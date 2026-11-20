@@ -246,7 +246,7 @@ ALIEN WORLD SURFACE: standing on the ground of another world. A raymarched terra
 
 `Scene2D/AllenCahnCoarsening.frag` · type=normal · mood=calm,dreamy,gallery · complexity=6
 
-ALLEN CAHN COARSENING: Allen-Cahn: two phases that coarsen into large domains, with borders that move by their curvature; the photo sets the preference and colours the domains. Where the photo is bright one phase is slightly favoured, so the domains follow the photo's shapes more and more as they grow. The borders glow. Audio Reactivity (structure, not only light): audioAdvance -> the coarsening runs on: the pace of …
+ALLEN CAHN COARSENING: Allen-Cahn: two phases that coarsen into large domains, with borders that move by their curvature; the photo sets the preference and colours the domains. Where the photo is bright one phase is slightly favoured, so the domains follow the photo's shapes more and more as they grow. The borders glow. Audio Reactivity (structure, not only light): audioSwell -> the pace of the coarsening: loud music…
 
 ![AllenCahnCoarsening ruhig (t=8)](img/AllenCahnCoarsening_A.jpg) ![AllenCahnCoarsening ruhig (t=16)](img/AllenCahnCoarsening_B.jpg) ![AllenCahnCoarsening audio-heiß (t=21)](img/AllenCahnCoarsening_C.jpg)
 
@@ -318,7 +318,7 @@ ANOMALOUS FLOQUET TOPOLOGICAL INSULATOR: Out-of-equilibrium Floquet topological 
 
 `Scene2D/AnorthoscopeSlitDistortion.frag` · type=normal · mood=electronic,dark,gallery · complexity=8
 
-ANORTHOSCOPE SLIT DISTORTION: Plateau's anorthoscope: a heavily distorted picture, seen through a narrow rotating slit, appears undistorted to the eye. Here the photo is stretched into polar coordinates, and two crossed slits scan it, so the picture is only there as the sum of the slits; between the slits it lies as a pale stretched ghost. Audio Reactivity (structure, not only light): audioAdvance -> the slits turn (…
+ANORTHOSCOPE SLIT DISTORTION: Plateau's anorthoscope: a heavily distorted picture, seen through a narrow rotating slit, appears undistorted to the eye. Here the photo is stretched into polar coordinates, and two crossed slits scan it, so the picture is only there as the sum of the slits; between the slits it lies as a pale stretched ghost. Audio Reactivity (structure, not only light): sceneAdvance -> the slits turn: …
 
 ![AnorthoscopeSlitDistortion ruhig (t=8)](img/AnorthoscopeSlitDistortion_A.jpg) ![AnorthoscopeSlitDistortion ruhig (t=16)](img/AnorthoscopeSlitDistortion_B.jpg) ![AnorthoscopeSlitDistortion audio-heiß (t=21)](img/AnorthoscopeSlitDistortion_C.jpg)
 
@@ -426,7 +426,7 @@ APOLLONIAN SPHERE PACKING DIVE: 3D Raymarching continuous dive into the voids of
 
 `Scene2D/ApollonianSpherePackingGasket.frag` · type=normal · mood=bright,psychedelic · complexity=9
 
-APOLLONIAN SPHERE PACKING GASKET: Raymarched infinite 3D Apollonian sphere packing gasket formed by recursive sphere inversions. Mutually tangent "kissing" spheres create an infinite fractal foam with jewel refractions, specular mirror reflections, and audio-reactive metric scaling. audioAdvance -> navigates camera through the Apollonian sphere foam audioKick -> flashes sphere facet contact points and jewel glints au…
+APOLLONIAN SPHERE PACKING GASKET: Raymarched infinite 3D Apollonian sphere packing gasket formed by recursive sphere inversions. Mutually tangent "kissing" spheres create an infinite fractal foam with jewel refractions, specular mirror reflections, and audio-reactive metric scaling. sceneAdvance -> navigates camera through the Apollonian sphere foam: the music carries most of the flight (integrated; without music it …
 
 ![ApollonianSpherePackingGasket ruhig (t=8)](img/ApollonianSpherePackingGasket_A.jpg) ![ApollonianSpherePackingGasket ruhig (t=16)](img/ApollonianSpherePackingGasket_B.jpg) ![ApollonianSpherePackingGasket audio-heiß (t=21)](img/ApollonianSpherePackingGasket_C.jpg)
 
@@ -7198,7 +7198,7 @@ Adapted from "Inside the System" by \@kishimisu (2022) — https://www.shadertoy
 
 `Scene2D/IntarsiaStepTiles.frag` · type=normal · mood=playful,gallery,electronic · complexity=4
 
-INTARSIA STEP TILES: intarsia in the style of tumbling blocks: rhombs of three woods make a pile of cubes; the photo is rastered into diamonds and every rhomb is turned to one of three sides. The three sides of a cube are light, middle and dark; the photo gives the tone and the hue of each cube, and the cubes turn slowly: the borders between their faces wander round. Audio Reactivity (structure, not only light): audi…
+INTARSIA STEP TILES: intarsia in the style of tumbling blocks: rhombs of three woods make a pile of cubes; the photo is rastered into diamonds and every rhomb is turned to one of three sides. The three sides of a cube are light, middle and dark; the photo gives the tone and the hue of each cube, and the cubes turn slowly: the borders between their faces wander round. Audio Reactivity (structure, not only light): scen…
 
 ![IntarsiaStepTiles ruhig (t=8)](img/IntarsiaStepTiles_A.jpg) ![IntarsiaStepTiles ruhig (t=16)](img/IntarsiaStepTiles_B.jpg) ![IntarsiaStepTiles audio-heiß (t=21)](img/IntarsiaStepTiles_C.jpg)
 
@@ -7810,7 +7810,7 @@ KINETIC TILE MOSAIC MATRIX: 100% viewport-filling architectural facade of thousa
 
 `Scene2D/KinetoscopePeepholeIris.frag` · type=normal · mood=cinematic,dark,gallery · complexity=7
 
-KINETOSCOPE PEEPHOLE IRIS: the view through the eyepiece of a kinetoscope: a round cut-out shows the photo, at the edge there are veils and the rim of a lens, and the cut-out wanders on a lemniscate; up to four eyepieces interlock, each of them swelling and shrinking in its own slow rhythm. Audio Reactivity (structure, not only light): audioAdvance -> the eyepieces wander on the lemniscate (integrated) audioSwell -> …
+KINETOSCOPE PEEPHOLE IRIS: the view through the eyepiece of a kinetoscope: a round cut-out shows the photo, at the edge there are veils and the rim of a lens, and the cut-out wanders on a lemniscate; up to four eyepieces interlock, each of them swelling and shrinking in its own slow rhythm. Audio Reactivity (structure, not only light): sceneAdvance -> the eyepieces wander on the lemniscate: the music carries them (in…
 
 ![KinetoscopePeepholeIris ruhig (t=8)](img/KinetoscopePeepholeIris_A.jpg) ![KinetoscopePeepholeIris ruhig (t=16)](img/KinetoscopePeepholeIris_B.jpg) ![KinetoscopePeepholeIris audio-heiß (t=21)](img/KinetoscopePeepholeIris_C.jpg)
 
@@ -7972,7 +7972,7 @@ KLUVER FORM CONSTANTS: the four geometric hallucination forms -- tunnel, spiral,
 
 `Scene2D/KMeansPaletteVoronoi.frag` · type=normal · mood=calm,playful,gallery · complexity=5
 
-K MEANS PALETTE VORONOI: a decomposition by k colour centres: the picture is divided into cells by the nearest palette colour, the centres wander on slow orbits, and the cell boundaries swing with them; every cell carries the colour of the photo at its centre and the photo shines through it, so the picture is half photo, half palette. Audio Reactivity (structure, not only light): audioAdvance -> the centres wander (i…
+K MEANS PALETTE VORONOI: a decomposition by k colour centres: the picture is divided into cells by the nearest palette colour, the centres wander on slow orbits, and the cell boundaries swing with them; every cell carries the colour of the photo at its centre and the photo shines through it, so the picture is half photo, half palette. Audio Reactivity (structure, not only light): sceneAdvance -> the centres wander: t…
 
 ![KMeansPaletteVoronoi ruhig (t=8)](img/KMeansPaletteVoronoi_A.jpg) ![KMeansPaletteVoronoi ruhig (t=16)](img/KMeansPaletteVoronoi_B.jpg) ![KMeansPaletteVoronoi audio-heiß (t=21)](img/KMeansPaletteVoronoi_C.jpg)
 
@@ -8368,7 +8368,7 @@ LEAF DAPPLE DRIFT: dappled light under the crown of a tree: spots of sun that wa
 
 `Scene2D/LeafMarginSerrationWave.frag` · type=normal · mood=calm,playful,gallery · complexity=7
 
-LEAF MARGIN SERRATION WAVE: toothed leaf margins: leaves with teeth whose row runs as a wave over the surface; the photo fills the leaves, and the number of teeth glides. Leaves lie in rows, each a pointed oval with a serrated edge and a midrib with side veins; the teeth run along the edge as a wave. Audio Reactivity (structure, not only light): audioHarmAdvance -> the number of teeth glides with the key (integrated)…
+LEAF MARGIN SERRATION WAVE: toothed leaf margins: leaves with teeth whose row runs as a wave over the surface; the photo fills the leaves, and the number of teeth glides. Leaves lie in rows, each a pointed oval with a serrated edge and a midrib with side veins; the teeth run along the edge as a wave. Audio Reactivity (structure, not only light): audioHarmAdvance -> the number of teeth glides with the key: a chord cha…
 
 ![LeafMarginSerrationWave ruhig (t=8)](img/LeafMarginSerrationWave_A.jpg) ![LeafMarginSerrationWave ruhig (t=16)](img/LeafMarginSerrationWave_B.jpg) ![LeafMarginSerrationWave audio-heiß (t=21)](img/LeafMarginSerrationWave_C.jpg)
 
@@ -15522,7 +15522,7 @@ STRAW MARQUETRY HERRINGBONE: straw marquetry: split stalks, ironed flat and glue
 
 `Scene2D/StreamgraphLayersFlow.frag` · type=normal · mood=calm,dreamy,gallery · complexity=5
 
-STREAMGRAPH LAYERS FLOW: a streamgraph: the photo is cut into layers by colour class, and they flow as surging bands from left to right in the width of the respective amount of colour, in a snake of waves. Each layer takes the photo's colours where it flows, and the stack is centred, so the whole picture rises and falls like one body. Audio Reactivity (structure, not only light): audioAdvance -> the surging runs on (…
+STREAMGRAPH LAYERS FLOW: a streamgraph: the photo is cut into layers by colour class, and they flow as surging bands from left to right in the width of the respective amount of colour, in a snake of waves. Each layer takes the photo's colours where it flows, and the stack is centred, so the whole picture rises and falls like one body. Audio Reactivity (structure, not only light): sceneAdvance -> the surging runs on: …
 
 ![StreamgraphLayersFlow ruhig (t=8)](img/StreamgraphLayersFlow_A.jpg) ![StreamgraphLayersFlow ruhig (t=16)](img/StreamgraphLayersFlow_B.jpg) ![StreamgraphLayersFlow audio-heiß (t=21)](img/StreamgraphLayersFlow_C.jpg)
 
@@ -15747,7 +15747,7 @@ SUPERMASSIVE ACCRETION DISK: Raymarched Kerr rotating black hole with extreme gr
 
 `Scene2D/SupermassiveBlackHoleOrbit.frag` · type=normal · mood=dark,psychedelic,space · complexity=5
 
-SUPERMASSIVE BLACK HOLE: A terrifying orbit around the event horizon of a supermassive black hole. Intense gravitational lensing distorts the background starfield, while the searing accretion disk pulses with the beat. audioAdvance -> camera orbit speed audioKick -> intense energy flares in the accretion disk audioSwell -> brightness and width of the photon ring audioChromaHue-> palette offset for the accretion disk …
+SUPERMASSIVE BLACK HOLE: A terrifying orbit around the event horizon of a supermassive black hole. Intense gravitational lensing distorts the background starfield, while the searing accretion disk pulses with the beat. sceneAdvance -> the camera's orbit: the music carries most of it (integrated; without music it creeps) audioPhase -> the disk's flow (integrated) audioKick -> intense energy flares in the accretion dis…
 
 ![SupermassiveBlackHoleOrbit ruhig (t=8)](img/SupermassiveBlackHoleOrbit_A.jpg) ![SupermassiveBlackHoleOrbit ruhig (t=16)](img/SupermassiveBlackHoleOrbit_B.jpg) ![SupermassiveBlackHoleOrbit audio-heiß (t=21)](img/SupermassiveBlackHoleOrbit_C.jpg)
 
@@ -18458,7 +18458,7 @@ VENUS GIRDLE RIBBONS: long transparent ribbons -- Venus' girdles, the ribbon-sha
 
 `Scene2D/VenusYShapedCloudBands.frag` · type=normal · mood=calm,dreamy,gallery · complexity=7
 
-VENUS Y SHAPED CLOUD BANDS: the cloud bands of Venus in ultraviolet: a Y-shaped pattern of bands that turns round the planet in four days; the photo lies as the cloud deck, and the bands are stripes of absorption. Chevron bands (a V where they meet the equator) lie over a stem of straight bands, and the whole pattern runs to the side with the planet's turn. Audio Reactivity (structure, not only light): audioAdvance -…
+VENUS Y SHAPED CLOUD BANDS: the cloud bands of Venus in ultraviolet: a Y-shaped pattern of bands that turns round the planet in four days; the photo lies as the cloud deck, and the bands are stripes of absorption. Chevron bands (a V where they meet the equator) lie over a stem of straight bands, and the whole pattern runs to the side with the planet's turn. Audio Reactivity (structure, not only light): sceneAdvance -…
 
 ![VenusYShapedCloudBands ruhig (t=8)](img/VenusYShapedCloudBands_A.jpg) ![VenusYShapedCloudBands ruhig (t=16)](img/VenusYShapedCloudBands_B.jpg) ![VenusYShapedCloudBands audio-heiß (t=21)](img/VenusYShapedCloudBands_C.jpg)
 
