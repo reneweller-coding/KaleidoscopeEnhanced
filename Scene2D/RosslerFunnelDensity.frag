@@ -12,8 +12,10 @@
  *  the key, and the view turns.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioHarmAdvance -> the parameter c glides with the key (integrated)
- *    audioAdvance     -> the view turns (integrated)
+ *    audioHarmAdvance -> the parameter c glides with the key: a chord change bends the funnel (integrated)
+ *    sceneAdvance     -> the band turns (integrated)
+ *    audioSwell       -> the funnel's height (slow)
+ *    audioKick        -> the paths flare (light only)
  *
  *  Knobs: sizeP (the thickness of the paths), hueP.
  *
@@ -37,6 +39,8 @@ uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, u
 uniform float audioPhase;       ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
                                 ///< back).
+uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -512,8 +516,9 @@ vec3 rossler( vec3 s, float c )
 void main()
 {
     vec2  p = screenP();
-    float c = 5.7 + 1.5 * sin( 0.04 * audioHarmAdvance + 0.02 * sceneTime );
-    float va = 0.03 * audioAdvance + 0.02 * sceneTime;
+    float c = 5.7 + 1.5 * sin( 0.7 * audioHarmAdvance + 0.012 * sceneTime );
+    float va = 0.012 * sceneTime + 0.25 * sceneAdvance;
+    float lift = 0.025 * ( 0.7 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) );
     mat2  R = rot2( va );
     float K = 1.0 / pow( 0.013 + 0.013 * clamp( sizeP, 0.0, 1.0 ), 2.0 );
     float acc = 0.0;
@@ -531,7 +536,7 @@ void main()
             vec3 k2 = rossler( s + 0.03 * k1, c );
             s += 0.06 * k2;
             float ang = atan( s.y, s.x );
-            vec2  q = R * vec2( s.x * 0.05, s.y * 0.035 + s.z * 0.025 );
+            vec2  q = R * vec2( s.x * 0.05, s.y * 0.035 + s.z * lift );
             vec2  d = p - q;
             float g = exp( -dot( d, d ) * K );
             vec2  dmid = p - 0.5 * ( q + qp );
@@ -543,7 +548,7 @@ void main()
     }
     vec3  ph = imgLod( p * 0.85 + 0.5, 0.8 );
     float dens = 1.0 - exp( -acc * 0.5 );
-    vec3  col = ph * 0.24 + ph * dens * 1.3;
+    vec3  col = ph * 0.24 + ph * dens * ( 1.3 + 0.5 * clamp( audioKick, 0.0, 1.0 ) );
     col *= 0.8 + 0.4 * ( hh / max( acc, 1.0 ) );
     finish( col );
 }

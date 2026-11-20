@@ -4,18 +4,19 @@
  *
  * Audio Reactivity (structure, not only light):
  *   audioSwell   -> the width of the bands breathes
- *   audioAdvance -> the shell grows outwards (the bands run outward) (integrated)
+ *   sceneAdvance -> the shell grows outwards (the bands run outward): the music carries it (integrated)
+ *   audioKick    -> the growth lines light up (light only)
  *
  * Knobs: sizeP (the number of ribs), hueP.
 //@params sizeP
-//@audio audioSwell audioAdvance
+//@audio audioSwell audioAdvance audioKick
 //@body
 void main()
 {
     vec2 p = screenP();
     float r = length(p) + 1e-4;
     float th = atan(p.y, p.x);
-    float g = 0.01 * audioAdvance + 0.015 * sceneTime;
+    float g = 0.008 * sceneTime + 1.2 * sceneAdvance;
     float K = 14.0 + 6.0 * clamp(audioSwell, 0.0, 1.0);
     float u = r * K - g + 0.5 * sin(5.0 * r * K * 0.3) * 0.5;
     float band = floor(u);
@@ -30,6 +31,6 @@ void main()
     c = mix(vec3(luma(c)), c, 1.3);
     float tone = 0.65 + 0.4 * mod(band, 2.0) * 0.5;
     vec3 col = c * tone * (0.7 + 0.45 * rib) * cone * 1.25;
-    col = mix(col, vec3(0.9, 0.85, 0.75) * luma(c), edge * 0.5);
+    col = mix(col, vec3(0.9, 0.85, 0.75) * luma(c) * (1.0 + 0.6 * clamp(audioKick, 0.0, 1.0)), edge * 0.5);
     finish(col);
 }

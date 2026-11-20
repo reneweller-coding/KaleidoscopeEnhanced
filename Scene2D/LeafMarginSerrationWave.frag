@@ -12,8 +12,11 @@
  *  the edge as a wave.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioHarmAdvance -> the number of teeth glides with the key (integrated)
- *    audioAdvance     -> the wave of teeth runs along the edges (integrated)
+ *    audioHarmAdvance -> the number of teeth glides with the key: a chord change moves it on (integrated)
+ *    sceneAdvance     -> the wave of teeth runs along the edges and the leaves sway: the music carries both
+ *                        (integrated)
+ *    audioSwell       -> the leaves sway wider (slow)
+ *    audioKick        -> the leaves' ribs and veins light up (light only)
  *
  *  Knobs: sizeP (the size of the leaves), hueP.
  *
@@ -37,6 +40,8 @@ uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, u
 uniform float audioPhase;       ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
                                 ///< back).
+uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -505,23 +510,27 @@ void main()
     vec2  gi = floor( g );
     vec2  f = fract( g ) - 0.5;
     float h = hash21( gi );
-    float ang = 0.5 * sin( 0.4 * gi.x + 0.5 * gi.y + 0.05 * audioAdvance + 0.07 * sceneTime ) + ( h - 0.5 ) * 0.5;
+    float ang = ( 0.45 + 0.35 * clamp( audioSwell, 0.0, 1.0 ) )
+                    * sin( 0.4 * gi.x + 0.5 * gi.y + 1.6 * sceneAdvance + 0.04 * sceneTime )
+                + ( h - 0.5 ) * 0.5;
     vec2  q = rot2( ang ) * f * vec2( 1.0, 1.0 );
     float u = q.x * 1.0 + 0.5;
     float wlen = 0.46;
-    float tn = 7.0 + 3.0 * sin( 0.05 * audioHarmAdvance + 0.02 * sceneTime );
-    float saw = fract( tn * u - 0.15 * audioAdvance * 0.2 - 0.1 * sceneTime );
+    float tn = 7.0 + 3.0 * sin( 0.4 * audioHarmAdvance + 0.012 * sceneTime );
+    float saw = fract( tn * u - 1.2 * sceneAdvance - 0.06 * sceneTime );
     float tooth = saw * 0.07;
     float w = 0.28 * sin( 3.1415927 * clamp( u, 0.0, 1.0 ) ) * ( 1.0 - 0.3 * u )
               + tooth * smoothstep( 0.0, 0.2, u ) * ( 1.0 - smoothstep( 0.8, 1.0, u ) );
     float d = abs( q.y ) - w;
     float inside = ( 1.0 - smoothstep( -0.004, 0.012, d ) ) * step( 0.0, u ) * step( u, 1.0 );
-    vec3  c = imgLod( ( gi * S + f * S ) * 0.85 + 0.5, 0.8 );
+    vec3  c = imgLod( ( gi * S + q * S ) * 0.85 + 0.5, 0.8 );
     c = mix( vec3( luma( c ) ), c, 1.3 ) * vec3( 0.8, 1.1, 0.75 );
     float rib = 1.0 - smoothstep( 0.0, 0.012, abs( q.y ) );
     float veins = 1.0 - smoothstep( 0.0, 0.015, abs( abs( q.y ) - 0.35 * ( fract( tn * u * 0.5 ) - 0.2 ) * 0.5 ) );
     vec3  col = c * ( 0.75 + 0.3 * smoothstep( 0.0, 0.3, w - abs( q.y ) ) );
-    col = mix( col, vec3( 0.9, 0.95, 0.7 ), rib * 0.35 + veins * 0.12 );
+    float kick = clamp( audioKick, 0.0, 1.0 );
+    col = mix( col, vec3( 0.9, 0.95, 0.7 ), ( rib * 0.35 + veins * 0.12 ) * ( 1.0 + 1.2 * kick ) );
+    col *= 1.0 + 0.25 * kick;
     vec3 bg = imgLod( p * 0.85 + 0.5, 2.5 ) * 0.12;
     finish( mix( bg, col * 1.2, inside ) );
 }

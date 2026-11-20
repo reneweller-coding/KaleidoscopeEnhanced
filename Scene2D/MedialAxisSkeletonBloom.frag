@@ -14,7 +14,8 @@
  *
  *  Audio Reactivity (structure, not only light):
  *    audioSwell   -> the threshold: the shapes grow and shrink
- *    audioAdvance -> the threshold wanders slowly (integrated)
+ *    audioPhase   -> the threshold wanders with the music (integrated)
+ *    audioKick    -> the skeletons and the shapes they stand in flare (light only)
  *
  *  Knobs: sizeP (the smoothing of the shapes), hueP.
  *
@@ -37,6 +38,7 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -520,7 +522,7 @@ void main()
     vec2  p = screenP();
     vec2  uv = p * 0.85 + 0.5;
     float lod = 2.0 + 1.6 * clamp( sizeP, 0.0, 1.0 );
-    float thr = 0.55 + 0.12 * sin( 0.03 * audioAdvance + 0.04 * sceneTime ) - 0.1 * clamp( audioSwell, 0.0, 1.0 );
+    float thr = 0.55 + 0.16 * sin( 0.7 * audioPhase + 0.02 * sceneTime ) - 0.16 * clamp( audioSwell, 0.0, 1.0 );
     float h = 0.012;
     float d0 = sdEst( uv, thr, lod );
     float lap = sdEst( uv + vec2( h, 0.0 ), thr, lod ) + sdEst( uv - vec2( h, 0.0 ), thr, lod )
@@ -529,8 +531,8 @@ void main()
     float skel = smoothstep( 0.003, 0.015, -lap ) * inside * smoothstep( 0.01, 0.06, d0 );
     vec3  c = imgLod( uv, 0.8 );
     c = mix( vec3( luma( c ) ), c, 1.3 );
-    vec3 col = c * ( 0.18 + 0.2 * inside ) + vec3( 0.02 );
-    col = mix( col, c * 1.7 + 0.1, skel );
+    vec3 col = c * ( 0.18 + ( 0.2 + 0.25 * clamp( audioKick, 0.0, 1.0 ) ) * inside ) + vec3( 0.02 );
+    col = mix( col, c * ( 1.7 + 0.7 * clamp( audioKick, 0.0, 1.0 ) ) + 0.1, skel );
     col += vec3( 1.0, 0.9, 0.7 ) * exp( -pow( d0 / 0.01, 2.0 ) ) * 0.15;
     finish( col );
 }

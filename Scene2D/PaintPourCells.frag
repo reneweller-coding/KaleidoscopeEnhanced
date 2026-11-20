@@ -10,14 +10,14 @@
  *  pushed the top layer apart, each ringed by thin lacy rims of the colours beneath.
  *
  *  The paint keeps flowing, slowly, as if the canvas were still being tilted; cells drift and stretch with it.  A
- *  soft studio light gives the wet surface a gloss.  The music is in the light.
+ *  soft studio light gives the wet surface a gloss.  The music keeps the paint flowing and stretches it.
  *
  *  Audio Reactivity:
- *    audioSwell  -> the gloss of the wet paint (slow)
+ *    audioSwell  -> how far the paint is stretched, and the gloss of the wet paint (slow)
  *    audioKick   -> the cell rims glint (light only)
  *    audioLevel  -> brightness
  *    audioChromaHue / hueP -> which paint set (photo-tinted)
- *    sceneTime / sceneAdvance -> the flow (continuous)
+ *    sceneAdvance -> the flow: the music carries most of it (integrated; without music it creeps)
  *
  *  Per-activation variety: cellsP (cell density), hueP.
  *
@@ -181,15 +181,18 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float kick = clamp( audioKick, 0.0, 1.0 );
-    float T = sceneTime + sceneAdvance * 0.4;
+    // The flow: the music carries most of it; the swell stretches the paint (B2, 20.11.2026: the scene measured among
+    // the 5 % least reactive).
+    float T = 0.5 * sceneTime + 9.0 * sceneAdvance;
+    float Tw = 0.003 * sceneTime + 0.5 * sceneAdvance;
     float fam = fract( ( ( hueP > 0.001 ) ? hueP : 0.0 ) / 6.2831853 );
     float cd = 5.0 + 5.0 * clamp( cellsP, 0.0, 1.0 );
 
     // The flow: a slow shear plus a domain warp, as if the canvas is tilted.
     vec2 q = p * 1.4 + vec2( T * 0.01, T * 0.004 );
-    vec2 w1 = vec2( fbm( q + vec2( 0.0, T * 0.006 ) ), fbm( q + vec2( 5.2, 1.3 ) ) );
+    vec2 w1 = vec2( fbm( q + vec2( 0.0, Tw ) ), fbm( q + vec2( 5.2, 1.3 - 0.6 * Tw ) ) );
     vec2 w2 = vec2( fbm( q + 3.0 * w1 + vec2( 1.7, 9.2 ) ), fbm( q + 3.0 * w1 + vec2( 8.3, 2.8 ) ) );
-    vec2 f = q + 2.2 * w2;
+    vec2 f = q + ( 1.8 + 0.8 * swell ) * w2;
 
     // Base: ribbons of paint along the flow.
     float band = f.x * 0.8 + f.y * 0.35 + 0.15 * fbm( f * 3.0 );

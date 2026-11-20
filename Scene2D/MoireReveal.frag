@@ -38,7 +38,7 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float linesP; ///< Lines knob: the lines' density.
+uniform float linesP; ///< Lines knob: the lines' density, 0..1.
 uniform float bandP;  ///< Band knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
@@ -502,7 +502,7 @@ void main()
 {
     vec2  p = screenP();
     vec2  uv = p * 0.8 + 0.5;
-    float t = sceneTime * 0.4 + 3.0 * audioAdvance;
+    float t = sceneTime * 0.25 + 12.0 * sceneAdvance;
     float ang = 0.35 + 0.25 * sin( 0.05 * ( sceneTime + 6.0 * audioPhase ) );
     float across = dot( p, vec2( cos( ang ), sin( ang ) ) );
     vec3  c = imgLod( uv, 0.5 );

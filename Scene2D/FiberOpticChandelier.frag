@@ -11,13 +11,16 @@
  *  of light.
  *
  *  Pulses of light run outward through the strands, and the tips glow in the colour of their pitch class: when a
- *  note sounds, its strands light up across the whole crown.  The chandelier and the camera are still.
+ *  note sounds, its strands light up across the whole crown.  The crown turns slowly with the music and fans
+ *  wider as it swells; the stairwell and the camera are still.
  *
  *  Audio Reactivity:
  *    audioChroma[12] -> the tips and pulses of each pitch class's strands (light)
  *    audioBass       -> the hub's glow (light)
  *    audioLevel      -> brightness
- *    sceneTime / sceneAdvance -> the pulses running out along the strands
+ *    sceneAdvance    -> the pulses running out along the strands: the music carries them (integrated)
+ *    audioPhase      -> the crown turns (integrated)
+ *    audioSwell      -> the crown fans wider (slow)
  *
  *  Per-activation variety: spreadP (how wide the crown fans), hueP.
  *
@@ -37,6 +40,8 @@ uniform float audioAdvance;    ///< The music's advance: integrated tempo-weight
                                ///< backwards).
 uniform float audioChroma[12]; ///< Pitch-class energies (12 values).
 uniform float audioBass;       ///< Bass band level, 0..1.
+uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioPhase;      ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioLevel;      ///< Overall loudness, 0..1.
 uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
@@ -121,15 +126,18 @@ void main()
     vec2  uv = gl_FragCoord.xy / resolution;
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
     float bass = clamp( audioBass, 0.0, 1.0 );
-    float T = sceneTime + sceneAdvance * 0.4;
-    float spread = 0.85 + 0.35 * clamp( spreadP, 0.0, 1.0 );
+    // The music carries the pulses, turns the crown and fans it (B2, 20.11.2026: the scene measured among the 5 % least
+    // reactive).
+    float T = 0.5 * sceneTime + 8.0 * sceneAdvance;
+    float spread = ( 0.85 + 0.35 * clamp( spreadP, 0.0, 1.0 ) ) * ( 0.9 + 0.18 * clamp( audioSwell, 0.0, 1.0 ) );
+    float crown_turn = 0.06 * audioPhase;
     float px = 1.0 / resolution.y;
 
     // Seen from below, slightly off axis: the crown is a flattened circle.
     vec2  c0 = vec2( 0.03, 0.02 );
     vec2  q = ( p - c0 ) * vec2( 1.0, 1.12 );
     float r = length( q );
-    float th = atan( q.y, q.x );
+    float th = atan( q.y, q.x ) - crown_turn;
 
     // The stairwell: dark, a warm glow of the chandelier on the ceiling.
     vec3 col = vec3( 0.012, 0.012, 0.02 ) + vec3( 0.06, 0.05, 0.07 ) * exp( -r * 2.5 );
@@ -196,8 +204,8 @@ void main()
             }
             // The tip: a round point of light with a soft halo.
             vec2 tip = vec2( cos( a_c ), sin( a_c ) ) * len;
-            // Re-apply the sag to place the tip where the strand ends.
-            float t_a = a_c + sag * len * len * ( fl - 1.0 ) * 0.6;
+            // Re-apply the sag to place the tip where the strand ends (and the crown's turn).
+            float t_a = a_c + sag * len * len * ( fl - 1.0 ) * 0.6 + crown_turn;
             tip = vec2( cos( t_a ), sin( t_a ) ) * len;
             float dt = length( q - tip );
             float tip_r = 0.0035 + 0.0015 * ( 1.0 - fl * 0.3 );

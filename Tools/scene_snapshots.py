@@ -70,7 +70,11 @@ def shoot(block, fx, out, photo, timeout, slot=0):
         os.remove(out)
     env = PS.env(dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(timeout + 15), KALEIDO_NO_ACTIVATE="1",
                       KALEIDO_FREEZE_TIME="20", KALEIDO_FIXED_PHOTO=photo, KALEIDO_SEED="7",
-                      KALEIDO_NO_VSYNC="1", KALEIDO_FREEZE_SHOT=out), slot)
+                      KALEIDO_NO_VSYNC="1", KALEIDO_FREEZE_SHOT=out,
+                      # the machine's media session stays out: the app weaves what the system plays (NowPlaying:
+                      # title, lyrics, artist) into the picture; a scripted session that never names a track keeps
+                      # the real one from being asked (20.11.2026, B2: half of a snapshot set carried the title)
+                      KALEIDO_NP_FAKE=os.environ.get("KALEIDO_NP_FAKE", "none|none@999999")), slot)
     # no -l: stderr comes here through a pipe -- runs at once never share a log file
     p = subprocess.Popen([os.path.join(REL, EXE), "-c", name, "-t", "0"], cwd=REL, env=env,
                          stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)

@@ -14,8 +14,9 @@
  *  drive of the music, the height of the range the swell.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioAdvance    -> the flight (integrated)
+ *    sceneAdvance    -> the flight: the music carries most of it (integrated; without music it creeps)
  *    audioSwell      -> the height of the range
+ *    audioKick       -> the lit slopes flare (light only)
  *
  *  Knobs: heightP (the base height), hueP.
  *
@@ -38,6 +39,7 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float heightP; ///< Height knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -746,7 +748,7 @@ void main()
     }
     vec2  p = screenP();
     float amp = ( 0.35 + 0.5 * clamp( heightP, 0.0, 1.0 ) ) * ( 0.6 + 0.8 * clamp( audioSwell, 0.0, 1.0 ) );
-    float adv = 0.04 * audioAdvance + 0.03 * sceneTime;
+    float adv = 0.018 * sceneTime + 1.0 * sceneAdvance;
     vec3  ro = vec3( 4.0 * sin( 0.015 * audioAdvance + 0.01 * sceneTime ), 1.3 * amp + 0.35, 4.0 * adv );
     vec3  fw = normalize( vec3( 0.15 * sin( 0.02 * audioAdvance ), -0.38, 1.0 ) );
     vec3  rt = normalize( cross( vec3( 0.0, 1.0, 0.0 ), fw ) );
@@ -783,7 +785,7 @@ void main()
         float lam = clamp( dot( n, normalize( vec3( 0.5, 0.8, -0.3 ) ) ), 0.0, 1.0 );
         vec3  ground = gc * ( 0.3 + 0.9 * lam ) * ( 0.6 + 0.6 * clamp( pos.y / ( amp + 0.3 ), 0.0, 1.0 ) );
         float fog = 1.0 - exp( -0.07 * t );
-        col = mix( ground * 1.15, sky, fog );
+        col = mix( ground * ( 1.15 + 0.5 * lam * clamp( audioKick, 0.0, 1.0 ) ), sky, fog );
     }
     finish( col );
 }

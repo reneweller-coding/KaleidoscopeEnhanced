@@ -13,7 +13,8 @@
  *
  *  Audio Reactivity (structure, not only light):
  *    audioSwell       -> the build-up: the disc opens and the lines flare (a slow signal)
- *    audioHarmAdvance -> the mode (the nodal lines) changes with the key (integrated)
+ *    audioHarmAdvance -> the mode (the nodal lines) changes with the key: a chord change carries it on (integrated)
+ *    audioPhase       -> the ripples run out over the plate with the music (integrated)
  *
  *  Knobs: sizeP (the size of the disc), hueP.
  *
@@ -520,12 +521,12 @@ void main()
     float r = length( p );
     float sw = clamp( audioSwell, 0.0, 1.0 );
     float R = ( 0.4 + 0.1 * clamp( sizeP, 0.0, 1.0 ) ) * ( 0.9 + 0.2 * sw );
-    float ph = 0.04 * audioHarmAdvance + 0.01 * sceneTime;
+    float ph = 0.3 * audioHarmAdvance + 0.008 * sceneTime;
     float m0 = 3.0 + mod( floor( ph ), 4.0 );
     float m1 = 3.0 + mod( floor( ph ) + 1.0, 4.0 );
     float f = smoothstep( 0.1, 0.9, fract( ph ) );
-    float t = 1.5 * sceneTime;
-    float v = mix( nodal( p, m0, 30.0, t ), nodal( p, m1, 30.0, t * 1.1 ), f );
+    float t = 0.8 * sceneTime + 4.0 * audioPhase;
+    float v = mix( nodal( p, m0, 30.0, t ), nodal( p, m1, 30.0, t ), f );
     float line = exp( -v * v * 60.0 );
     float rag = R * ( 1.0 + 0.04 * ( noise2( vec2( atan( p.y, p.x ) * 3.0, 0.1 * sceneTime ) ) - 0.5 ) );
     float disc = 1.0 - smoothstep( rag * 0.97, rag, r );

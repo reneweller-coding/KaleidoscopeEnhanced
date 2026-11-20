@@ -13,7 +13,7 @@
  *
  *  Audio Reactivity (structure, not only light):
  *    audioSwell      -> the exposure lengthens as the music swells
- *    audioPhase      -> the cells' turns (integrated)
+ *    audioPhase      -> the cells' turns: each cell's picture swings round its pivot with the music (integrated)
  *
  *  Knobs: lengthP (the base length of the exposure), reachP (the path's reach or the pivot's wandering), hueP.
  *
@@ -513,6 +513,7 @@ vec2 expPath( vec2 p, float u, float t )
     vec2  g = floor( q );
     float best = 9.0;
     vec2  c = vec2( 0.0 );
+    vec2  cid = vec2( 0.0 );
     for ( int j = -1; j <= 1; ++j )
     {
         for ( int i = -1; i <= 1; ++i )
@@ -524,11 +525,12 @@ vec2 expPath( vec2 p, float u, float t )
             {
                 best = d;
                 c = pt;
+                cid = cg;
             }
         }
     }
     c /= ( 3.0 + 3.0 * R / 0.7 );
-    return c + rot2( 1.4 * L * u ) * ( p - c );
+    return c + rot2( 1.4 * L * u + 0.8 * sin( 0.6 * t + 6.2831853 * hash21( cid + 3.7 ) ) ) * ( p - c );
 }
 
 // ---- the photo as a long exposure ----
@@ -572,6 +574,6 @@ vec3 expAccum( vec2 p, float t, int mode, float lodk )
 void main()
 {
     vec2  p = screenP();
-    float t = sceneTime * 0.15 + 1.2 * audioPhase;
+    float t = sceneTime * 0.1 + 2.0 * audioPhase;
     finish( expAccum( p, t, 0, 1.5 ) * 1.05 );
 }

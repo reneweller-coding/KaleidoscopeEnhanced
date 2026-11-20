@@ -7,12 +7,13 @@
  * colour family from the photo.
  *
  * Audio Reactivity (structure, not only light):
- *   audioAdvance -> the discs turn (integrated)
+ *   sceneAdvance -> the discs turn: the music carries the turn (integrated)
+ *   audioKick    -> the net of light flares (light only)
  *   audioSwell   -> the ripples' depth: the net sharpens
  *
  * Knobs: rippleP (the ripples' scale), lightP (the light's brightness), hueP.
 //@params rippleP lightP
-//@audio audioSwell
+//@audio audioSwell audioKick
 //@body
 /**  The caustic brightness of one rippled disc.
  *
@@ -44,10 +45,10 @@ void main()
     float fh = famHue();
     float scale = 6.0 + 6.0 * clamp(rippleP, 0.0, 1.0);
     float depth = 0.35 + 0.35 * clamp(audioSwell, 0.0, 1.0);
-    float turn = 0.04 * sceneTime + 0.18 * audioAdvance;
+    float turn = 0.025 * sceneTime + 0.7 * sceneAdvance;
     float a = caustic(rot2(turn) * p, scale, depth, 0.0);
     float b = caustic(rot2(-0.8 * turn) * p + 0.3, scale * 0.8, depth, 1.3);
-    float light = sqrt(a * b) * (0.5 + 0.6 * clamp(lightP, 0.0, 1.0));
+    float light = sqrt(a * b) * (0.5 + 0.6 * clamp(lightP, 0.0, 1.0)) * (1.0 + 0.3 * clamp(audioKick, 0.0, 1.0));
     vec3 col = famLight(fh, 0.3 + 0.03 * light, 0.2 * smoothstep(2.0, 6.0, light)) * light * 0.22;
     col *= smoothstep(1.4, 0.4, length(p));                      // the lamp's beam fades toward the edges
     finish(col);

@@ -58,6 +58,8 @@ WORK = os.path.join(ROOT, ".screen")
 RELEASE = os.path.join(ROOT, "Release")
 # The folder the app runs from (its exe, its scene-cost.json); KALEIDO_SCREEN_DIR points at another build.
 APP_DIR = os.environ.get("KALEIDO_SCREEN_DIR", RELEASE)
+# KALEIDO_NP_FAKE for every run: a scripted media session that never names a track (see render()).
+NP_QUIET = "none|none@999999"
 # The screening renders as a video export (Kaleidoscope.exe -e) on the frame clock, as fast as the GPU allows: the
 # measurement below looks at 160 x 90 at 5 fps, and the scene cost is the GPU time of each frame at the size a show
 # runs at.  Until 16.10.2026 it was a real-time recording (-x): 1430 scenes x 8 s = more than three hours of waiting.
@@ -316,6 +318,11 @@ def render(cfg, wav, log_path, hold, seed, kind="scene", time_start=0, extra_env
     env = dict(os.environ, KALEIDO_SEED=str(seed),
                KALEIDO_TIME_START=str(int(time_start)),
                KALEIDO_SOLO_SECS=str(int(round(hold))))
+    # The machine's media session stays out (20.11.2026, B2): the app asks the system what it is playing
+    # (NowPlaying) and weaves the title, lyrics and artist into the picture -- a measurement run while the user played
+    # something read up to 0.19 apart from the same run without.  A scripted session that never names a track keeps
+    # the real one from being asked.
+    env.setdefault("KALEIDO_NP_FAKE", NP_QUIET)
     if extra_env:
         env.update(extra_env)
     env[var] = str(int(round(hold)))

@@ -3,12 +3,14 @@
  * the ribbons are in its colours.  Eighteen pairs of places of the photo wander slowly, and so do the ribbons that belong to them.
  *
  * Audio Reactivity (structure, not only light):
- *   audioAdvance -> the circle turns (integrated)
- *   audioSwell   -> the width of the ribbons
+ *   audioHarmAdvance -> the pairs of places wander on: a chord change carries the ribbons to new colours (integrated)
+ *   sceneAdvance     -> the circle turns (integrated)
+ *   audioSwell       -> the width of the ribbons
+ *   audioKick        -> the ribbons and the photo behind them light up (light only)
  *
  * Knobs: sizeP (the radius of the circle), hueP.
 //@params sizeP
-//@audio audioSwell audioAdvance
+//@audio audioSwell audioAdvance audioHarmAdvance audioKick
 //@body
 /**  The hue of a colour as a number 0..1 (the angle in the chroma plane).
  *
@@ -25,19 +27,21 @@ void main()
 {
     vec2 p = screenP();
     float R = 0.36 + 0.12 * clamp(sizeP, 0.0, 1.0);
-    float rot = 0.04 * audioAdvance + 0.03 * sceneTime;
-    vec3 col = imgLod(p * 0.85 + 0.5, 2.0) * 0.3;
+    float rot = 0.015 * sceneTime + 1.0 * sceneAdvance;
+    float wander = 0.02 * sceneTime + 0.25 * audioHarmAdvance + 1.0 * sceneAdvance;
+    float kick = clamp(audioKick, 0.0, 1.0);
+    vec3 col = imgLod(p * 0.85 + 0.5, 2.0) * (0.3 + 0.12 * kick);
     float r = length(p);
     float a = atan(p.y, p.x) - rot;
     float ringm = smoothstep(R - 0.006, R, r) * (1.0 - smoothstep(R + 0.02, R + 0.026, r));
     float sec = fract(a / 6.2831853 * 12.0);
     vec3 ringc = hsv2rgb(vec3(fract(a / 6.2831853 + 0.5), 0.7, 0.95)) * (0.5 + 0.5 * smoothstep(0.0, 0.08, sec) * (1.0 - smoothstep(0.92, 1.0, sec)));
     col = mix(col, ringc, ringm);
-    float sw = 0.6 + 0.8 * clamp(audioSwell, 0.0, 1.0);
+    float sw = 0.5 + 1.2 * clamp(audioSwell, 0.0, 1.0);
     for (int k = 0; k < 18; ++k) {
         float fk = float(k);
         vec2 h = hash22(vec2(fk, 1.3));
-        vec2 pa = 0.5 + 0.38 * sin(h * 6.2831853 + 0.07 * sceneTime * (0.6 + h.yx));
+        vec2 pa = 0.5 + 0.38 * sin(h * 6.2831853 + 2.0 * wander * (0.6 + h.yx));
         vec2 pb = pa + 0.06 * vec2(cos(6.2831853 * h.x * 3.0), sin(6.2831853 * h.y * 3.0));
         vec3 ca = imgLod(pa, 2.5);
         vec3 cb = imgLod(pb, 2.5);
@@ -60,7 +64,7 @@ void main()
         float al = 1.0 - smoothstep(w * 0.5, w, dmin);
         vec3 cr = mix(ca, cb, sbest);
         cr = mix(vec3(luma(cr)), cr, 1.7);
-        col = mix(col, cr * 1.3, al * 0.8);
+        col = mix(col, cr * (1.3 + 0.45 * kick), al * 0.8);
     }
     finish(col * 1.1);
 }

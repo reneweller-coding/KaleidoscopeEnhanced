@@ -13,7 +13,8 @@
  *
  *  Audio Reactivity (structure, not only light):
  *    audioSwell   -> the overlap of the scales (the radius against the spacing)
- *    audioAdvance -> the swell wanders (integrated)
+ *    sceneAdvance -> the swell wanders: the music carries most of the drift (integrated; without music it creeps)
+ *    audioKick    -> the rings' white lines light up (light only)
  *
  *  Knobs: sizeP (the size of the scales), hueP.
  *
@@ -36,6 +37,7 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -501,7 +503,8 @@ void main()
     vec2  p = screenP();
     float S = 0.13 + 0.1 * clamp( sizeP, 0.0, 1.0 );
     float R = S * ( 0.58 + 0.2 * clamp( audioSwell, 0.0, 1.0 ) );
-    float sl = 0.03 * audioAdvance + 0.04 * sceneTime;
+    float sl = 0.02 * sceneTime + 1.1 * sceneAdvance;
+    float kick = clamp( audioKick, 0.0, 1.0 );
     vec2  q = vec2( p.x + 0.0, p.y ) / S;
     float row0 = floor( q.y * 2.0 );
     float best_y = 1e3;
@@ -529,7 +532,7 @@ void main()
                 float tone = mod( ring, 2.0 ) < 0.5 ? 1.15 : 0.62;
                 float line = smoothstep( 0.0, 0.1, fr ) * ( 1.0 - smoothstep( 0.9, 1.0, fr ) );
                 col = c * tone * ( 0.5 + 0.5 * line ) * ( 0.85 + 0.2 * smoothstep( 1.0, 0.0, u ) );
-                col += vec3( 0.9, 0.92, 1.0 ) * ( 1.0 - line ) * 0.18;
+                col += vec3( 0.9, 0.92, 1.0 ) * ( 1.0 - line ) * ( 0.18 + 0.3 * kick );
                 found = 1.0;
             }
         }

@@ -4,11 +4,13 @@
  *
  * Audio Reactivity (structure, not only light):
  *   audioSwell   -> the degree of opening
- *   audioAdvance -> the wave of opening runs through the leaf (integrated)
+ *   sceneAdvance -> the wave of opening runs through the leaf and the cells shift against each other: the music
+ *                   carries both (integrated)
+ *   audioKick    -> the guard cells' rims light up (light only)
  *
  * Knobs: sizeP (the size of the cells), hueP.
 //@params sizeP
-//@audio audioSwell audioAdvance
+//@audio audioSwell audioAdvance audioKick
 //@body
 void main()
 {
@@ -24,7 +26,8 @@ void main()
         for (int dx = -1; dx <= 1; ++dx) {
             vec2 cj = gi + vec2(float(dx), float(dy));
             vec2 h = hash22(cj);
-            vec2 pt = cj + 0.5 + 0.38 * (h - 0.5) * 2.0;
+            vec2 pt = cj + 0.5 + 0.3 * (h - 0.5) * 2.0
+                    + 0.1 * vec2(sin(2.5 * sceneAdvance + 0.1 * sceneTime + 6.2831853 * h.x), cos(2.1 * sceneAdvance + 0.08 * sceneTime + 6.2831853 * h.y));
             float d = length(g - pt);
             if (d < d1) { d2 = d1; d1 = d; best = pt; bestId = cj; } else if (d < d2) d2 = d;
         }
@@ -37,7 +40,7 @@ void main()
     if (h0 < 0.4) {
         float ang = 6.2831853 * hash21(bestId + 1.3);
         vec2 q = rot2(ang) * (g - best);
-        float wv = 0.5 + 0.5 * sin(0.7 * bestId.x + 0.5 * bestId.y - 0.05 * audioAdvance - 0.1 * sceneTime);
+        float wv = 0.5 + 0.5 * sin(0.7 * bestId.x + 0.5 * bestId.y - 0.05 * sceneTime - 3.0 * sceneAdvance);
         float op = clamp(0.1 + 0.55 * clamp(audioSwell, 0.0, 1.0) + 0.5 * wv, 0.0, 1.0);
         float a = 0.36;
         float b = 0.21;
@@ -48,7 +51,7 @@ void main()
         vec3 guard = mix(c, vec3(0.5, 0.9, 0.45) * (0.5 + 0.7 * luma(c)), 0.45) * 1.25;
         col = mix(col, guard, inside);
         col = mix(col, vec3(0.03), inside * slit * 0.92);
-        col += vec3(0.8, 0.95, 0.6) * rim * 0.25;
+        col += vec3(0.8, 0.95, 0.6) * rim * (0.25 + 0.35 * clamp(audioKick, 0.0, 1.0));
     }
     finish(col);
 }

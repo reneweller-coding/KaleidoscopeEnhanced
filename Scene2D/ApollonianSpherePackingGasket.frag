@@ -11,9 +11,10 @@
  *  Mutually tangent "kissing" spheres create an infinite fractal foam with jewel refractions, specular mirror
  *  reflections, and audio-reactive metric scaling.
  *
- *    audioAdvance -> navigates camera through the Apollonian sphere foam
- *    audioKick    -> flashes sphere facet contact points and jewel glints
- *    audioBass    -> pulses recursive sphere inversion radius & metric scale
+ *    sceneAdvance -> navigates camera through the Apollonian sphere foam: the music carries most of the flight
+ *                    (integrated; without music it creeps on time)
+ *    audioPhase   -> the gems' colours wander with the music (integrated)
+ *    audioKick    -> flashes sphere facet contact points, jewel glints and rims (light only)
  *    audioChromaHue-> shifts jewel dispersion reflection colors
  *
  *  Per-activation variety:
@@ -32,6 +33,7 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
@@ -182,7 +184,9 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
     vec2 st = gl_FragCoord.xy / resolution;
 
-    float t = time * 0.22 * spd + audioAdvance * 0.12;
+    // The flight: the music carries most of it (sceneAdvance runs about 0.05 a second under music and stands in
+    // silence), the clock keeps a creep (B2, 20.11.2026: the scene measured among the 5 % least reactive).
+    float t = time * 0.12 * spd + sceneAdvance * 2.2 * spd;
 
     // Glide along a CELL EDGE of the fold (x = y = 1 in fold space, i.e.
     // divided by gsk in world space, because the march evaluates the field
@@ -259,7 +263,7 @@ void main()
         // colour per sphere, stripes gone; the tiny advance drift shifts all
         // gems together, never spatially.
         float gem_class = floor( trap_min * 5.0 ) * 0.2;
-        vec3  jewel = imgPalette( fract( gem_class * 0.83 + 0.02 * audioAdvance ) );
+        vec3  jewel = imgPalette( fract( gem_class * 0.83 + 0.02 * audioAdvance + 0.04 * audioPhase ) );
         jewel = mix( jewel, img( n.xy * 0.25 + 0.5 ), 0.22 );
 
         // Iteration-count occlusion: crevices between kissing spheres darken.
@@ -268,7 +272,7 @@ void main()
 
         col = jewel * ( 0.38 + 1.25 * diff ) * ao;
         col += spec * vec3( 1.0, 0.96, 0.88 ) * ( 0.8 + 1.6 * audioKick );
-        col += jewel * rim * 0.55;
+        col += jewel * rim * ( 0.55 + 0.45 * clamp( audioKick, 0.0, 1.0 ) );
 
         col = mix( col, deep, 1.0 - exp( -hit_dist * 0.30 ) );
     }

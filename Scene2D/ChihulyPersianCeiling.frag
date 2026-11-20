@@ -16,7 +16,8 @@
  *
  *  Audio Reactivity (structure, not only light):
  *    audioSwell   -> the bowls open: they widen and their rims ruffle deeper
- *    audioAdvance -> the light wanders over the ceiling and the layers drift (integrated)
+ *    sceneAdvance -> the light wanders over the ceiling and the layers drift: the music carries them (integrated)
+ *    audioKick    -> the rims catch the light (light only)
  *
  *  Knobs: bowlP (the bowls' size), ribP (how many ribs), hueP.
  *
@@ -39,6 +40,7 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float bowlP; ///< Bowl knob: the bowls' size, 0..1.
 uniform float ribP;  ///< Rib knob: how many ribs, 0..1.
@@ -547,6 +549,33 @@ vec3 famLight( float h, float t, float w )
     return mix( famCol( h, t ), vec3( 1.0, 0.93, 0.82 ), clamp( w, 0.0, 1.0 ) );
 }
 
+/**  The scene's light lifted toward a fuller picture (22.10.2026: the 400 new scenes were half as bright as the old
+ * ones): a gain, a gamma below one that widens the glows' soft falloffs, and a faint haze of the colour family that
+ * drifts slowly where the picture is dark.
+ *
+ * @param col   The scene's light. (in)
+ * @param gain  The gain. (in)
+ * @param gam   The gamma: 1 keeps the falloffs, below 1 widens them. (in)
+ * @param haze  The haze's strength (0: none). (in)
+ * @param h     The family's hue. (in)
+ *
+ * @return
+ *   The light.
+ *
+ * The lift starts above a toe of 0.02, so a scene's flat dark ground stays dark instead of turning into a flat coloured
+ * wash.  Each scene's values come from its catalogue frames.
+ **/
+vec3 famExpose( vec3 col, float gain, float gam, float haze, float h )
+{
+    const float Toe = 0.02;
+    vec3        c = max( col, vec3( 0.0 ) );
+    col = min( c, vec3( Toe ) ) + gain * pow( max( c - Toe, vec3( 0.0 ) ), vec3( gam ) );
+    vec2  q = screenP();
+    float n = fbm( 1.1 * q + vec2( 0.011, -0.007 ) * sceneTime );
+    vec3  mist = famCol( h, 0.3 + 0.4 * n ) * haze * ( 0.45 + 0.55 * n );
+    return col + mist * ( 1.0 - smoothstep( 0.0, 0.25, luma( col ) ) );
+}
+
 /**  The photo's colour calmed toward the colour family.
  *
  * @param photo  The photo's colour. (in)
@@ -571,7 +600,7 @@ void main()
     float sw = clamp( audioSwell, 0.0, 1.0 );
     float open = 0.85 + 0.25 * sw;
     float ruff = 0.05 + 0.1 * sw;
-    float run = 0.02 * sceneTime + 0.08 * audioAdvance;
+    float run = 0.012 * sceneTime + 0.6 * sceneAdvance;
     vec2  lp = vec2( 0.6 * sin( 1.3 * run ), 0.35 * cos( 0.9 * run ) );
     vec3  light = famLight( fh, 0.5, 0.85 ) * ( 0.6 + 0.8 * exp( -dot( p - lp, p - lp ) / 0.3 ) );
     vec3  filt = vec3( 1.0 );
@@ -602,6 +631,6 @@ void main()
             rims += famLight( fh, h, 0.6 ) * smoothstep( 0.86, 0.99, x ) * alpha * 0.18;
         }
     }
-    vec3 col = light * filt + rims * light;
+    vec3 col = light * filt + rims * light * ( 1.0 + 1.2 * clamp( audioKick, 0.0, 1.0 ) );
     finish( col );
 }

@@ -12,7 +12,8 @@
  *  the side with the planet's turn.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioAdvance -> the turn (the bands run) (integrated)
+ *    sceneAdvance -> the turn (the bands run): the music carries it (integrated)
+ *    audioKick    -> the bright bands flare (light only)
  *    audioSpread  -> the width of the bands (smoothed)
  *
  *  Knobs: sizeP (the number of bands), hueP.
@@ -36,6 +37,7 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSpread;    ///< Spectral spread, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -500,7 +502,7 @@ void main()
 {
     vec2  p = screenP();
     float N = 5.0 + 6.0 * clamp( sizeP, 0.0, 1.0 );
-    float run = 0.03 * audioAdvance + 0.04 * sceneTime;
+    float run = 0.025 * sceneTime + 0.5 * sceneAdvance;
     float ax = abs( p.x - 0.3 * sin( 0.1 * run ) );
     float v = ( p.y + 0.55 * ax ) * N;
     float stem = p.x * N * 0.7;
@@ -513,7 +515,8 @@ void main()
     c = mix( vec3( luma( c ) ), c, 0.8 );
     vec3  cloud = mix( vec3( 0.85, 0.82, 0.7 ), c * 1.2, 0.5 );
     vec3  absr = mix( vec3( 0.25, 0.22, 0.3 ), c * 0.4, 0.5 );
-    vec3  col = mix( absr, cloud, band ) * ( 0.85 + 0.25 * fbm( p * 12.0 ) );
+    vec3  col = mix( absr, cloud * ( 1.0 + 0.3 * clamp( audioKick, 0.0, 1.0 ) ), band )
+                * ( 0.85 + 0.25 * fbm( p * 12.0 ) );
     float lim = 1.0 - smoothstep( 0.78, 1.0, length( p * vec2( 0.8, 1.0 ) ) * 1.6 );
     vec3  bg = imgLod( p * 0.85 + 0.5, 3.0 ) * 0.1;
     finish( mix( bg, col * 1.15, smoothstep( 1.0, 0.85, length( p ) * 1.5 ) ) );

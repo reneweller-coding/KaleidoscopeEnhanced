@@ -12,9 +12,9 @@
  *  One colour family from the photo, shaded by the step at which the orbit came closest.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioAdvance -> the Julia constant wanders round the main cardioid's edge (integrated): stalks bend and
- *    regrow;
- *                    and the field drifts
+ *    sceneAdvance -> the Julia constant wanders round the main cardioid's edge: the music carries it (integrated);
+ *                    stalks bend and regrow
+ *    audioAdvance -> the field drifts (integrated)
  *    audioSwell   -> the stalks' width
  *    audioOnset   -> the stalks' tips flare
  *
@@ -582,7 +582,7 @@ void main()
 {
     vec2  p = screenP();
     float fh = famHue();
-    float ph = 0.05 * audioAdvance + 0.006 * sceneTime;
+    float ph = 0.004 * sceneTime + 0.5 * sceneAdvance;
     // c on a path just outside the main cardioid: dendrites, spirals and bays in turn
     float th = 6.2831853 * fract( 0.17 + 0.5 * sin( ph ) * 0.18 + 0.03 * ph );
     vec2  card = 0.5 * vec2( cos( th ), sin( th ) ) - 0.25 * vec2( cos( 2.0 * th ), sin( 2.0 * th ) );

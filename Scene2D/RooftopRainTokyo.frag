@@ -10,13 +10,17 @@
  *  mirroring the vertical neon signs that climb the building fronts in pink, cyan and amber; towers rise behind
  *  into the low clouds, which glow with the city's light.
  *
- *  Rain falls in fine slanting streaks and rings spread in the puddles.  The camera is still.
+ *  Rain falls in fine slanting streaks and rings spread in the puddles.  The camera is still; the music
+ *  carries the rain, lights more windows as it swells and runs the signs' glyphs upward.
  *
  *  Audio Reactivity:
  *    audioSpectrum[32] -> the neon signs, band by band (light)
  *    audioSwell        -> the glow of the clouds (slow)
  *    audioLevel        -> brightness
- *    sceneTime / sceneAdvance -> the rain, the rings in the puddles
+ *    sceneAdvance      -> the rain, the rings in the puddles, the glyphs running up the signs: the music carries
+ *                         them (integrated; without music they creep)
+ *    audioSwell        -> more windows lit, harder rain (slow)
+ *    audioKick         -> the rain glitters (light only)
  *
  *  Per-activation variety: rainP (how hard it rains), hueP.
  *
@@ -36,6 +40,7 @@ uniform float audioAdvance;      ///< The music's advance: integrated tempo-weig
                                  ///< backwards).
 uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
 uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioLevel;        ///< Overall loudness, 0..1.
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
@@ -143,6 +148,7 @@ float fbm( vec2 p )
 
 float gBand[8]; ///< Eight band levels of the music this frame, 0..1.
 float gT;       ///< The chain's (or scene's) time this frame.
+float gLitAt;   ///< The hash above which a window is lit this frame (lower when the music swells).
 
 /**  One of three neon colours (pink, cyan, amber) by a random value.
  *
@@ -184,7 +190,7 @@ vec3 skyline( vec2 p, float row, out float cov )
     // Lit windows: a grid, few lit.
     vec2  wq = vec2( bf * 8.0, ( p.y - base ) * 70.0 / sc );
     vec2  wi = floor( wq ), wf = fract( wq );
-    float lit = step( 0.82, hash21( wi + bi * 13.0 + row ) );
+    float lit = smoothstep( gLitAt, gLitAt + 0.04, hash21( wi + bi * 13.0 + row ) );
     c += vec3( 1.0, 0.85, 0.6 ) * lit * smoothstep( 0.3, 0.2, abs( wf.x - 0.5 ) )
          * smoothstep( 0.3, 0.2, abs( wf.y - 0.5 ) ) * 0.25;
     // A vertical neon sign on some facades.
@@ -198,7 +204,7 @@ vec3 skyline( vec2 p, float row, out float cov )
         vec3  nc = neonCol( hash11( bi * 7.3 + row ) );
         float b = gBand[int( mod( bi + row * 3.0, 8.0 ) )];
         // Glyph-like blocks inside the sign.
-        vec2 gq = vec2( ( bf - sx ) / sw, ( p.y - sy0 ) / ( sy1 - sy0 ) * 8.0 );
+        vec2 gq = vec2( ( bf - sx ) / sw, ( p.y - sy0 ) / ( sy1 - sy0 ) * 8.0 - gT * 0.25 );
         // Glyph strokes: rounded bars inside the sign's character cells.
         vec2  gc = gq * vec2( 2.0, 1.0 );
         vec2  gcell = floor( gc ), gl = fract( gc ) - 0.5;
@@ -221,9 +227,12 @@ void main()
     vec2  uv = gl_FragCoord.xy / resolution;
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
-    gT = sceneTime + sceneAdvance * 0.4;
+    // The music carries the rain and the signs, the swell lights windows (B2, 20.11.2026: the scene measured among the
+    // 5 % least reactive).
+    gT = 0.5 * sceneTime + 8.0 * sceneAdvance;
+    gLitAt = 0.86 - 0.12 * swell;
     float px = 1.0 / resolution.y;
-    float rain = 0.4 + 0.6 * clamp( rainP, 0.0, 1.0 );
+    float rain = ( 0.4 + 0.6 * clamp( rainP, 0.0, 1.0 ) ) * ( 0.7 + 0.5 * swell );
     for ( int i = 0; i < 8; ++i )
         gBand[i] = clamp(
             ( audioSpectrum[i * 4] + audioSpectrum[i * 4 + 1] + audioSpectrum[i * 4 + 2] + audioSpectrum[i * 4 + 3] )
@@ -231,7 +240,7 @@ void main()
             0.0, 1.0 );
 
     // Low clouds glowing with the city.
-    float cl = fbm( vec2( p.x * 2.0 + gT * 0.01, p.y * 3.0 ) );
+    float cl = fbm( vec2( p.x * 2.0 + 0.005 * sceneTime + 0.7 * sceneAdvance, p.y * 3.0 - 0.35 * sceneAdvance ) );
     vec3  col = mix( vec3( 0.12, 0.08, 0.14 ), vec3( 0.3, 0.16, 0.25 ), cl ) * ( 0.7 + 0.5 * swell );
     col = mix( col, col * imgPalette( 0.9 + hueP * 0.159 ) * 1.3, 0.1 );
 
@@ -285,7 +294,7 @@ void main()
         vec2  ri = floor( rq ), rf = fract( rq );
         float streak = step( 1.0 - 0.12 * rain, hash21( ri ) ) * smoothstep( 0.12, 0.0, abs( rf.x - 0.5 ) )
                        * smoothstep( 0.0, 0.3, rf.y ) * smoothstep( 1.0, 0.6, rf.y );
-        col += vec3( 0.6, 0.55, 0.7 ) * streak * 0.18;
+        col += vec3( 0.6, 0.55, 0.7 ) * streak * ( 0.18 + 0.22 * clamp( audioKick, 0.0, 1.0 ) );
     }
 
     col *= 0.9 + 0.2 * audioLevel;

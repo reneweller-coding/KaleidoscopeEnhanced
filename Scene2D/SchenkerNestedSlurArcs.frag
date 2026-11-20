@@ -14,7 +14,9 @@
  *
  *  Audio Reactivity (structure, not only light):
  *    audioSwell       -> the number of layers that are drawn and their thickness
- *    audioHarmAdvance -> the arcs' position slides along the baseline (integrated)
+ *    audioHarmAdvance -> the arcs' position slides along the baseline: a chord change carries it on (integrated)
+ *    sceneAdvance     -> the slide goes on with the music between the changes (integrated)
+ *    audioKick        -> the arcs light up (light only)
  *
  *  Knobs: sizeP (the smallest span), hueP.
  *
@@ -39,6 +41,7 @@ uniform float audioPhase;       ///< Rotation phase driven by the music (integra
 uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
                                 ///< back).
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -504,7 +507,7 @@ void main()
     vec2  p = screenP();
     float asp = resolution.x / resolution.y;
     float unit = 0.055 + 0.04 * clamp( sizeP, 0.0, 1.0 );
-    float sl = 0.03 * audioHarmAdvance + 0.04 * sceneTime;
+    float sl = 0.02 * sceneTime + 0.6 * audioHarmAdvance + 0.5 * sceneAdvance;
     vec2  q = vec2( p.x + sl * unit, abs( fract( p.y / 0.5 + 0.5 ) - 0.5 ) * 0.5 );
     vec3  col = imgLod( p * 0.85 + 0.5, 2.0 ) * 0.22;
     float sw = clamp( audioSwell, 0.0, 1.0 );
@@ -523,7 +526,7 @@ void main()
         c = mix( vec3( luma( c ) ), c, 1.4 );
         float inner = 1.0 - smoothstep( R * 0.96 - th, R * 0.96 - th * 0.5, length( vec2( q.x - cx, q.y ) ) );
         col = mix( col, c * 0.8, inner * 0.3 * on );
-        col = mix( col, c * 1.3, al );
+        col = mix( col, c * ( 1.3 + 0.45 * clamp( audioKick, 0.0, 1.0 ) ), al );
     }
     finish( col );
 }

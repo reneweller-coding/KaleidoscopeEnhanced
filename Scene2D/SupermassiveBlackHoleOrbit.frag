@@ -10,9 +10,11 @@
  *  Intense gravitational lensing distorts the background starfield, while the searing accretion disk pulses with
  *  the beat.
  *
- *    audioAdvance -> camera orbit speed
+ *    sceneAdvance -> the camera's orbit: the music carries most of it (integrated; without music it creeps)
+ *    audioPhase   -> the disk's flow (integrated)
  *    audioKick    -> intense energy flares in the accretion disk
- *    audioSwell   -> brightness and width of the photon ring
+ *    audioSwell   -> the accretion disk spreads wider and thicker, the photon ring brightens (slow)
+ *    audioKick    -> the photon ring flares (light only)
  *    audioChromaHue-> palette offset for the accretion disk
  *
  *  Per-activation variety:
@@ -211,7 +213,11 @@ void main()
 
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
-    float t = sceneTime * 0.1 + sceneAdvance * 0.2;
+    // The orbit: the music carries most of it (B2, 20.11.2026: the scene measured among the 5 % least reactive).
+    float t = sceneTime * 0.06 + sceneAdvance * 1.2;
+    float swell = clamp( audioSwell, 0.0, 1.0 );
+    float disk_out = 4.0 + 1.8 * swell; // the disk's outer edge in Schwarzschild radii
+    float disk_th = 0.15 + 0.1 * swell; // its half thickness against the radius
 
     // Camera orbit
     vec3 ro = vec3( 10.0 * cos( t ), 2.0 * sin( t * 0.5 ), 10.0 * sin( t ) );
@@ -267,14 +273,14 @@ void main()
         float dy = abs( dp3.y );
 
         // Disk exists between rs*1.5 and rs*5.0
-        if ( dr > rs * 1.5 && dr < rs * 5.0 && dy < 0.2 * dr )
+        if ( dr > rs * 1.5 && dr < rs * disk_out && dy < disk_th * dr )
         {
             // Flow around the black hole
             float angle = atan( dp3.z, dp3.x );
             // time*5*(rs/dr) grows without bound AND goes on as a noise coordinate --
             // at clock 3600 fbm resolves nothing there any more and the disc loses
             // all structure.
-            float flow_speed = sceneTime * 5.0 * ( rs / dr ) + audioPhase * 2.0;
+            float flow_speed = ( sceneTime * 2.5 + audioPhase * 9.0 ) * ( rs / dr );
             float disk_dens = mix( fbm( vec3( dr * 2.0, angle * 5.0 - flow_speed, sceneTime ) ),
                                    fbm( vec3( dr * 2.0, ( angle - 6.2831853 ) * 5.0 - flow_speed, sceneTime ) ),
                                    seamW( angle ) );
@@ -300,7 +306,8 @@ void main()
         float photon_dist = abs( r - rs * 1.5 );
         if ( photon_dist < 0.5 )
         {
-            col += disk_color * exp( -photon_dist * 5.0 ) * 0.02 * ( 1.0 + audioSwell );
+            col += disk_color * exp( -photon_dist * 5.0 ) * 0.02
+                   * ( 1.0 + audioSwell + 1.5 * clamp( audioKick, 0.0, 1.0 ) );
         }
     }
 

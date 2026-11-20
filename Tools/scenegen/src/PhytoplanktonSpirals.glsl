@@ -5,8 +5,8 @@
  * in two phases that take over from each other unseen.  The photo tints the water and the bloom.
  *
  * Audio Reactivity (structure, not only light):
- *   audioPhase      -> the eddies turn (integrated)
- *   audioAdvance    -> the bloom is wound on (integrated)
+ *   audioPhase      -> the eddies' strengths swing (integrated)
+ *   sceneAdvance    -> the bloom is wound on and the eddies wander: the music carries both (integrated)
  *   audioKick       -> the densest filaments glint (light)
  *
  * Knobs: eddiesP (how many eddies), windP (how far the bloom is wound), photoP (photo share), hueP.
@@ -28,7 +28,7 @@ vec2 eddyFlow(vec2 x, float n, float rot)
     for (int i = 0; i < 9; ++i) {
         float fi = float(i);
         if (fi >= n) break;
-        vec2 c = vec2(0.85 * sin(0.021 * sceneTime + 2.3 * fi), 0.45 * cos(0.017 * sceneTime + 1.9 * fi));
+        vec2 c = vec2(0.85 * sin(0.012 * sceneTime + 0.35 * sceneAdvance + 2.3 * fi), 0.45 * cos(0.01 * sceneTime + 0.3 * sceneAdvance + 1.9 * fi));
         vec2 d = x - c;
         float r2 = dot(d, d) + 0.01;
         float g = (mod(fi, 2.0) < 0.5 ? 1.0 : -1.0) * (0.03 + 0.01 * sin(rot + fi));
@@ -41,9 +41,9 @@ void main()
 {
     vec2 p = screenP();
     float n = floor(4.0 + 5.0 * clamp(eddiesP, 0.0, 1.0));
-    float rot = 0.02 * audioPhase;
+    float rot = 0.3 * audioPhase;
     float span = 6.0 + 10.0 * clamp(windP, 0.0, 1.0);
-    float T = 0.05 * sceneTime + 0.15 * audioAdvance;
+    float T = 0.03 * sceneTime + 0.6 * sceneAdvance;
     float bloom = 0.0;
     vec2 tint = vec2(0.0);
     for (int ph = 0; ph < 2; ++ph) {

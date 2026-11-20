@@ -15,8 +15,9 @@
  *
  *  Audio Reactivity (structure, not only light):
  *    audioChroma     -> the number of charges follows how many notes the chord holds
- *    audioPhase      -> the shells turn (integrated)
- *    audioKick       -> the charges flash (light)
+ *    audioPhase      -> the shells turn: the music carries most of the turn (integrated)
+ *    audioSwell      -> the shells widen (slow)
+ *    audioKick       -> the charges and their glow flash (light)
  *
  *  Knobs: countP (the base count), beadP (the beads' size), photoP (photo share), hueP.
  *
@@ -40,6 +41,7 @@ uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, un
 uniform float audioPhase;      ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioChroma[12]; ///< Pitch-class energies (12 values).
 uniform float audioKick;       ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float countP; ///< Count knob: the base count, 0..1.
 uniform float beadP;  ///< Bead knob: the beads' size, 0..1.
@@ -742,7 +744,7 @@ void main()
     }
     vec2  p = screenP();
     float rb = 0.013 + 0.008 * clamp( beadP, 0.0, 1.0 );
-    float a = 0.02 * audioPhase + 0.05 * sceneTime;
+    float a = 0.25 * audioPhase + 0.025 * sceneTime;
     mat3  R = mat3( cos( a ), 0.0, sin( a ), 0.0, 1.0, 0.0, -sin( a ), 0.0, cos( a ) );
     float b = 0.4 * sin( 0.03 * sceneTime );
     mat3  T = mat3( 1.0, 0.0, 0.0, 0.0, cos( b ), -sin( b ), 0.0, sin( b ), cos( b ) );
@@ -751,7 +753,7 @@ void main()
     float glow = 0.0, best_z = -1e9;
     for ( int s = 0; s < 4; ++s )
     {
-        float rad = 0.1 + 0.115 * float( s );
+        float rad = ( 0.1 + 0.115 * float( s ) ) * ( 0.85 + 0.3 * clamp( audioSwell, 0.0, 1.0 ) );
         // the shell itself, a faint sphere outline
         float ring = abs( length( p ) - rad );
         col += tone * 0.05 * exp( -ring * ring / 0.00002 );
@@ -776,6 +778,6 @@ void main()
             }
         }
     }
-    col += tone * glow * 1.5;
+    col += tone * glow * ( 1.5 + 1.2 * clamp( audioKick, 0.0, 1.0 ) );
     finish( col * 1.3 );
 }

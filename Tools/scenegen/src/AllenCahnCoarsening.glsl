@@ -3,12 +3,14 @@
  * as they grow.  The borders glow.
  *
  * Audio Reactivity (structure, not only light):
- *   audioAdvance -> the coarsening runs on: the pace of the steps (integrated through the clock)
+ *   audioSwell   -> the pace of the coarsening: loud music drives it on, silence lets it rest (the state
+ *                   integrates the step)
  *   audioSpread  -> the width of the borders
+ *   audioKick    -> the borders light up (light only)
  *
  * Knobs: scaleP (cell size), hueP.
 //@params scaleP
-//@audio audioSpread
+//@audio audioSpread audioSwell audioKick
 //@state 320 180 60 32
 //@body
 /**  The photo at a field cell (the photo fitted to the field's height, 0.8 of it).
@@ -35,7 +37,7 @@ vec4 stateStep()
     float l = luma(phAt(vec2(ip) + 0.5, 1.5));
     float D = 2.2 + 1.6 * clamp(audioSpread, 0.0, 1.0);
     float bias = 0.35 * (l - 0.5);
-    float dt = 0.06;
+    float dt = 0.025 + 0.07 * clamp(audioSwell, 0.0, 1.0);
     float nu = u + dt * (D * lap.r + u - u * u * u + bias);
     nu += 0.002 * (stRand(1) - 0.5);
     return vec4(clamp(nu, -1.2, 1.2), 0.0, 0.0, 1.0);
@@ -50,6 +52,6 @@ void main()
     vec3 ph = phAt(cc, 0.8);
     float side = smoothstep(-0.4, 0.4, s.r);
     float wall = exp(-s.r * s.r * 6.0);
-    vec3 col = mix(ph * 0.35, ph * 1.2, side) + imgPalette(0.6) * wall * 0.35;
+    vec3 col = mix(ph * 0.35, ph * 1.2, side) + imgPalette(0.6) * wall * (0.35 + 0.35 * clamp(audioKick, 0.0, 1.0));
     finish(col);
 }

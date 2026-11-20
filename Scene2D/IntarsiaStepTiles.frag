@@ -12,7 +12,8 @@
  *  cubes turn slowly: the borders between their faces wander round.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioAdvance -> the cubes turn (the face borders wander round) (integrated)
+ *    sceneAdvance -> the cubes turn (the face borders wander round): the music carries the turn (integrated)
+ *    audioKick    -> the top faces and the face borders light up (light only)
  *    audioSwell   -> the contrast between the three faces
  *
  *  Knobs: sizeP (the size of the cubes), hueP.
@@ -36,6 +37,7 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -507,15 +509,16 @@ void main()
     vec2  b = mod( q - h, r ) - h;
     vec2  gv = dot( a, a ) < dot( b, b ) ? a : b;
     vec2  id = q - gv;
-    float ang = atan( gv.y, gv.x ) + 0.02 * audioAdvance + 0.015 * sceneTime + 1.5707963;
+    float ang = atan( gv.y, gv.x ) + 2.5 * sceneAdvance + 0.008 * sceneTime + 1.5707963;
     float sec = floor( mod( ang / 6.2831853 + 8.0, 1.0 ) * 3.0 );
     float fs = fract( mod( ang / 6.2831853 + 8.0, 1.0 ) * 3.0 );
     vec3  c = imgLod( ( id * S ) * 0.85 + 0.5, 1.2 );
     float ct = 0.35 + 0.35 * clamp( audioSwell, 0.0, 1.0 );
-    float tone = sec < 0.5 ? 1.05 : ( sec < 1.5 ? 1.0 - ct * 0.55 : 1.0 - ct * 1.1 );
+    float tone = sec < 0.5 ? 1.05 * ( 1.0 + 0.35 * clamp( audioKick, 0.0, 1.0 ) )
+                           : ( sec < 1.5 ? 1.0 - ct * 0.55 : 1.0 - ct * 1.1 );
     float hexd = max( abs( gv.x ) * 0.8660254 + abs( gv.y ) * 0.5, abs( gv.y ) );
     float edge = smoothstep( 0.5, 0.44, hexd );
     float seam = smoothstep( 0.0, 0.05, fs ) * ( 1.0 - smoothstep( 0.95, 1.0, fs ) );
-    vec3  col = c * tone * ( 0.7 + 0.3 * seam );
+    vec3  col = c * tone * ( 0.7 + 0.3 * seam ) + c * ( 1.0 - seam ) * 0.45 * clamp( audioKick, 0.0, 1.0 );
     finish( col * edge * 1.25 + ( 1.0 - edge ) * vec3( 0.03 ) );
 }

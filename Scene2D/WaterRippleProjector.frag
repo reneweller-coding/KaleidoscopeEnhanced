@@ -14,7 +14,8 @@
  *  derivatives.  The light is shades of one colour family from the photo.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioAdvance -> the discs turn (integrated)
+ *    sceneAdvance -> the discs turn: the music carries the turn (integrated)
+ *    audioKick    -> the net of light flares (light only)
  *    audioSwell   -> the ripples' depth: the net sharpens
  *
  *  Knobs: rippleP (the ripples' scale), lightP (the light's brightness), hueP.
@@ -38,9 +39,10 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-uniform float rippleP; ///< Ripple knob: the ripples' scale.
-uniform float lightP;  ///< Light knob: the light's brightness.
+uniform float rippleP; ///< Ripple knob: the ripples' scale, 0..1.
+uniform float lightP;  ///< Light knob: the light's brightness, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
@@ -546,6 +548,33 @@ vec3 famLight( float h, float t, float w )
     return mix( famCol( h, t ), vec3( 1.0, 0.93, 0.82 ), clamp( w, 0.0, 1.0 ) );
 }
 
+/**  The scene's light lifted toward a fuller picture (22.10.2026: the 400 new scenes were half as bright as the old
+ * ones): a gain, a gamma below one that widens the glows' soft falloffs, and a faint haze of the colour family that
+ * drifts slowly where the picture is dark.
+ *
+ * @param col   The scene's light. (in)
+ * @param gain  The gain. (in)
+ * @param gam   The gamma: 1 keeps the falloffs, below 1 widens them. (in)
+ * @param haze  The haze's strength (0: none). (in)
+ * @param h     The family's hue. (in)
+ *
+ * @return
+ *   The light.
+ *
+ * The lift starts above a toe of 0.02, so a scene's flat dark ground stays dark instead of turning into a flat coloured
+ * wash.  Each scene's values come from its catalogue frames.
+ **/
+vec3 famExpose( vec3 col, float gain, float gam, float haze, float h )
+{
+    const float Toe = 0.02;
+    vec3        c = max( col, vec3( 0.0 ) );
+    col = min( c, vec3( Toe ) ) + gain * pow( max( c - Toe, vec3( 0.0 ) ), vec3( gam ) );
+    vec2  q = screenP();
+    float n = fbm( 1.1 * q + vec2( 0.011, -0.007 ) * sceneTime );
+    vec3  mist = famCol( h, 0.3 + 0.4 * n ) * haze * ( 0.45 + 0.55 * n );
+    return col + mist * ( 1.0 - smoothstep( 0.0, 0.25, luma( col ) ) );
+}
+
 /**  The caustic brightness of one rippled disc.
  *
  * @param p      The point on the wall (the disc's frame). (in)
@@ -578,10 +607,11 @@ void main()
     float fh = famHue();
     float scale = 6.0 + 6.0 * clamp( rippleP, 0.0, 1.0 );
     float depth = 0.35 + 0.35 * clamp( audioSwell, 0.0, 1.0 );
-    float turn = 0.04 * sceneTime + 0.18 * audioAdvance;
+    float turn = 0.025 * sceneTime + 0.7 * sceneAdvance;
     float a = caustic( rot2( turn ) * p, scale, depth, 0.0 );
     float b = caustic( rot2( -0.8 * turn ) * p + 0.3, scale * 0.8, depth, 1.3 );
-    float light = sqrt( a * b ) * ( 0.5 + 0.6 * clamp( lightP, 0.0, 1.0 ) );
+    float light = sqrt( a * b ) * ( 0.5 + 0.6 * clamp( lightP, 0.0, 1.0 ) )
+                  * ( 1.0 + 0.3 * clamp( audioKick, 0.0, 1.0 ) );
     vec3  col = famLight( fh, 0.3 + 0.03 * light, 0.2 * smoothstep( 2.0, 6.0, light ) ) * light * 0.22;
     col *= smoothstep( 1.4, 0.4, length( p ) ); // the lamp's beam fades toward the edges
     finish( col );

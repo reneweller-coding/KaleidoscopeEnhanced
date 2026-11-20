@@ -13,7 +13,10 @@
  *
  *  Audio Reactivity (structure, not only light):
  *    audioSpread  -> the number of striae (smoothed)
- *    audioAdvance -> the knots of the ion tail run outwards and the fan breathes (integrated)
+ *    sceneAdvance -> the striae sweep across the fan: the music carries them (integrated)
+ *    audioPhase   -> the knots of the ion tail run outwards (integrated)
+ *    audioSwell   -> the fan opens (slow)
+ *    audioKick    -> the head and the ion tail flare (light only)
  *
  *  Knobs: sizeP (the width of the fan), hueP.
  *
@@ -36,6 +39,8 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSpread;    ///< Spectral spread, 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -504,12 +509,13 @@ void main()
     float r = length( d );
     float a = atan( d.y, d.x );
     float base = -0.35;
-    float fan = 0.25 + 0.5 * clamp( sizeP, 0.0, 1.0 );
+    float fan = ( 0.25 + 0.5 * clamp( sizeP, 0.0, 1.0 ) ) * ( 0.85 + 0.3 * clamp( audioSwell, 0.0, 1.0 ) );
+    float kick = clamp( audioKick, 0.0, 1.0 );
     float curve = 0.9 * r;
     float aa = a - base - curve;
     float in_fan = exp( -pow( aa / fan, 2.0 ) ) * smoothstep( 0.03, 0.15, r ) * exp( -r * 0.9 );
     float N = 30.0 + 40.0 * clamp( audioSpread, 0.0, 1.0 );
-    float s = ( aa / fan ) * N * 0.5 + 0.1 * sin( 0.03 * audioAdvance );
+    float s = ( aa / fan ) * N * 0.5 + 1.6 * sceneAdvance + 0.03 * sceneTime;
     float stria = pow( 0.5 + 0.5 * sin( 6.2831853 * s * 0.5 ), 3.0 )
                   * ( 0.5 + 0.5 * noise2( vec2( floor( s ) * 3.0, r * 4.0 ) ) );
     vec3  c = imgLod( p * 0.85 + 0.5, 1.0 );
@@ -517,9 +523,9 @@ void main()
     vec3  col = c * 0.1 + vec3( 0.01, 0.015, 0.03 );
     col += dust * in_fan * ( 0.3 + 1.1 * stria );
     float ion = exp( -pow( ( a - base * 1.0 + 0.0 ) / 0.03, 2.0 ) ) * smoothstep( 0.03, 0.2, r ) * exp( -r * 0.6 );
-    float knot = 0.5 + 0.5 * sin( 30.0 * r - 0.5 * audioAdvance * 0.2 - 2.0 * sceneTime );
-    col += vec3( 0.3, 0.55, 1.0 ) * ion * ( 0.4 + 0.9 * knot );
+    float knot = 0.5 + 0.5 * sin( 30.0 * r - 3.0 * audioPhase - 1.2 * sceneTime );
+    col += vec3( 0.3, 0.55, 1.0 ) * ion * ( 0.4 + 0.9 * knot ) * ( 1.0 + 0.6 * kick );
     float head_ = exp( -r * r / 0.0016 ) + 0.3 * exp( -r * r / 0.02 );
-    col += vec3( 1.0, 0.95, 0.85 ) * head_;
+    col += vec3( 1.0, 0.95, 0.85 ) * head_ * ( 1.0 + 0.5 * kick );
     finish( col * 1.1 );
 }

@@ -7,12 +7,13 @@
  *
  * Audio Reactivity (structure, not only light):
  *   audioChroma     -> the number of charges follows how many notes the chord holds
- *   audioPhase      -> the shells turn (integrated)
- *   audioKick       -> the charges flash (light)
+ *   audioPhase      -> the shells turn: the music carries most of the turn (integrated)
+ *   audioSwell      -> the shells widen (slow)
+ *   audioKick       -> the charges and their glow flash (light)
  *
  * Knobs: countP (the base count), beadP (the beads' size), photoP (photo share), hueP.
 //@params countP beadP photoP
-//@audio audioChroma[12] audioKick
+//@audio audioChroma[12] audioKick audioSwell
 //@state 48 4 60
 //@body
 /**  How many charges a shell should hold now: more for a richer chord.
@@ -66,7 +67,7 @@ void main()
     if (statePass == 1) { fragColor = stateStep(); return; }
     vec2 p = screenP();
     float rb = 0.013 + 0.008 * clamp(beadP, 0.0, 1.0);
-    float a = 0.02 * audioPhase + 0.05 * sceneTime;
+    float a = 0.25 * audioPhase + 0.025 * sceneTime;
     mat3 R = mat3(cos(a), 0.0, sin(a), 0.0, 1.0, 0.0, -sin(a), 0.0, cos(a));
     float b = 0.4 * sin(0.03 * sceneTime);
     mat3 T = mat3(1.0, 0.0, 0.0, 0.0, cos(b), -sin(b), 0.0, sin(b), cos(b));
@@ -74,7 +75,7 @@ void main()
     vec3 col = imgLod(p * 0.3 + 0.5, 5.0) * 0.1;
     float glow = 0.0, bestZ = -1e9;
     for (int s = 0; s < 4; ++s) {
-        float rad = 0.1 + 0.115 * float(s);
+        float rad = (0.1 + 0.115 * float(s)) * (0.85 + 0.3 * clamp(audioSwell, 0.0, 1.0));
         // the shell itself, a faint sphere outline
         float ring = abs(length(p) - rad);
         col += tone * 0.05 * exp(-ring * ring / 0.00002);
@@ -96,6 +97,6 @@ void main()
             }
         }
     }
-    col += tone * glow * 1.5;
+    col += tone * glow * (1.5 + 1.2 * clamp(audioKick, 0.0, 1.0));
     finish(col * 1.3);
 }
