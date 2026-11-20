@@ -8255,8 +8255,8 @@ preset diff touches most entries by a second or two.
   QamConstellationDust +22 %, the dim photo behind in ChordColourTransitions, SphericalWaveCrossStitch and
   FatouParabolicFlowers); `temporal_budget.py` sees no full-field flash above its limits, but the eye should judge
   those five first.
-- *OrbitalRingStation* still scales its cloud deck by `audioBass` (a fast signal on a spatial scale); the fix went
-  with the dropped change. One line (`sc = 3.4 * ( 1.0 + 0.12 * audioBass )` -> `audioSwell`).
+- *OrbitalRingStation* scaled its cloud deck by `audioBass` (a fast signal on a spatial scale); the fix went with
+  the dropped change and was made afterwards: `sc = 3.4 * ( 1.0 + 0.12 * audioSwell )`, new catalogue frames.
 - *Snapshots and the now-playing title:* `scene_snapshots.py` runs the app live, and the app's title reveal
   (`NowPlaying`, the system's media session) wove whatever the machine was playing into about half of the first
   B2 snapshot frames. The set was rendered again with `KALEIDO_NP_FAKE="none|none@999999"` (a scripted session that

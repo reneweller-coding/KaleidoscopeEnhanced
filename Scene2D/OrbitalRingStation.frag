@@ -16,7 +16,7 @@
  *    audioAdvance -> station rotation and cloud advection
  *    audioSwell   -> hab-ring window brightness and limb scattering
  *    audioKick    -> docking-beacon flash on the rim modules
- *    audioBass    -> storm scale in the cloud deck (the belts breathe)
+ *    audioSwell   -> storm scale in the cloud deck (the belts breathe, over seconds)
  *    audioBeatPhase-> the hub's rotating beacon
  *    audioChromaHue-> atmosphere and ring hue follow the musical key
  *
@@ -378,7 +378,7 @@ void main()
         // BANDED weather.  The belts come from latitude; the shear and curl
         // come from a two-stage domain warp whose displacement field ALSO
         // drifts, which is what makes the storms deform instead of sliding.
-        float sc = 3.4 * ( 1.0 + 0.12 * audioBass );
+        float sc = 3.4 * ( 1.0 + 0.12 * audioSwell ); // a spatial scale: the slow envelope, not the bass band
         vec3  w1 = vec3( fbm3( rot * sc * 0.55 + 7.0, 4 ),
                          fbm3( rot * sc * 0.55 + 19.0, 4 ),
                          fbm3( rot * sc * 0.55 + 31.0, 4 ) )
