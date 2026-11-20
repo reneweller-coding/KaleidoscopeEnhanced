@@ -703,6 +703,7 @@ float AudioAnalyzer::tapTempo()
 bool  AudioAnalyzer::M_ExternalClock = true;
 float AudioAnalyzer::M_ClockDelay = 0.06f;
 FILE *AudioAnalyzer::M_TempoTrace = nullptr;
+FILE *AudioAnalyzer::M_SectionTrace = nullptr;
 
 void AudioAnalyzer::externalBeat( const char *source, qint64 refMs, float bpm, bool phase )
 {
@@ -2553,7 +2554,10 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             for ( int b = 0; b < NB; ++b )
                 m_secAcc[b] += raw[b] * raw[b];
             ++m_secAccN;
+            for ( int g = 0; g < 3; ++g )
+                m_secOnsAcc[g] += m_onsetEnvGrp[g];
             m_secAccSecs += static_cast<float>( numFrames ) / static_cast<float>( std::max( sampleRate, 1 ) );
+            m_secClock += static_cast<double>( numFrames ) / static_cast<double>( std::max( sampleRate, 1 ) );
             bool trigger = false;
             if ( m_secAccSecs >= 0.1f )
             {
@@ -2576,6 +2580,12 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                 for ( int b = 0; b < NB; ++b )
                     f[b] -= mean_db;                // the shape: loudness removed
                 f[NB] = 10.f * std::log10( total ); // the loudness
+                float ons[3];                       // the band groups' onset envelopes over the frame (#M_SectionTrace)
+                for ( int g = 0; g < 3; ++g )
+                {
+                    ons[g] = m_secOnsAcc[g] / static_cast<float>( m_secAccN );
+                    m_secOnsAcc[g] = 0.f;
+                }
                 m_secAccN = 0;
                 m_secAccSecs = 0.f;
                 m_secRingPos = ( m_secRingPos + 1 ) % SecRingLen;
@@ -2637,6 +2647,21 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                     m_secPending = true;
                     m_secPendingDrops = m_dropCount;
                     m_secCooldown = 120;
+                }
+                if ( M_SectionTrace )
+                {
+                    float rec[55];
+                    rec[0] = static_cast<float>( m_secClock ); // seconds: a block is not always 10 ms (44.1 kHz)
+                    std::copy( f, f + SecDims, rec + 1 );
+                    std::copy( m_chroma, m_chroma + 12, rec + 1 + SecDims );
+                    std::copy( ons, ons + 3, rec + 13 + SecDims );
+                    rec[16 + SecDims] = m_sMusicPresence;
+                    rec[17 + SecDims] = sum;
+                    rec[18 + SecDims] = static_cast<float>( m_dropCount );
+                    rec[19 + SecDims] = nov;
+                    rec[20 + SecDims] = trigger ? 1.f : 0.f;
+                    rec[21 + SecDims] = m_secNovMed;
+                    fwrite( rec, sizeof( float ), 55, M_SectionTrace );
                 }
             }
             if ( trigger )

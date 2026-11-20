@@ -214,6 +214,13 @@ public:
      * candidates offline (Tools/tempo_lab.py; PresetEditor --features ... --tempo-trace FILE).  Off (null) in the app.
      **/
     static FILE *M_TempoTrace;
+    /** When set, every 0.1-s frame of the section detector appends its inputs and decision to this file (55 float32:
+     * time, the 32 bands' log shape and the loudness, the 12 pitch classes, the three band groups' onset envelopes
+     * averaged over the frame, music presence, the block's band sum, the drop count, the novelty, whether a section
+     * started this frame, the novelty's median) -- for replaying section detectors offline (Tools/section_lab.py;
+     * PresetEditor --features ... --section-trace FILE).  Off (null) in the app.
+     **/
+    static FILE *M_SectionTrace;
     /**  Offline analysis of samples in memory: the same pipeline as analyzeWavToTimeline(), for checks that build
      * their own signal (`Kaleidoscope.exe -q`).
      *
@@ -523,19 +530,22 @@ private:
     float m_secAcc[AudioFeatures::SpectrumBands] = {}; ///< Band power summed over the current frame's blocks.
     int              m_secAccN = 0;                               ///< Blocks in it.
     float            m_secAccSecs = 0.f;                          ///< Seconds in it.
-    float            m_secRing[SecRingLen][SecDims] = {};         ///< The last 15 s of frames (dB).
-    int              m_secRingPos = 0;                            ///< Where the next frame goes (the oldest one).
-    int              m_secFrames = 0;                             ///< Frames since the start (or the song's).
-    float            m_secNovHist[SecMedLen] = {};                ///< The novelty of the last minute.
-    int              m_secNovPos = 0;                             ///< Where the next one goes.
-    int              m_secNovN = 0;                               ///< How many there are.
-    int              m_secMedTick = 0;                            ///< Frames until the median is taken again.
-    float            m_secNovMed = 0.f;                           ///< Their median.
+    double           m_secClock = 0.0;                            ///< Seconds analysed (#M_SectionTrace's time).
+    float            m_secOnsAcc[3] = {};                         ///< The band groups' onset envelopes summed over
+                                                                  ///< the frame's blocks (#M_SectionTrace only).
+    float m_secRing[SecRingLen][SecDims] = {};                    ///< The last 15 s of frames (dB).
+    int   m_secRingPos = 0;                                       ///< Where the next frame goes (the oldest one).
+    int   m_secFrames = 0;                                        ///< Frames since the start (or the song's).
+    float m_secNovHist[SecMedLen] = {};                           ///< The novelty of the last minute.
+    int   m_secNovPos = 0;                                        ///< Where the next one goes.
+    int   m_secNovN = 0;                                          ///< How many there are.
+    int   m_secMedTick = 0;                                       ///< Frames until the median is taken again.
+    float m_secNovMed = 0.f;                                      ///< Their median.
     float m_secNovelty = 0.f; ///< The novelty over its median of the last minute; see AudioFeatures::sectionNovelty.
     int   m_secWarm = 0;      ///< Blocks since start (the fingerprint's EMA settles on it).
-    int              m_secCooldown = 0;                           ///< Frames until the next section trigger is allowed.
-    bool m_secPending = false; ///< A change found in the last frame, published in this one unless a drop came.
-    int              m_secPendingDrops = 0;                       ///< #m_dropCount when it was found.
+    int   m_secCooldown = 0;                                      ///< Frames until the next section trigger is allowed.
+    bool  m_secPending = false; ///< A change found in the last frame, published in this one unless a drop came.
+    int   m_secPendingDrops = 0;                                  ///< #m_dropCount when it was found.
     float m_secThr = 3.f;     ///< The relative novelty a change must exceed (see AudioFeatures::sectionThreshold).
     int   m_sectionCount = 0; ///< Cumulative section-change count; see AudioFeatures::sectionCount.
 

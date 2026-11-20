@@ -9010,3 +9010,65 @@ first.
     run from Python (`subprocess.run`) or with `Start-Process -Wait`.
   - The PiP stays off in the other app tests (`videoEnabled=false` since B6); `pip_soak_test.py` is the one that runs
     it, `--source both` together with `-v`.
+
+## 20.11.2026 (68): section boundaries against real music -- the Harmonix Set on the user's own tracks, a lab, and what did not help
+
+A5 of the plan (section boundaries on the bar grid) had been dropped: more found, always more invented, and the misses
+were not a matter of timing but of a novelty that stayed under the threshold.  The user asked what else could help.
+The detector had only ever been measured on the 43 demos of our own generators.
+
+- *Real tracks with an answer key* (`Tools/harmonix_key.py`).  The Harmonix Set (Nieto et al., ISMIR 2019) annotates
+  912 pop, rock, dance, hip-hop and metal tracks by hand -- beats, downbeats and sections with their kind -- but ships
+  no audio.  40 of them are in the user's MP3 folder (1,336 tracks); 22 of those have the same length to 8 s (the
+  other 18 are game edits or remixes under the same name).  The annotations belong to Harmonix's copy: the annotated
+  beats are laid over our audio's onset envelope, the shift searched only within the length difference plus 2 s (the
+  beats are nearly periodic: over +-15 s a shift by whole beats fit almost as well and the best one fell anywhere),
+  and among the near-best shifts the downbeats decide.  19 tracks line up (at least 60 % of the beats within 70 ms of
+  an onset); three do not.  An error of a beat in the shift remains possible on a few; against the scoring window of
+  -2..+6 s it hardly counts.  Everything stays in `.screen/harmonix` (the audio is the user's).
+- *Baseline on real music* (`analyser_vs_cues.py @.screen/harmonix/set.txt`): 24 % of 181 boundaries found, 48 % of the
+  sections invented -- against 37 % / 57 % on the demos (sections alone; 44 % with the drops).  Found by kind: verse
+  31 %, chorus 27 %, bridge and prechorus 7 %, solos and instrumentals 0.
+- *Diagnosis* (`Tools/section_diag.py`): at each boundary and at control moments 6 s from any, the detector's own
+  two-window test (3 s against the 12 s before) for four groups -- the 32 bands' shape, the loudness, the 12 pitch
+  classes, the onset density in three band groups -- against the track's ordinary.  All four separate boundaries from
+  the control (AUC demos 0.71..0.82, real 0.60..0.68), timbre best.  But at the missed boundaries half of the real ones
+  (69 of 137) show no group at twice its ordinary, and harmony or rhythm alone would have reached that at only 14 of
+  them (26 of 177 on the demos).  Equal windows separate better on real music (timbre AUC 0.68 at 3/12 s, 0.76 at
+  6/6 s), not on the demos.
+- *A lab* (`Tools/section_lab.py`, the section trace `PresetEditor --features ... --section-trace FILE`,
+  `AudioAnalyzer::M_SectionTrace`: 55 float32 per 0.1-s frame -- the detector's inputs, the pitch classes, the onset
+  envelopes, its novelty and decision).  The replay of the C++ decision (median of the last minute every second,
+  threshold, minimum level, 12 s apart, a drop starting the 12 s as well, a change the drop takes over not counting,
+  a new song starting over) reproduces both baselines to the percent; two of 62 tracks differ by one decision
+  (float32 against float64).  *A trap on the way:* the trace first stamped its frames with the block counter x 10 ms
+  -- at 44.1 kHz a block is 10.9 ms, and after three minutes the time was 15 s off (the real tracks scored 18 % instead
+  of 24 %); now it counts seconds.
+- *What was tried, scored on both sets (found / invented):*
+
+  | variant | demos | real |
+  |---|---|---|
+  | the code (3 s against 12 s, threshold 3, 12 s apart) | 37 / 57 % | 24 / 48 % |
+  | equal windows 4/4, 5/5, 6/6 s, or 3/6, 4/8, 5/10 (each at threshold 2.5..3.5) | 23..41 / 58..68 % | 16..28 / 45..57 % |
+  | harmony or rhythm added to the novelty (weights 0.25..1) | no better than without | worse |
+  | the novelty against its median and spread (MAD, k 3..8) | 41..50 / 66..70 % | 28..34 / 45..48 % |
+  | peak picking (the highest frame of a rise, 0.5 or 1 s to confirm) | fewer found, +2 s later | fewer found |
+  | a learned combination of the four (logistic regression, two-fold) | 44 / 65 % | 32 / 50 % |
+  | **threshold 2.5 instead of 3** | **40 / 59 %** | **30 / 44 %** |
+  | threshold 2.5, 9 s apart | 43 / 61 % | 32 / 46 % |
+
+  The equal windows separate better at a fixed moment but decide worse: their novelty rises and falls slowly, and the
+  threshold crossing comes at the wrong time.  The learned combination gave the harmony a negative weight (a chord
+  change moves the spectrum too, so "the timbre changes, the harmony does not" marks a section rather than a chord);
+  trained on the demos alone it read the real tracks at 37 / 50 % -- but in a clean two-fold check it was no better
+  than the threshold, invented far more on the demos and swung with its own threshold (0.55: 56 / 72 %, 0.65: 28 /
+  66 %).  Not taken.
+- *The result:* the only change that held up is the threshold -- on real music better on both counts (found 24 ->
+  30 %, invented 48 -> 44 %), on the demos a trade (found 37 -> 40 %, invented 57 -> 59 %), about one section more per
+  real track.  The plan's rule for A5 (no more invented than today) is broken on the demos by 2 points; the code is
+  left as it was, for the user to decide (`section_lab.py --method thr25` reproduces it).
+- *Not tried:* the song-structure memory as a cue (a chorus coming back), sections shorter than 12 s (a prechorus of
+  8 s cannot be found at all with 12 s between sections -- 9 s apart found more and invented more), a trained model
+  on spectrogram patches (Ullrich, Schlüter & Grill 2014) or an offline teacher for the user's other 1,300 tracks
+  (All-In-One, Kim & Nam 2023), and real tracks of the genres the presets are named for: the Harmonix overlap is pop,
+  rock and dance.
