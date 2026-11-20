@@ -10,10 +10,12 @@ says so.
 
 - **`linux`** -- Ubuntu 24.04, Qt 6.4.2 from the distribution, the packages the README names. `cmake` build,
   the self test `Kaleidoscope -q` under Xvfb, then a video export of a generated five-second WAV (`-e`, 640 x 360,
-  30 fps, preset Club, `KALEIDO_SEED=1`) under Xvfb with Mesa's llvmpipe, then two preset switches over the web
-  remote and a regular end. Gates: the build, `N passed, 0 failed`, exit codes 0, "Presets: N files read" with
-  N > 0, an mp4 of 4.5..5.6 s by ffprobe, the program alive after each switch. A Linux build break makes the
-  workflow red -- seen on the first run, which stopped at `uniform.h` (below).
+  30 fps, preset Club, `KALEIDO_SEED=1`) under Xvfb with Mesa's llvmpipe, then every shader of Komplett compiled
+  once through Ubuntu's own Mesa 25.2 (`KALEIDO_COMPILE_ALL`), then two preset switches over the web remote
+  (Club -> Cinematic -> Noir) and a regular end. Gates: the build, `N passed, 0 failed`, exit codes 0, "Presets: N
+  files read" with N > 0, an mp4 of 4.5..5.6 s by ffprobe, "COMPILEALL done" within 10 minutes (else the shader in
+  progress is named), the program alive after each switch. A Linux build break makes the workflow red -- seen on
+  the first run, which stopped at `uniform.h` (below).
 - **`appimage`** -- Ubuntu 22.04 (the oldest runner GitHub still maintains: its glibc 2.35 is the floor the package
   needs), Qt 6.2.4 from the distribution, `bash Tools/appimage/build_appimage.sh`, the AppImage as the artifact
   `Kaleidoscope-AppImage` (14 days).
@@ -72,8 +74,8 @@ says so.
 - **Sound:** the capture still records `@DEFAULT_MONITOR@` (what the default output plays; PipeWire's pulse server
   answers to the name too). `PULSE_SOURCE` now picks another source -- libpulse applies it when the stream names
   no device, so with it set none is named. Moving the stream in pavucontrol works without it, for the session.
-- **Background shader compile off with Mesa** (`parallelCompile()` in shader_setup.cpp, not on Windows): see the
-  freeze under Numbers.
+- **TwentyFourCellBreathing.frag**: the F4 fold's loop bound is no longer a compile-time constant; see the freeze
+  under Numbers.
 - **The photo loader stops cooperatively on Linux** (`endImageLoader()` in RenderPipeline.cpp): see Numbers.
 - **Tools/appimage/build_appimage.sh** + `kaleidoscope.desktop`: cmake build, AppDir with the executable in usr/bin
   and Engine, Scene2D, Scene3D, FX, Transitions, Presets (tracked files only) and standard.vert in usr/ -- the
@@ -111,18 +113,27 @@ says so.
   also switches the preset twice over the web remote (`/api/config` with the `X-Kaleido: 1` header) and ends by
   `KALEIDO_MAX_RUNTIME_SECS`. That step was not run against the unrepaired loader; the export's exit code 134 was
   the failure seen.
-- *A freeze inside Mesa after a preset switch.* One CI run of that step never ended. A temporary workflow repeated it
-  (export first, then ten runs per machine, the hung program's threads shown by gdb): the main thread sat in a deep
-  self-recursion inside libgallium, entered from `shaderPrebuildStart()` -- the background compile through
-  GL_KHR_parallel_shader_compile -- at the first frames after the second switch, whatever scene came up. Per
-  machine 0 to 10 of 10 runs (31 of 50 in one round; Club -> Cinematic -> Noir 39 of 40); with
-  `KALEIDO_NO_PARALLEL_COMPILE=1` none of 30. Mesa's debug symbols for that build (25.2.8-0ubuntu0.24.04.5) are on
-  neither Ubuntu's debuginfod nor ddebs, so the Mesa function is not named. libgallium holds the GLSL front end and
-  every Gallium driver (radeonsi, iris as well), and only llvmpipe could be run here; so on Linux the background
-  compile is off for every Mesa driver (`SHADER: background compile off (Mesa; ...)`), `KALEIDO_PARALLEL_COMPILE=1`
-  turns it on again, NVIDIA's own driver keeps it, Windows is unchanged. The cost is a compile at first use of a
-  scene instead of beforehand. Whether radeonsi or iris freeze too is open; the switch step goes Club -> Cinematic ->
-  Noir, the combination that froze most reliably, so a regression shows.
+- *A freeze inside Mesa: TwentyFourCellBreathing.* One CI run of the switch step never ended. A temporary workflow
+  repeated it (export first, then ten runs per machine, the hung program's threads shown by gdb): the main thread sat
+  in a deep self-recursion inside libgallium at the first frames after a switch to Allround, Ambient or Noir, most
+  often entered from `shaderPrebuildStart()` (the background compile of the next scenes). Per machine 0 to 10 of 10
+  runs (31 of 50 in one round; Club -> Cinematic -> Noir 39 of 40). Mesa's debug symbols for that build
+  (25.2.8-0ubuntu0.24.04.5) are on neither Ubuntu's debuginfod nor ddebs, so the frames stayed unnamed.
+  - *Wrong first conclusion, taken back:* with `KALEIDO_NO_PARALLEL_COMPILE=1` none of 30 runs froze, and the
+    background compile was switched off for every Mesa driver. The next round froze without it too, in
+    `setShaders()` from `EffectShader::initUniforms()`: the background compile only met the culprit sooner. Reverted.
+  - *The culprit:* every shader of Komplett compiled once (`KALEIDO_COMPILE_ALL`, one machine each): 1285 went
+    through, then `Scene2D/TwentyFourCellBreathing.frag` was still compiling after 45 minutes, on both machines. With
+    it left out the rest -- 2425 scenes, 30 combines, 210 transitions -- compiled in 17.5 s (7 ms each), none over
+    10 s. That shader alone: not compiled after 300 s as it is, nor with its 90-step march loop made non-unrollable;
+    compiled in 9 s (program start included) with the 6-step F4 fold loop made non-unrollable (`i < 6 + int( min(
+    audioLevel, 0.0 ) )`). The fold sits in `map24()`, which is inlined eight times (the march, the start test, six
+    for the normal); unrolled in each, the shader outgrows what this Mesa's optimiser finishes. The Windows job's
+    Mesa (26.2) and NVIDIA compile the original. The scene is in Allround, Ambient, Noir and Komplett: on Ubuntu 24.04
+    each of them froze for good whenever the scene was prepared -- with radeonsi or iris too, if the unrolling is in
+    Mesa's shared NIR code, which is likely but not shown.
+  - *The gate:* the `linux` job compiles all of Komplett under Ubuntu's Mesa and names the shader that does not
+    finish in ten minutes; the switch step goes Club -> Cinematic -> Noir (Noir holds the scene).
 - *Times on the runners:* `linux` 3.1 min (packages 34 s, build 43 s, self test 24 s, export 20 s, switches 50 s),
   `appimage` 2.1 min (the AppImage itself 81 s), `appimage-run` 1.1 min; the three run beside the Windows job (about
   12 min), so the workflow takes no longer than before. llvmpipe renders the 1920 x 1080 window at render scale 0.25 with 4..9 fps.
@@ -136,7 +147,10 @@ says so.
 
 - *Real hardware.* Everything ran on llvmpipe under Xvfb: no GPU driver, no Wayland, no sound server. Whether the
   capture hears PipeWire, whether the NVIDIA/AMD drivers compile all 3,200 shaders as Mesa does, how fast it is,
-  whether Mesa's GPU drivers need the background compile switched off as llvmpipe does -- open until someone runs it.
+  whether radeonsi or iris on Ubuntu 24.04 froze on TwentyFourCellBreathing as llvmpipe did -- open until someone
+  runs it.
+- *The mesh scenes* (geom="mesh", 264 of Komplett) were not part of the compile-all: without the model pack they are
+  left out when the preset is read.
 - *FUSE mounting.* The container has no FUSE, so the test uses `--appimage-extract-and-run`; the normal start
   mounts the image read-only, which userFolders() covers by the same rule (APPDIR).
 - *Wayland.* The Qt plugin deploys the xcb platform only; on a Wayland desktop Qt falls back to XWayland.

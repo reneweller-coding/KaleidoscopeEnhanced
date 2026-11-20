@@ -907,7 +907,6 @@ What differs from Windows:
 | Compute-shader effects | yes (OpenGL 4.3) | no — macOS froze OpenGL at 4.1, so those effects take their fragment fallbacks |
 | Setup tool, Preset editor, video export tool | no — Windows projects; `-e` and the ini instead | no |
 | Shader program cache (first draw of a lab scene) | the driver's own cache only | the driver's own cache only |
-| Background shader compile | off with Mesa drivers — under llvmpipe it froze the program after a preset switch; `KALEIDO_PARALLEL_COMPILE=1` turns it on | as the driver offers it |
 | Spout in/out (`-o`, `-i`) | no — Windows-only technology | no |
 | Track title / lyrics / artist images | no — these read the Windows now-playing service | no |
 | MIDI input | no | no |
