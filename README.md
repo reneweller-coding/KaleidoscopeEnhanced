@@ -8,10 +8,10 @@
 
 <br clear="left">
 
-A real-time, audio-reactive kaleidoscope / tunnel visualizer for Windows (the
-releases are Windows builds; on Linux it builds from source or comes as an
-AppImage from the CI, not yet confirmed on real hardware; it also compiles on
-macOS — see [Linux and macOS](#linux-and-macos)). It
+A real-time, audio-reactive kaleidoscope / tunnel visualizer for Windows and
+Linux (since v1.20.0 the releases carry a Linux AppImage beside the Windows
+builds, tested in the CI but not yet confirmed on real hardware; it also
+compiles on macOS — see [Linux and macOS](#linux-and-macos)). It
 listens to whatever is playing on the system (Spotify, browser, foobar2000,
 a live mic, …), analyses it in real time, and drives a huge library of GLSL
 shaders whose motion, colour and structure follow the music's rhythm, timbre
@@ -90,6 +90,8 @@ lights.*
 - **`KaleidoscopeVisualizer-portable.zip`** — unzip anywhere, double-click
   `Kaleidoscope-starten.bat`. No installation, nothing written outside the
   folder.
+- **`Kaleidoscope-x86_64.AppImage`** — Linux (since v1.20.0), one file; see
+  [Linux and macOS](#linux-and-macos).
 
 The installer offers the photo and model packs as ticked options and installs
 them for you; see [Extra content](#extra-content-photos-and-3d-models) for the
@@ -838,8 +840,9 @@ drives the visualizer's own video export (`-e`, see
 `kaleidoscope_settings.ini`, which can be edited by hand.
 
 **The AppImage** — one file with Qt and its plugins, the shaders, the engine
-files and the presets inside. It is not a release package yet: take it from
-the artifacts of a [CI run](https://github.com/reneweller-coding/KaleidoscopeEnhanced/actions/workflows/ci.yml)
+files and the presets inside. Since v1.20.0 it is part of every
+[release](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/latest);
+a newer one is in the artifacts of each [CI run](https://github.com/reneweller-coding/KaleidoscopeEnhanced/actions/workflows/ci.yml)
 (`Kaleidoscope-AppImage`), or build it yourself.
 
 ```bash
