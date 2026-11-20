@@ -47,7 +47,7 @@ jobs:
           echo "export: exit code $?"
           hung=0
           symbolised=0
-          for run in 1 2 3; do
+          for run in 1 2 3 4 5 6 7 8 9 10; do
             export KALEIDO_SETTINGS="$RUNNER_TEMP/s$run.ini" KALEIDO_MAX_RUNTIME_SECS=50
             xvfb-run -a -s "-screen 0 1280x720x24" ./Kaleidoscope -w ../smoke.wav -c Club -s 0.25 -t 18091 > run$run.log 2>&1 &
             pid=$!
