@@ -3,6 +3,6 @@ astrix_mel.wav	140.0	analyser median 140.0 and whole-track autocorrelation 139.5
 daftpunk_atw.wav	121.4	analyser median 121.4, whole-track autocorrelation 122.4/120.0 (Around the World: about 121)	no
 dmt.wav	145.2	analyser median 145.2, whole-track autocorrelation 146.3	no
 infected_kadafi.wav	120.0	whole-track autocorrelation 120.0 (engine-internals: "the whole-track autocorrelation says 120")	no
-ironic.wav	114.0	by ear and docs (engine-internals 66: the analyser reads its dotted pulse, 171 = 1.5 x 114)	no
+ironic.wav	84.0	the user, 20.11.2026: 84 BPM by official sources (114 was taken from a note, not a source)	yes
 prodigy_breathe.wav	130.0	analyser median 130.1, whole-track autocorrelation 130.4 (Breathe: 130)	no
 thunderstruck.wav	133.5	analyser median 133.5, whole-track autocorrelation 133.3	no

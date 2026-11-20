@@ -7874,7 +7874,7 @@ What each package did and what it measured:
 |---|---|---|
 | A0 | the tempo moved into `Source/TempoTracker.{h,cpp}`; a trace (`--tempo-trace`) and a lab (`Tools/tempo_lab.py`) | features and traces of 82 files byte-identical before and after |
 | A1 | a yardstick for the beat phase (`Tools/beat_vs_cues.py`: F-measure, CMLt, AMLt, hold) | baseline of the PLL: F 27.5 %, CMLt 20.7 %, AMLt 28.0 %, hold 26 % (chance 25 %) |
-| A2 | the tempo chosen by pulse trains (Percival & Tzanetakis 2014) | right within 4 %: 49 -> 66 %; real tracks up or equal, *Ironic 28 -> 14 %* (open: its truth of 114 is unconfirmed) |
+| A2 | the tempo chosen by pulse trains (Percival & Tzanetakis 2014) | right within 4 %: 49 -> 66 %; real tracks up or equal, Ironic 12 -> 85 % against its official 84 BPM |
 | A3 | the beat phase by beat tracking (BTrack, Stark, Davies & Plumley 2009), counted in envelope samples | through the PLL F 27.9 -> 48.5 %, CMLt 25.8 -> 43.8 %, AMLt 32.9 -> 61.1 %, hold 25 -> 39 %; no pulse on calm music |
 | A4 | the fold into 70..180 BPM measured on the beat grid | on the grid 60 -> 69 %; the fold stays |
 | A5 | section boundaries on the bar grid | tried and dropped: more found, always more invented |
@@ -7905,8 +7905,8 @@ annotated demos, and the beat phase never measured at all.
   like `tempo_vs_cues.py`: 37 s per method (10 s with four workers) instead of a build and minutes of analysis.  The
   port of the method of 10.11. matched the C++ in every demo (no demo with more than 1 % of its blocks off by
   0.5 BPM) and reproduced the table to the percent.  `--real` scores seven real tracks against `Tools/tempo_truth.tsv`
-  (the values come from the analyser's medians and a whole-track autocorrelation where both agree, Ironic's 114 from
-  the documentation; *the user has still to confirm them*), `--calm` the confidence on nine calm tracks (three
+  (the values come from the analyser's medians and a whole-track autocorrelation where both agree; Ironic's 84 the
+  user gave from official sources -- at first it stood at 114, taken from a note; the other six are unconfirmed), `--calm` the confidence on nine calm tracks (three
   Noctuary renders, five additive-synth demos, the chord test track).
 - *A0, the move.*  The autocorrelation and the fusion with the kicks went into `Source/TempoTracker.{h,cpp}` unchanged:
   the feature files and traces of the 41 beat demos and the seven real tracks (82 files) were byte-identical before
@@ -7928,9 +7928,9 @@ annotated demos, and the beat phase never measured at all.
   octave family must score 1.25 times as high.  Measured (tempo_vs_cues.py): right 49 -> 66 %, 90..135 BPM 81 -> 87 %,
   over 135 78 -> 80 %, under 90 25 -> 51 % (on the beat grid 60 -> 69 %, A4: the fold stays), folded 55 -> 74 %.
   Real tracks: Astrix 97 -> 98, Daft Punk 100, DMT 92, Kadafi 80 -> 93, Prodigy 97 -> 100, Thunderstruck 100.
-  *Worse: Ironic 28 -> 14 %* (the plan asked for 48).  Every source reads its ternary grid -- the autocorrelation,
-  the pulse trains and the kick intervals all say 171 or 86 -- so either the music's pulse really is ternary or its
-  truth of 114 is wrong; the user can tell by ear.  Calm material: the confidence exactly as before (the gate is the
+  Ironic first read *worse* (28 -> 14 %) -- against a reference of 114 BPM taken from a note.  Every source reads
+  171 or 86 there (the autocorrelation, the pulse trains, the kick intervals), and the official tempo is 84 (the
+  user, 20.11.): against 84 the old method is right 12 % of the time, the new one 85 %.  Calm material: the confidence exactly as before (the gate is the
   same).  Features run 4.6 s (4.8 before).  self test 127/127, check_schedule 20 plans without a violation.
 - *A3, the beat phase by beat tracking* (`TempoTracker::beatStep()`).  The phase restarted at every kick and ran at the
   tempo in between: a syncopated kick moved it off the beat, a break let it drift.  Now BTrack's cumulative score and
