@@ -2865,6 +2865,9 @@ void GLwidget::timerEvent( QTimerEvent * )
     if ( m_pendingConfig && m_pendingConfig != m_actConfiguration )
     {
         beginConfigFade();
+        // A rating walk belongs to the preset it judges: another preset ends it (the remote shows "off").
+        if ( m_actConfiguration->renderPipeline() && m_actConfiguration->renderPipeline()->rating() )
+            m_actConfiguration->renderPipeline()->stopRating();
         m_actConfiguration->stop();
         m_actConfiguration = m_pendingConfig;
         m_actConfiguration->start( m_width, m_height );
