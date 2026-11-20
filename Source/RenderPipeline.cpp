@@ -2293,13 +2293,13 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
 // 1.41 GB an hour after minute 10, while 25 scenes shown over and over for half an hour did not grow at all -- what
 // a scene once had, it kept: its program (and the background builds were never let go, see progStore()), and a 3D
 // scene its geometry (trimMeshResidency()).  On a card with 8 GB a day of Allround would not fit.  With both budgets
-// an hour of Allround in a shuffled order stays at 3.4..4.0 GB private and 2.2..2.8 GB GPU once the mesh working set
-// is full (616 changes, no GL error).  Now the plain 2D scenes keep a working set: the scene on screen, the one fading in, and the most recently used or compiled ahead
-// beyond them; the rest go back to their state before the first use (cleanShaderPrograms(), the hot reload's path)
-// and compile again when they are next due -- in the background, as on their first appearance.  An eviction trims
-// one below the budget, so the warm-up builds one more scene from where it stopped (beginFrame()).  Not for 3D
-// scenes (their own programs and buffers; the mesh budget above covers the big part) and not for the walking labs
-// (their programs take seconds to build).
+// an hour of Allround in a shuffled order stays at 3.3..4.1 GB private and 2.2..2.9 GB GPU once the mesh working set
+// is full (616 changes, no GL error).  Now the plain 2D scenes keep a working set: the scene on screen, the one fading
+// in, and the most recently used or compiled ahead beyond them; the rest go back to their state before the first use
+// (cleanShaderPrograms(), the hot reload's path) and compile again when they are next due -- in the background, as on
+// their first appearance.  An eviction trims one below the budget, so the warm-up builds one more scene from where it
+// stopped (beginFrame()).  Not for 3D scenes (their own programs and buffers; the mesh budget above covers the big
+// part) and not for the walking labs (their programs take seconds to build).
 //
 // KALEIDO_PROGRAM_BUDGET overrides the count (minimum 16).
 // ---------------------------------------------------------------------------

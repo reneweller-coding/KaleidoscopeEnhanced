@@ -951,11 +951,11 @@ public:
     static bool programBudgeted( EffectShader *s );
 
 private:
-    QHash<EffectShader *, qint64> m_progLastUse; ///< Last frame stamp at which a 2D scene was active, fading in or
-                                                 ///< compiled ahead (trimProgramResidency()).
-    qint64 m_progUseClock = 0;                   ///< Monotonic frame counter behind m_progLastUse.
-    int    m_progResident = 0;                   ///< Budgeted programs kept at the last trimProgramResidency().
-    size_t m_warmCursor = 0;                     ///< Where the warm-up goes on compiling ahead (it goes round).
+    QHash<EffectShader *, qint64> m_progLastUse;      ///< Last frame stamp at which a 2D scene was active, fading in or
+                                                      ///< compiled ahead (trimProgramResidency()).
+    qint64                        m_progUseClock = 0; ///< Monotonic frame counter behind m_progLastUse.
+    int                           m_progResident = 0; ///< Budgeted programs kept at the last trimProgramResidency().
+    size_t                        m_warmCursor = 0;   ///< Where the warm-up goes on compiling ahead (it goes round).
     QHash<EffectShader *, qint64> m_meshLastUse; ///< Last frame stamp at which a mesh scene was active or fading in.
     qint64                        m_meshUseClock = 0; ///< Monotonic frame counter behind m_meshLastUse.
 

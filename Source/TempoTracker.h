@@ -169,15 +169,15 @@ private:
     float m_kickBPM = 0.f;         ///< The tempo of the last kick-interval estimate alone (diagnostics).
 
     // ---- beat tracker (beatStep()) ----
-    double m_cs[BtHist] = {};       ///< Ring of the cumulative score, one value per block.
-    int    m_csIdx = 0;             ///< Next write index into #m_cs.
-    float  m_blockOnsets[MaxBlockOnsets] = {}; ///< The onset-envelope samples of the current block (for the beat tracker).
-    int    m_blockOnsetN = 0;      ///< Valid entries in #m_blockOnsets.
-    int    m_btCountdown = -1;      ///< Blocks until the predicted beat (-1: none predicted).
-    int    m_btToPredict = -1;      ///< Blocks until the next prediction (-1: none scheduled).
-    double m_btClock = 0.0;         ///< Seconds since the start (the block's start time).
-    double m_btLastBeat = -1e9;     ///< Time of the last tracked beat (-1e9: none yet).
-    float  m_btPhase = 0.f;         ///< The beat phase, see phase().
+    double m_cs[BtHist] = {};                  ///< Ring of the cumulative score, one value per block.
+    int    m_csIdx = 0;                        ///< Next write index into #m_cs.
+    float  m_blockOnsets[MaxBlockOnsets] = {}; ///< The current block's onset-envelope samples (for beatStep()).
+    int    m_blockOnsetN = 0;                  ///< Valid entries in #m_blockOnsets.
+    int    m_btCountdown = -1;                 ///< Blocks until the predicted beat (-1: none predicted).
+    int    m_btToPredict = -1;                 ///< Blocks until the next prediction (-1: none scheduled).
+    double m_btClock = 0.0;                    ///< Seconds since the start (the block's start time).
+    double m_btLastBeat = -1e9;                ///< Time of the last tracked beat (-1e9: none yet).
+    float  m_btPhase = 0.f;                    ///< The beat phase, see phase().
 };
 
 #endif // TEMPOTRACKER_H

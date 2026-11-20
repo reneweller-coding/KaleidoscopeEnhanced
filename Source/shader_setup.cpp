@@ -499,7 +499,7 @@ static GLuint collectPrebuild( const PrebuildJob &j )
     glDeleteShader( j.fs ); // flagged; freed with the program
     if ( linked )
         return progStore( j.key, j.prog, 0 ); // nobody holds it yet
-    glDeleteProgram( j.prog ); // the blocking path will build it again and log why
+    glDeleteProgram( j.prog );                // the blocking path will build it again and log why
     return 0;
 }
 
