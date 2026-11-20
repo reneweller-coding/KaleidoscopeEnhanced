@@ -239,8 +239,8 @@ SetupWindow::SetupWindow()
     // then a flash to the real language once loadFromIni() runs later).
     {
         QSettings s( settingsPath(), QSettings::IniFormat );
-        Strings::setLanguage( Strings::fromCode(
-            s.value( "language", "de" ).toString().toLocal8Bit().constData() ) );
+        // No "language" yet: the system's (German on a German system, else English), as in the program.
+        Strings::setLanguage( Strings::fromSetting( s.value( "language" ).toString().toLocal8Bit().constData() ) );
     }
 
     // Wider than it used to be: the download panel's rows ("3D: Raumschiffe
@@ -630,7 +630,11 @@ void SetupWindow::saveToIni()
 {
     QSettings s( settingsPath(), QSettings::IniFormat );
 
-    s.setValue( "language", m_language->currentData().toString() );
+    // A file without "language" follows the system; saving the other settings must not pin it.  Written when the
+    // file has one, or when the choice differs from the system's.
+    const QString lang = m_language->currentData().toString();
+    if ( s.contains( "language" ) || lang != QLatin1String( Strings::toCode( Strings::systemLanguage() ) ) )
+        s.setValue( "language", lang );
 
     const QString cfg = m_startConfig->currentData().toString();
     if ( !cfg.isEmpty() )

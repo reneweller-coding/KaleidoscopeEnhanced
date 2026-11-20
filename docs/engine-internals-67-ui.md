@@ -45,3 +45,24 @@ file holds their notes until they are folded into docs/engine-internals.md.
   `VideoPiP.cpp` takes frames in a `videoFrameChanged` lambda without a context object; if the backend emits it from
   its decoder thread, `g.latest` is replaced while the GL thread uploads it. Not caused by the walk (the crash came
   with no verdict pending); left for its own look. Tests now run with `videoEnabled=false`.
+
+### D3. The language follows the system until it is chosen
+
+- *What was there.* Without a `language` key the program, the Setup tool and the export tool spoke German (the
+  default of `Strings` and `SetupWindow.cpp:243`, `ExportWindow.cpp:285`), while the releases address everyone in
+  English since v1.19.1.
+- *What changed.* `Strings::fromSetting()`: a value in the file wins; without one, `Strings::systemLanguage()`
+  decides -- German when the user's first UI language (`QLocale::system().uiLanguages()`, on Windows the display
+  language; the locale's name if the list is empty) is German (`de`, `de-DE`, `de_AT`, `de-CH` ...), English for
+  everything else. The display language rather than the number format, because the text is what the user reads. The
+  answer is never written: the program remembers it as the session's start value, so the exit (which writes only
+  what the session changed) leaves the file without the key, and the Setup tool writes `language` on "Save" only when
+  the file had one or the choice differs from the system's. The remote page is built from the same table per request,
+  so it follows. `KALEIDO_LOCALE=en_US` (or `de_DE`) stands in for the system in tests.
+- *Measured.* Self test (`Kaleidoscope.exe -q`): five checks (German names, other names including `dsb-DE`, the file
+  without the key follows the locale, a value wins, the start value is not written back), 132 of 132. The program on
+  an empty settings copy: the remote page in English with `KALEIDO_LOCALE=en_US` ("Rate", "Start rating"), in German
+  with `de_DE` ("Bewerten", "Bewerten starten"); after a clean end (`KALEIDO_MAX_RUNTIME_SECS`) the copy has no
+  `language` key. The Setup tool (`--script-shot`, new: saves the window as it first appears and quits) shows
+  "Language: English" / "Sprache: Deutsch" under the two locales. The on-screen menu was not opened (no key presses in
+  tests); it reads the same table.

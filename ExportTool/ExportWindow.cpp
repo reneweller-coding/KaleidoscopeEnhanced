@@ -282,7 +282,8 @@ ExportWindow::ExportWindow()
     m_engine = findEngine();
     {
         QSettings s( settingsPath(), QSettings::IniFormat );
-        Strings::setLanguage( Strings::fromCode( s.value( "language", "de" ).toString().toLocal8Bit().constData() ) );
+        // No "language" yet: the system's (German on a German system, else English), as in the program.
+        Strings::setLanguage( Strings::fromSetting( s.value( "language" ).toString().toLocal8Bit().constData() ) );
     }
     setWindowTitle( ui( S_EXPORT_WINDOW_TITLE ) );
     if ( QFileInfo( m_root + "/icon.ico" ).isFile() )

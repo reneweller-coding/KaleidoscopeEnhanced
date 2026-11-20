@@ -664,9 +664,12 @@ or the web remote, all cached locally so a repeat play needs no network:
 
 ## Language
 
-The UI (on-screen overlays, the web remote page, and the Setup tool) speaks
-German or English, switchable from a dropdown in the Setup tool — German is
-the default. The Android app isn't part of that switch; it follows the
+The UI (on-screen overlays, the web remote page, the Setup tool and the video
+export tool) speaks German or English, switchable from a dropdown in the Setup
+tool. Until you choose, it follows the system: German on a German Windows (the
+display language decides), English everywhere else. Nothing is written into
+your settings file for that, so it keeps following the system until you pick a
+language yourself. The Android app isn't part of that switch; it follows the
 phone's own system language, the standard Android behaviour.
 
 ---

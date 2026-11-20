@@ -2372,8 +2372,9 @@ void GLwidget::loadUiSettings()
     // program that opens a listening port because it was installed is a surprise nobody asked for.
     m_cuePort = s.value( "cuePort", 0 ).toInt();
     m_cueBind = s.value( "cueBind", m_cueBind ).toString();
-    Strings::setLanguage( Strings::fromCode(
-        s.value( "language", Strings::toCode( Strings::language() ) ).toString().toLocal8Bit().constData() ) );
+    // Without a "language" key the system's language decides (German on a German system, else English); the answer
+    // is remembered as the session's start value (rememberUiSettings()), so the exit does not write it into the file.
+    Strings::setLanguage( Strings::fromSetting( s.value( "language" ).toString().toLocal8Bit().constData() ) );
 }
 
 QList<QPair<QString, QVariant>> GLwidget::uiSettings() const
@@ -2665,11 +2666,11 @@ void GLwidget::updateAutoConfig( const AudioFeatures &f )
 {
     if ( !m_autoConfig )
         return;
-
     // A rating walk judges the scenes of ONE preset: the mood must not switch it away mid-walk.
     if ( m_actConfiguration && m_actConfiguration->renderPipeline()
          && m_actConfiguration->renderPipeline()->rating() )
         return;
+
     // Map the sustained mood to a configuration bucket (preset set of 18.10.2026).
     //   0 ambient/drone -> Ambient, 1 calm with a beat -> Downtempo,
     //   2 normal -> Allround,       3 energetic -> Club.

@@ -28,6 +28,7 @@
 #include "AudioConditioner.h"
 #include "RenderPipeline.h"
 #include "SettingsFile.h"
+#include "Strings.h"
 #include "VideoExport.h"
 #include "coreclock.h"
 
@@ -837,6 +838,46 @@ void settingsChecks()
     const QString why = SettingsFile::failure( ro );
     QFile::setPermissions( path, QFileDevice::ReadOwner | QFileDevice::WriteOwner );
     check( !why.isEmpty(), "a settings file that cannot be written is noticed", why.toStdString() );
+
+    // The language (20.11.2026): without a "language" key the system's decides -- German on a German system,
+    // English everywhere else -- and a value in the file stays as it is.
+    printf( "\nlanguage (Strings::fromSetting)\n" );
+    const char *de_names[] = { "de", "de-DE", "de_AT", "DE-ch", "de-Latn-DE" };
+    const char *en_names[] = { "en-US", "en_GB", "fr-FR", "nl", "dsb-DE", "", nullptr };
+    bool        de_ok = true, en_ok = true;
+    for ( const char *n : de_names )
+        de_ok = de_ok && Strings::fromLocaleName( n ) == LangE::DE;
+    for ( const char *n : en_names )
+        en_ok = en_ok && Strings::fromLocaleName( n ) == LangE::EN;
+    check( de_ok, "German locale names give German (de, de-DE, de_AT, DE-ch, de-Latn-DE)" );
+    check( en_ok, "every other name gives English (en-US, en_GB, fr-FR, nl, dsb-DE -- Lower Sorbian --, empty)" );
+    const QByteArray had_env = qgetenv( "KALEIDO_LOCALE" );
+    const bool       env_set = qEnvironmentVariableIsSet( "KALEIDO_LOCALE" );
+    qputenv( "KALEIDO_LOCALE", "en_US" );
+    const LangE en_sys = Strings::fromSetting( "" );
+    const LangE en_set = Strings::fromSetting( "de" );
+    qputenv( "KALEIDO_LOCALE", "de_DE" );
+    const LangE de_sys = Strings::fromSetting( nullptr );
+    const LangE de_set = Strings::fromSetting( "en" );
+    if ( env_set )
+        qputenv( "KALEIDO_LOCALE", had_env );
+    else
+        qunsetenv( "KALEIDO_LOCALE" );
+    check( en_sys == LangE::EN && de_sys == LangE::DE, "a file without 'language' follows the system's locale" );
+    check( en_set == LangE::DE && de_set == LangE::EN, "a language in the file wins over the system's" );
+    // The exit writes back only what the session changed: the language the system chose is the session's start
+    // value, so a file without the key stays without it.
+    {
+        QSettings s( path, QSettings::IniFormat );
+        s.remove( "selftest/language" );
+    }
+    SettingsFile::remember( "selftest/language", QString::fromLatin1( Strings::toCode( LangE::EN ) ) );
+    {
+        QSettings s( path, QSettings::IniFormat );
+        SettingsFile::store( s, "selftest/language", QString::fromLatin1( Strings::toCode( LangE::EN ) ), false );
+    }
+    check( !QSettings( path, QSettings::IniFormat ).contains( "selftest/language" ),
+           "the system's language is not written into the file at the exit" );
 }
 
 /**  A kick pattern: kicks (the drum track's thump) at the given beat positions of every 4-beat bar, over a tone.

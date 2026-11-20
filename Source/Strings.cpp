@@ -11,6 +11,9 @@
 
 #include "Strings.h"
 #include "Platform.h"
+#include <QtCore/QByteArray>
+#include <QtCore/QLocale>
+#include <QtCore/QStringList>
 #include <cstring>
 #include <cstdlib>
 
@@ -379,9 +382,6 @@ const char *kDE[S_COUNT] = {
     /* S_OSD_STRICTLIGHT */ "Lichtschutz streng",
     /* S_SETUP_STRICTLIGHT */
     "Lichtschutz streng: Helligkeit steigt halb so schnell, Lampen und Titel ohne Beat-Blitze",
-};
-
-/** The English texts, in the same order as kDE. */
     /* S_WR_TAB_RATE */ "Bewerten",
     /* S_WR_RATE_START */ "Bewerten starten",
     /* S_WR_RATE_STOP */ "Bewerten beenden",
@@ -400,6 +400,9 @@ const char *kDE[S_COUNT] = {
     /* S_FB_RATE_STOP_FMT */ "Bewerten beendet: %1 von %2 bewertet",
     /* S_FB_RATE_DONE */ "Bewerten: alle Szenen dieses Presets sind bewertet",
     /* S_FB_RATE_UNDO_FMT */ "Urteil zurückgenommen: %1",
+};
+
+/** The English texts, in the same order as kDE. */
 const char *kEN[S_COUNT] = {
     // ---- Help overview ----
     /* S_HELP_TITLE */ "KALEIDOSCOPE  -  Keyboard",
@@ -756,9 +759,6 @@ const char *kEN[S_COUNT] = {
     /* S_OSD_STRICTLIGHT */ "Strict light protection",
     /* S_SETUP_STRICTLIGHT */
     "Strict light protection: brightness rises half as fast, lamps and titles without beat flashes",
-};
-
-} // namespace
     /* S_WR_TAB_RATE */ "Rate",
     /* S_WR_RATE_START */ "Start rating",
     /* S_WR_RATE_STOP */ "Stop rating",
@@ -777,6 +777,9 @@ const char *kEN[S_COUNT] = {
     /* S_FB_RATE_STOP_FMT */ "Rating stopped: %1 of %2 rated",
     /* S_FB_RATE_DONE */ "Rating: every scene of this preset is rated",
     /* S_FB_RATE_UNDO_FMT */ "Verdict taken back: %1",
+};
+
+} // namespace
 
 void Strings::setLanguage( LangE lang )
 {
@@ -795,6 +798,32 @@ LangE Strings::fromCode( const char *code )
 const char *Strings::toCode( LangE lang )
 {
     return ( lang == LangE::EN ) ? "en" : "de";
+}
+
+LangE Strings::fromLocaleName( const char *name )
+{
+    if ( !name )
+        return LangE::EN;
+    const bool de = ( name[0] == 'd' || name[0] == 'D' ) && ( name[1] == 'e' || name[1] == 'E' )
+                    && ( name[2] == '\0' || name[2] == '-' || name[2] == '_' );
+    return de ? LangE::DE : LangE::EN;
+}
+
+LangE Strings::systemLanguage()
+{
+    const QByteArray forced = qgetenv( "KALEIDO_LOCALE" );
+    if ( !forced.isEmpty() )
+        return fromLocaleName( forced.constData() );
+    // The display language first: a German Windows with English number formats (or the reverse) speaks to its user
+    // in the display language, and that is what the UI text should follow.
+    const QStringList ui = QLocale::system().uiLanguages();
+    const QString     name = ui.isEmpty() ? QLocale::system().name() : ui.first();
+    return fromLocaleName( name.toLatin1().constData() );
+}
+
+LangE Strings::fromSetting( const char *code )
+{
+    return ( code && code[0] ) ? fromCode( code ) : systemLanguage();
 }
 
 const char *Strings::uiText( StrIdE id )
