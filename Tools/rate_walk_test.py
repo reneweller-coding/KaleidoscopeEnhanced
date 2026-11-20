@@ -44,8 +44,10 @@ def check(ok, what, detail=""):
         FAILED.append(what)
 
 
-def api(port, path, action=False, timeout=5.0):
-    """One GET on the remote; actions carry the header a foreign web page cannot send."""
+def api(port, path, action=False, timeout=30.0):
+    """One GET on the remote; actions carry the header a foreign web page cannot send.  A scene's first appearance
+    can compile its programs on the main thread for some seconds (a chain lab: dozens), and the remote answers
+    after that -- hence the long timeout."""
     req = urllib.request.Request("http://127.0.0.1:%d%s" % (port, path))
     if action:
         req.add_header("X-Kaleido", "1")
@@ -84,6 +86,7 @@ def main():
     ap.add_argument("--secs", type=int, default=4)
     ap.add_argument("--port", type=int, default=18391)
     ap.add_argument("--empty", action="store_true", help="start from an empty settings file, not a copy of the user's")
+    ap.add_argument("--from", dest="src", help="start from a copy of this settings file (read only)")
     ap.add_argument("--exe", default=os.path.join(ROOT, "Release", "Kaleidoscope.exe"))
     a = ap.parse_args()
 
@@ -91,6 +94,9 @@ def main():
     ini = ps.path(0)
     if a.empty:
         open(ini, "w").close()
+    elif a.src:
+        import shutil
+        shutil.copy(a.src, ini)
     before = read_ini(ini)
     rated_before = {k for k in before.get("rated", {}) if k.split("\\")[0] == a.preset}
     log = os.path.join(ps.dir, "app.log")
