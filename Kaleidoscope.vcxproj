@@ -257,6 +257,7 @@ if errorlevel 1 exit /b 1
     <ClCompile Include="Source\PresentPass.cpp" />
     <ClCompile Include="Source\SceneScheduler.cpp" />
     <ClCompile Include="Source\TrackMedia.cpp" />
+    <ClCompile Include="Source\TempoTracker.cpp" />
     <ClCompile Include="Source\glwidget.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\mesh.cpp" />
@@ -318,6 +319,7 @@ if errorlevel 1 exit /b 1
     <ClInclude Include="Source\PresentPass.h" />
     <ClInclude Include="Source\SceneScheduler.h" />
     <ClInclude Include="Source\LongRunVariety.h" />
+    <ClInclude Include="Source\TempoTracker.h" />
     <ClInclude Include="Source\coreclock.h" />
     <ClInclude Include="Source\TrackMedia.h" />
     <CustomBuild Include="Source\AudioAnalyzer.h">

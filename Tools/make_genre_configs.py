@@ -399,6 +399,20 @@ if os.path.exists(TASTE_FILE):
         else:
             fit[v[0]][v[1]] = max(0, min(10, fit[v[0]][v[1]] + int(v[2])))
 
+# Near-duplicates (20.11.2026, plan B5; the user's decision: they may leave the genre presets and stay in Allround).
+# Tools/scene_redundant.tsv holds the groups of scenes that show the same picture -- found by
+# Tools/scene_similarity.py (dup_group in Tools/scene_neighbours.tsv) and confirmed on contact sheets; a distance alone
+# is a suspect, not a verdict.  In each genre preset the two best of a group stay (interest, then the genre's fit),
+# the others go to Allround only.  A pair therefore never loses a member; only groups of three or more do.
+REDUNDANT_FILE = "Tools/scene_redundant.tsv"
+REDUNDANT_KEEP = 2
+REDUNDANT = {}
+if os.path.exists(REDUNDANT_FILE):
+    for ln in open(REDUNDANT_FILE, encoding="utf-8").read().splitlines()[1:]:
+        v = ln.split("\t")
+        if len(v) >= 2 and v[0] and not v[0].startswith("#"):
+            REDUNDANT.setdefault(v[1], set()).add(v[0])
+
 # Every scene has a home (22.10.2026): taking the best of each genre up to MIN_SCENES left 536 of 1815 scenes in no
 # genre preset at all -- scenes rated middling everywhere, shown only by Allround.  A scene that is not dull now also
 # goes into the genre it fits best, if it fits it at least HOME_MIN; where several genres tie, into the (at most
@@ -429,11 +443,11 @@ def home_genres():
 
 HOMES = home_genres()
 
-def select_by_fit(genre, rule):
+def select_by_fit(genre, rule, drop=frozenset()):
     col = FIT_COLUMN[genre]
     shaders = []
     for b in scenes:
-        if b[1] not in shaders:
+        if b[1] not in shaders and b[1] not in drop:
             shaders.append(b[1])
     rated = [s for s in shaders if s in fit and col in fit[s]]
     second = SECOND_FIT.get(genre)
@@ -452,7 +466,8 @@ def select_by_fit(genre, rule):
             if fit[s][col] >= FIT_FLOOR and (dull_ok or fit[s]["interest"] > DULL):
                 chosen.add(s)
     # Unrated scenes (or unrated in this genre's column): the old mood rule decides.
-    chosen |= {b[1] for b in scenes if (b[1] not in fit or col not in fit[b[1]]) and rule(b[2], b[4])}
+    chosen |= {b[1] for b in scenes if (b[1] not in fit or col not in fit[b[1]]) and rule(b[2], b[4])
+               and b[1] not in drop}
     sel = []
     for s in shaders:
         if s not in chosen:
@@ -463,6 +478,29 @@ def select_by_fit(genre, rule):
             entries = [entries[round(i * (n - 1) / (MAX_VARIANTS - 1))] for i in range(MAX_VARIANTS)]
         sel.extend(entries)
     return sel
+
+def select_without_duplicates(genre, rule):
+    """select_by_fit() with the near-duplicate rule (REDUNDANT): of each group, the REDUNDANT_KEEP best members that
+    are in the selection stay -- by interest, then this genre's fit, then name -- the others are dropped and the
+    selection is made again without them (the fill to MIN_SCENES may then take other scenes).  Returns the selection
+    and {dropped scene: the group members kept}."""
+    col = FIT_COLUMN[genre]
+    drop, why = set(), {}
+    for _ in range(5):
+        sel = select_by_fit(genre, rule, frozenset(drop))
+        names = {b[1] for b in sel}
+        more = False
+        for group in REDUNDANT.values():
+            inside = sorted(group & names, key=lambda s: (-fit.get(s, {}).get("interest", 0),
+                                                          -fit.get(s, {}).get(col, 0), s))
+            for s in inside[REDUNDANT_KEEP:]:
+                drop.add(s)
+                why[s] = inside[:REDUNDANT_KEEP]
+                more = True
+        if not more:
+            return sel, why
+    sys.exit("make_genre_configs: the near-duplicate rule did not settle in %s" % genre)
+
 
 def solo_times(genre, sel):
     """Solo time (min, max) in seconds per scene name for one genre preset (SOLO_GENRES; see above)."""
@@ -488,7 +526,9 @@ for entry in GENRES:
     name, rule, hidden = entry[0], entry[1], entry[2]
     fxRule = entry[3] if len(entry) > 3 else rule
     if name in FIT_COLUMN and fit:
-        sel_s = select_by_fit(name, rule)
+        sel_s, redundant = select_without_duplicates(name, rule)
+        for s in sorted(redundant):
+            print("%-12s %s only in Allround (near-duplicate of %s)" % (name, s, " and ".join(redundant[s])))
     else:
         sel_s = [b for b in scenes if rule(b[2], b[4])]
     # The genre's lab variants take the place of the plain lab entries.

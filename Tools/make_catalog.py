@@ -15,17 +15,37 @@
 #       AuroraBorealisOverFjord for 3D; see scratchpad fx_render.sh).
 #       Rendering is NOT done here on purpose — the harness owns that.
 #
+#   python Tools\make_catalog.py --data-only [--data-out <file>]
+#       [--neighbours <tsv>] [--reactivity <tsv>]
+#       Writes only catalog-data.js (the data of docs/Catalog/index.html):
+#       no picture is touched, Katalog.md and Katalog.html stay as they
+#       are.  --data-out writes it elsewhere (a test); --neighbours and
+#       --reactivity name other files than Tools/scene_neighbours.tsv and
+#       Tools/scene_reactivity.tsv.  Both are optional, like the strips in
+#       docs/Catalog/strip/; see the data section at the end.
+#
 # PDF export (done by the caller, requires Edge):
 #   msedge --headless --print-to-pdf="...\Katalog.pdf" "file:///...\Katalog.html"
 #
 # Descriptions come from each shader's own header comment (the first
 # comment block in the .frag), so maintaining the catalogue = maintaining
 # the shader headers, which we do anyway.
-import re, os, sys, html
+import re, os, html, argparse, math
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-scan = sys.argv[1] if len(sys.argv) > 1 else ""
-fxscan = sys.argv[2] if len(sys.argv) > 2 else ""
+ap = argparse.ArgumentParser(description="Generate the scene catalogue (docs/Catalog).")
+ap.add_argument("scan", nargs="?", default="", help="folder of the scenes' <Scene>_{A,B,C}.png frames")
+ap.add_argument("fxscan", nargs="?", default="", help="folder of the overlays' and transitions' <Name>_{2D,3D}.png frames")
+ap.add_argument("--data-only", action="store_true",
+                help="write only catalog-data.js: no pictures, Katalog.md and Katalog.html untouched")
+ap.add_argument("--data-out", default="", help="where catalog-data.js goes (default: docs/Catalog/catalog-data.js)")
+ap.add_argument("--neighbours", default=os.path.join(root, "Tools", "scene_neighbours.tsv"),
+                help="similar scenes (name, neighbours = comma list, nearest first); optional")
+ap.add_argument("--reactivity", default=os.path.join(root, "Tools", "scene_reactivity.tsv"),
+                help="reaction to the music (name, react = 0..1); optional")
+args = ap.parse_args()
+scan = "" if args.data_only else args.scan
+fxscan = "" if args.data_only else args.fxscan
 outd = os.path.join(root, "Docs", "Catalog")
 imgd = os.path.join(outd, "img")
 os.makedirs(imgd, exist_ok=True)
@@ -271,14 +291,64 @@ emit_effect_section(
     "(interpolation=0).")
 
 ht.append("</body></html>")
-open(os.path.join(outd, "Katalog.md"), "w", encoding="utf-8", newline="\n").write("\n".join(md))
-open(os.path.join(outd, "Katalog.html"), "w", encoding="utf-8", newline="\n").write("".join(ht))
+if not args.data_only:
+    open(os.path.join(outd, "Katalog.md"), "w", encoding="utf-8", newline="\n").write("\n".join(md))
+    open(os.path.join(outd, "Katalog.html"), "w", encoding="utf-8", newline="\n").write("".join(ht))
 
 # ---- the data of the browsable catalogue (docs/Catalog/index.html: search, filters by kind, genre and mood) ----
 # One line of JavaScript, loaded by a script tag, so the page also works from the disk (a fetch() of a JSON file does
 # not, there).  Per entry: n name, k kind (2D / 3D / FX / T), m moods, g the genre presets it is in, r the interest
 # rating (scenes), c complexity, d the description, i which pictures exist.
+# Optional keys, present only where another tool has measured something (the page works without them):
+#   s  similar scenes, up to eight names, nearest first -- the column `neighbours` of Tools/scene_neighbours.tsv
+#      (header: name, cluster, dup_group, neighbours, distances); names the catalogue does not hold are dropped
+#   x  how much the entry reacts to the music, 0..1 to two decimals -- the column `react` (a percentile rank) of
+#      Tools/scene_reactivity.tsv (header: name, react_struct, react_sync, react)
+#   p  1 when a transition has its strip docs/Catalog/strip/<Name>.jpg (five frames of the blend in one picture)
+# A name both a scene and a transition carry (VoronoiShatter) gets s and x on the scene, p on the transition.
 import json
+
+def read_tsv(path):
+    """Rows of a tab-separated file with a header line, as dicts; [] when the file is missing."""
+    if not path or not os.path.exists(path):
+        return []
+    lines = [ln for ln in open(path, encoding="utf-8-sig").read().splitlines() if ln.strip() and not ln.startswith("#")]
+    if not lines:
+        return []
+    head = [h.strip() for h in lines[0].split("\t")]
+    return [dict(zip(head, (v.strip() for v in ln.split("\t")))) for ln in lines[1:]]
+
+known = {s["stem"] for s in scenes} | {s["stem"] for s in fx} | {s["stem"] for s in trans}
+similar = {}
+for row in read_tsv(args.neighbours):
+    name = row.get("name", "")
+    near = [n.strip() for n in row.get("neighbours", "").split(",")]
+    near = [n for n in near if n and n != name and n in known][:8]
+    if name in known and near:
+        similar[name] = near
+reaction = {}
+for row in read_tsv(args.reactivity):
+    try:
+        v = float(row.get("react", ""))
+    except ValueError:
+        continue
+    if row.get("name", "") in known and math.isfinite(v):
+        reaction[row["name"]] = round(min(1.0, max(0.0, v)), 2)
+stripd = os.path.join(outd, "strip")
+strips = {os.path.splitext(f)[0] for f in os.listdir(stripd) if f.endswith(".jpg")} if os.path.isdir(stripd) else set()
+named = set()
+def extras(d):
+    """Adds the optional keys to one entry; s and x go to the first entry of a name only."""
+    if d["n"] not in named:
+        named.add(d["n"])
+        if d["n"] in similar:
+            d["s"] = similar[d["n"]]
+        if d["n"] in reaction:
+            d["x"] = reaction[d["n"]]
+    if d["k"] == "T" and d["n"] in strips:
+        d["p"] = 1
+    return d
+
 GENRES = ["Ambient", "SpaceAmbient", "Downtempo", "Cinematic", "Club", "Electronic", "Psytrance", "Psychedelic", "Noir"]
 member = {}
 for g in GENRES:
@@ -299,15 +369,19 @@ def pictures(stem, marks):
     return [v for v in marks if f"{stem}_{v}.jpg" in have]
 data = []
 for s in scenes:
-    data.append({"n": s["stem"], "k": "3D" if s["folder"] == "Scene3D" else "2D", "m": [t for t in s["mood"].split(",") if t],
-                 "g": member.get(s["stem"], []), "r": interest.get(s["stem"], 0), "c": s["complexity"], "d": s["desc"],
-                 "i": pictures(s["stem"], "ABC")})
+    data.append(extras({"n": s["stem"], "k": "3D" if s["folder"] == "Scene3D" else "2D", "m": [t for t in s["mood"].split(",") if t],
+                        "g": member.get(s["stem"], []), "r": interest.get(s["stem"], 0), "c": s["complexity"], "d": s["desc"],
+                        "i": pictures(s["stem"], "ABC")}))
 for kind, entries in (("FX", fx), ("T", trans)):
     for s in entries:
-        data.append({"n": s["stem"], "k": kind, "m": [t for t in s["mood"].split(",") if t], "g": member.get(s["stem"], []),
-                     "r": 0, "c": "", "d": s["desc"], "i": pictures(s["stem"], ("2D", "3D"))})
-open(os.path.join(outd, "catalog-data.js"), "w", encoding="utf-8", newline="\n").write(
+        data.append(extras({"n": s["stem"], "k": kind, "m": [t for t in s["mood"].split(",") if t], "g": member.get(s["stem"], []),
+                            "r": 0, "c": "", "d": s["desc"], "i": pictures(s["stem"], ("2D", "3D"))}))
+datap = args.data_out or os.path.join(outd, "catalog-data.js")
+open(datap, "w", encoding="utf-8", newline="\n").write(
     "window.CATALOG=" + json.dumps({"genres": GENRES, "entries": data}, ensure_ascii=False, separators=(",", ":")) + ";\n")
+print(f"catalog-data.js: {len(data)} entries, {sum('s' in d for d in data)} with similar scenes, "
+      f"{sum('x' in d for d in data)} with a reaction, {sum('p' in d for d in data)} strips -> {datap}")
 
 n_img = len([f for f in os.listdir(imgd) if f.endswith(".jpg")])
-print(f"catalog: {len(scenes)} Szenen, {len(fx)} FX-Overlays, {len(trans)} Übergänge, {n_img} Bilder -> {outd}")
+if not args.data_only:
+    print(f"catalog: {len(scenes)} Szenen, {len(fx)} FX-Overlays, {len(trans)} Übergänge, {n_img} Bilder -> {outd}")

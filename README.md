@@ -417,9 +417,13 @@ The same catalogue as a page with search and filters by kind, genre preset
 and mood is online at
 **[reneweller-coding.github.io/KaleidoscopeEnhanced](https://reneweller-coding.github.io/KaleidoscopeEnhanced/)**
 (the file is [`docs/Catalog/index.html`](docs/Catalog/index.html); it has no
-dependencies and also opens from a clone without a server). It also lets you
-mark what you like and what you do not; `Tools/apply_taste.py --ratings`
-folds an export of those marks into the genre presets.
+dependencies and also opens from a clone without a server). Every entry has
+its own link (the page address with `#SceneName`, e.g.
+[`#TunnelPlain`](https://reneweller-coding.github.io/KaleidoscopeEnhanced/#TunnelPlain)),
+the arrow keys page through the current selection, and "Random scene" picks
+one from it. It also lets you mark what you like and what you do not;
+`Tools/apply_taste.py --ratings` folds an export of those marks into the
+genre presets.
 
 **Building your own presets:** `PresetEditor.exe` (its own small Qt app,
 bundled with every release) edits `Presets\*.xml` with a live shader

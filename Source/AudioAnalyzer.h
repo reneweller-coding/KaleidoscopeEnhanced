@@ -20,9 +20,11 @@
 #include <QtCore/QList>
 #include <QtCore/QElapsedTimer>
 #include <atomic>
+#include <cstdio>
 #include <vector>
 
 #include "AudioFeatures.h"
+#include "TempoTracker.h"
 
 struct IMMDeviceEnumerator; // fwd (WASAPI) — only a pointer is used in the header
 
@@ -206,6 +208,12 @@ public:
      * synthetic profile.
      **/
     static std::vector<AudioFeatures> analyzeWavToTimeline( const QString &path, unsigned int *sampleRate = nullptr );
+    /** When set, every analysed block appends the tempo's inputs and outputs to this file (14 float32: time, the
+     * block's onset-envelope samples, the kick and its interval, track change, the autocorrelation tempo and
+     * confidence, the published tempo and beat phase, the kick tempo and its explained share) -- for replaying tempo
+     * candidates offline (Tools/tempo_lab.py; PresetEditor --features ... --tempo-trace FILE).  Off (null) in the app.
+     **/
+    static FILE *M_TempoTrace;
     /**  Offline analysis of samples in memory: the same pipeline as analyzeWavToTimeline(), for checks that build
      * their own signal (`Kaleidoscope.exe -q`).
      *
@@ -317,31 +325,9 @@ private:
     int   m_beatCount = 0;    ///< Cumulative beat counter (for sub-sampling discrete changes).
 
     // ---- BPM estimation ----
-    /** Length of #m_ioi: the last 12 intervals between kicks. */
-    static constexpr int IoiLen = 12;
-    float                m_ioi[IoiLen] = {};   ///< Ring of the last intervals between kicks, in seconds.
-    int                  m_ioiIdx = 0;         ///< Next write index into #m_ioi.
-    int                  m_ioiCount = 0;       ///< Valid entries in #m_ioi (an empty slot never counts).
-    float                m_ioiExplained = 0.f; ///< Share of #m_ioi the tempo's period explains (the rhythm's strength).
-    /**  The beat period that best explains the recent kick intervals (#m_ioi) as multiples of it.
-     *
-     * @param prevPeriod  The period so far in seconds (0: none), favoured among equals. (in)
-     * @param explained   The share of the intervals it explains, 0..1. (out)
-     *
-     * @return
-     *   The period in seconds, between 60/180 and 60/70 s; 0 if fewer than three intervals are known.
-     *
-     * Every interval, divided by 1, 1.5, 2, 2.5, 3 or 4, proposes a period in the 70-180 BPM range; each proposal
-     * is scored by how many intervals it explains as one of those multiples (within 30 ms + 4 %), then by how
-     * simple the multiples are, then by its nearness to prevPeriod; the winner is refined by least squares over
-     * the intervals it explains.  Until 16.10.2026 every interval was folded into 70-180 BPM on its own and the
-     * folded BPMs averaged: a boom-bap 90 (1.5, 1, 1.5 beats) read 110, a two-step 174 about 128.
-     **/
-    float ioiPeriod( float prevPeriod, float &explained ) const;
-    float m_lastBeatFrame = 0.f; ///< Frame counter value at the last detected beat.
-    float m_frameCounter = 0.f;  ///< Total frames processed since start (monotonic).
-    float m_smoothedBPM = 0.f;   ///< Smoothed BPM estimate (from inter-beat intervals, refined by autocorrelation).
-    float m_kickBPM = 0.f;       ///< The tempo of the last kick-interval estimate alone (diagnostics).
+    TempoTracker m_tempo; ///< The tempo: autocorrelation of the onset envelope, fused with the kick intervals.
+    float        m_lastBeatFrame = 0.f; ///< Frame counter value at the last detected beat.
+    float        m_frameCounter = 0.f;  ///< Total frames processed since start (monotonic).
 
     // ---- Log attack time state ----
     float m_prevLevel = 0.f;                ///< Previous overall level (for rise-rate / attack detection).
@@ -404,23 +390,13 @@ private:
     static constexpr int EnvRate = 100;
     /** Length of #m_odfEnv: ~4 s of envelope. */
     static constexpr int OdfEnvLen = 400;
-    /** The autocorrelation is evaluated every this many blocks (10 Hz): a 4 s window needs no more. */
-    static constexpr int AcEvery = 10;
-    /** Width of the log-Gaussian tempo prior around 120 BPM, in octaves (the lag pick, not the gate). */
-    static constexpr float AcPriorOctaves = 1.0f;
-    // ---- SuperFlux onset function: what the tempo autocorrelation runs on (16.10.2026) ----
+    // ---- SuperFlux onset function: what the tempo autocorrelation runs on (16.10.2026; TempoTracker) ----
     float m_sfPrev[2048 / 2 + 1] = {}; ///< Previous frame's log-compressed magnitudes (FFTHalf bins, declared below).
     float m_odfSF = 0.f;               ///< SuperFlux: rise of the log spectrum over the max-filtered previous frame.
-    float m_sfEnv[OdfEnvLen] = {};     ///< Fixed-rate ring of m_odfSF (same cadence and write index as m_odfEnv).
-    int   m_acBlock = 0;               ///< Blocks since the last autocorrelation (#AcEvery).
-    int   m_acRival = 0;               ///< Evaluations in a row whose tempo disagrees with #m_acBPM.
-    int   m_acDebugN = 0;              ///< Evaluations counted for the KALEIDO_AC_DEBUG line.
     float m_odfEnv[OdfEnvLen] = {};    ///< Fixed-rate ring of the onset detection function (diagnostic only:
                                        ///< KALEIDO_SPEECH_DEBUG's odfMean/odfStd).
     int   m_odfEnvIdx = 0;             ///< Next write index into #m_odfEnv.
     int   m_envFrameAcc = 0;           ///< Sample-frame accumulator that paces writes into #m_odfEnv to #EnvRate.
-    float m_acBPM = 0.f;               ///< Autocorrelation tempo estimate, in BPM.
-    float m_acConf = 0.f;              ///< Share of the last ~4 s the onset function was clearly periodic, 0..1.
     float m_odfEnvMean = 0.f;          ///< Last ODF-envelope mean (diagnostic for the tempo gate).
     float m_odfEnvStd = 0.f;           ///< Last ODF-envelope std-dev (diagnostic for the tempo gate).
     float m_roughRaw = 0.f; ///< Unscaled roughness ratio (diagnostic; the scale constant came from measuring this).

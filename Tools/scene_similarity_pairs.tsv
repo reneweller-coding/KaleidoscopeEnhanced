@@ -1,0 +1,96 @@
+a	b	verdict	note
+BitDepthPosterBands	ChromaLumaSlip	same	photo: both leave the shared photo almost as it is
+FibonacciSpiralGridWarp	SeaSpectrumPhoto	same	photo; the warp shows only in C
+PhotoObstacleFlow	WaterGlassRowFlip	same	photo: the same mirrored photo
+TelescopeMirrorSegments	TriboluminescentCrackTrails	same	photo: the same kaleidoscoped photo, faint cracks
+ChromaSubsampleBleed	LogisticRainCascade	same	photo
+ReactionFrontsOnPhotoRelief	SubBassMembrane	same	photo
+DctBlockBasisMosaic	SeaSpectrumPhoto	same	photo
+SubBassMembrane	WaveFrontFolding	same	photo
+HexLatticeBreathWarp	VocoderBandBank	same	photo
+BarCanonLayers	ReactionFrontsOnPhotoRelief	same	photo; layered copies faint
+ColorFilterWheelSequential	RockPaperScissorsSpirals	same	photo; faint spiral
+MiniatureFocusBandSweep	TransmissionLineStandingWave	same	photo
+BlinkingVortexStirring	LedDiffuserBloom	same	photo, blurred; C differs
+ActiveBrownianClusters	GranularGasCooling	same	own look: blue dot swarms on black
+BayerDitherTide	MilkCrownCoronas	near	photo; small coronas in one
+ClingFilmCreases	FresnelEdgeFringes	near	photo in A and B, C differs
+IkatFeather	StickSlipFrictionFronts	near	photo in A and B, C differs
+BeatFrequencyDrift	StickSlipFrictionFronts	near	photo in A and B, C differs
+BeatFrequencyDrift	TakagiBlancmangeWarp	near	photo in A and B, C differs
+HoarfrostFeatherGarden	WoodblockBokashi	near	photo; one washed out
+SeaSpectrumPhoto	TsunamiShoalingPhoto	near	photo in A and B, C differs
+BullseyeMirrorRings	TonalRangeOrrery	near	photo; mirrored differently
+FibonacciSpiralGridWarp	TsunamiShoalingPhoto	near	photo; the warp visible
+CharcoalSmudgeHatch	FingerprintRidgesFromPhoto	different	grey hatch against the coloured photo
+MajolicaGlazePools	SeptarianVeinNetwork	different	a vein network over the photo
+DctBlockBasisMosaic	PerceptionLab	different
+CatsPawWindRipplePatches	TsunamiShoalingPhoto	different
+BitDepthPosterBands	SpiderwebTessellation	different	hexagonal web over the same photo
+AntTrailStigmergyField	RulkovNeuronMapBursts	different
+HoarfrostFeatherGarden	OgeeTrellisSway	different	ring trellis over the same photo
+FibonacciSpiralGridWarp	FingerprintRidgesFromPhoto	different
+AntTrailStigmergyField	TsunamiShoalingPhoto	different
+DctBlockBasisMosaic	FibonacciSpiralGridWarp	different
+FibonacciSpiralGridWarp	ZoetropeSlitStrips	different
+TextureCircuitGlow	TextureFireflyGathering	different
+DiffractionLab	MilkCrownCoronas	different
+ConcreteFormworkPoreTexture	FingerprintRidgesFromPhoto	different
+HoarfrostFeatherGarden	KleinBottleGlideField	different
+BitPlaneGrayCascade	MutualDisplacement	different
+DoubleDiffusiveStaircase	MortonZOrderShuffle	different
+DiffractionLab	PythagoreanCommaSpiral	different
+ChromaLumaSlip	MonotypePressPull	different
+LifeRuleMorph	FireflyField	different
+KleinBottleGlideField	WaveSpeedPhotoTank	different
+TextureFireflyGathering	OrbitalDrop	different
+ShatterField	AcousticLevitationMatrix	different
+StandingWaveBeatingNodes	TextureRippleInterference	different
+BioCellularInfiniteZoom	PendulumWavePhoto	different
+HexbinDensityMosaic	TextureRippleInterference	different
+BellStrikePartialRings	LumaTerraceDrift	different
+CatsPawWindRipplePatches	LambWaveGuidePhoto	different
+ChainSlice3D	ZoomingGridOfSelves	different
+CamshaftStripWave	MandelboxHyperCubeMetamaterial	different
+CuticleWaxCrystalPlates	RauzyFractalTiles	different
+CellularFlowMixing	ElectrowettingDropletArray	different
+ChainExpKaleido	IsohedralTileMorph	different
+FlareGhostTrain	GinzburgLandauDefects	different
+DoublingMapBinaryShift	SequenceLab	different
+SilkMothScales	SkeletonOffsetBands	different
+KaleidoWaveFolds	PoincareDodecahedralSpace	different
+SteinerChainRings	WaveguideBundleFaces	different
+SecantBasinsPhoto	GeomagneticDynamoCore	different
+SmoothLifeGliderField	TrichomeHairForest	different
+CirclePatternFlow	SuperradiantTokamakIgnition	different
+CadenceGravity	PoissonGradientRemix	different
+BilateralDreamGrid	WoodcutKeylineBlocks	different
+MagnetohydrodynamicSolarGranulation	TalbotCarpet	different
+DragonCurveFolding3D	PoissonDiskGrowingStipple	different
+SpringLatticeWarp	TextureThinFilmSoap	different
+TartanTwillBlend	TilingSubstitutionAutomaton	different
+GlacierCrevasseDescent	LeParcMirrorRain	different
+BeatFrequencyDrift	IkatFeather	same	photo
+DetailTideBreakdown	SensorRowBanding	same	photo
+PlumeCapRollups	PolygonBokehBlades	same	photo
+IsophoteSilkStreaks	LedDiffuserBloom	same	photo, blurred
+FocusBreathingPull	MajolicaGlazePools	same	photo
+FoucaultStreakPlane	LobeAndCleftFront	near	photo; C differs
+BandLab	TransmissionLineStandingWave	near	photo; one washed out
+BlinkingVortexStirring	IsophoteSilkStreaks	same	photo, blurred; C differs
+FocusBreathingPull	SeptarianVeinNetwork	different	a vein network over the same photo
+DispersiveWaveTrain	FocusBreathingPull	near	photo; A blurred
+FresnelSheetFacets	ThermalColourConvection	different	facets and rings over the same photo
+PhotoDepthParallax	PhotoGeodesicFronts	different	contour fronts over the same photo
+ComaFlareField	PhotoSandpileSlides	same	photo
+BandLab	MiniatureFocusBandSweep	near	photo; one washed out
+LadderSwayBands	PianoStringHammerWaves	same	photo with horizontal line bands in both
+DetailTideBreakdown	QuarterNoteDelaySpiral	near	photo; a spiral in C
+PhotoDepthParallax	WaterDropCurtainRefract	same	photo
+KinkFrontShift	SaturationDepthSlide	same	photo
+JpegGenerationLoss	VectorQuantCodebookTiles	different	coarse codebook tiles against a fine block grain
+DropletCoalescenceBridges	ThreeGratingTriples	different
+RayleighSurfaceRollers	TransmissionLineStandingWave	near	photo in A, then different
+CapillaryFlight	ZCRNoiseStorm	different	two green radial looks, one a tunnel, one a starburst
+CoherenceDiffusionRepaint	FrostedGlassFocusRack	same	photo
+IceLensHeaveLayers	StreamgraphLayersFlow	different

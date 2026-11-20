@@ -45,13 +45,15 @@
  *    PresetEditor.exe --cfxcheck              verify the GL 4.3 compute-FX
  *                                             2D shaders don't render solid
  *                                             black (regression guard)
- *    PresetEditor.exe --features in.wav out.csv [--every N]
+ *    PresetEditor.exe --features in.wav out.csv [--every N] [--tempo-trace FILE]
  *                                             analyse a WAV at full speed and write what
  *                                             the shaders and the chain walk see, every
  *                                             N-th 10 ms block (default 5): the raw
  *                                             analyzer values and the app's conditioning
  *                                             (AudioConditioner: gate, slews, the
- *                                             integrated audioAdvance / audioPhase)
+ *                                             integrated audioAdvance / audioPhase);
+ *                                             --tempo-trace also writes the tempo's
+ *                                             inputs per block (AudioAnalyzer::M_TempoTrace)
  *
  *  @author René Weller
  */
@@ -150,7 +152,8 @@ static int dumpFeatures( const QString &wav, const QString &csv, int every )
         "t,presence,gate,level,level_c,arousal,arousal_c,valence,rhythm,bpm,flux,flux_c,spread,centroid,mode,"
         "chroma,chroma_c,hcdf,kick_c,onset_c,beat_c,buildup,swell_c,sections,section_id,known,drops,advance,"
         "rotphase,flip,ambient,phrase_pos,keyclarity,roughness,sharpness,novelty,valence_raw,sec_thr,spread_c,harm_c,harm_adv,"
-        "pitch,melody,melody_conf,melody_note,tempo_ac,tempo_ac_conf,tempo_kick,tempo_kick_expl\n",
+        "pitch,melody,melody_conf,melody_note,tempo_ac,tempo_ac_conf,tempo_kick,tempo_kick_expl,"
+        "beat_phase,beat_phase_c,beats\n",
         out );
     // One analysis block is 480 samples (analyzeWavToTimeline): its length follows the file's sample rate.
     unsigned int rate = 48000;
@@ -186,7 +189,7 @@ static int dumpFeatures( const QString &wav, const QString &csv, int every )
             out,
             "%.2f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.1f,%.4f,%.4f,%.4f,%.4f,%.3f,%.4f,%.4f,%.3f,%.3f,%.3f,%.3f,"
             "%.3f,%.3f,%d,%d,%d,%d,%.4f,%.4f,%.0f,%.3f,%.3f,%.3f,%.3f,%.3f,%.4f,%.3f,%.3f,%.4f,%.3f,%.4f,"
-            "%.4f,%.4f,%.3f,%.4f,%.1f,%.3f,%.1f,%.3f\n",
+            "%.4f,%.4f,%.3f,%.4f,%.1f,%.3f,%.1f,%.3f,%.4f,%.4f,%u\n",
             ctx.globalTime, a.musicPresence, cond.gate(), a.overallLevel, c.overallLevel, a.arousal, c.arousal,
             c.valence, a.rhythmStrength, a.estimatedBPM > 0.004f ? 40.f + 160.f * a.estimatedBPM : 0.f, a.spectralFlux,
             c.spectralFlux, a.spectralSpread, a.spectralCentroid, a.musicalMode, a.chromaHue, c.chromaHue,
@@ -194,7 +197,8 @@ static int dumpFeatures( const QString &wav, const QString &csv, int every )
             a.sectionId, a.sectionKnown ? 1 : 0, a.dropCount, c.audioAdvance, c.audioRotPhase, a.audioFlip,
             a.ambientFactor, c.phrasePos, a.keyClarity, a.roughness, a.sharpness, a.sectionNovelty, a.valence,
             a.sectionThreshold, c.spectralSpread, c.harmonicChange, c.harmAdvance, a.dominantPitch, a.melodyPitch,
-            a.melodyConf, a.melodyNote, a.tempoAc, a.tempoAcConf, a.tempoKick, a.tempoKickExplained );
+            a.melodyConf, a.melodyNote, a.tempoAc, a.tempoAcConf, a.tempoKick, a.tempoKickExplained, a.beatPhase,
+            c.beatPhase, static_cast<unsigned>( a.beatCount ) );
     }
     fclose( out );
     fprintf( stderr, "features: %d rows -> %s\n", static_cast<int>( ( tl.size() + every - 1 ) / every ),
@@ -233,7 +237,20 @@ int main( int argc, char *argv[] )
         QCoreApplication app( argc, argv );
         const int        at = static_cast<int>( args.indexOf( "--every" ) );
         const int        every = at > 0 && at + 1 < args.size() ? std::max( 1, args[at + 1].toInt() ) : 5;
-        return dumpFeatures( args[1], args[2], every );
+        const int        tt = static_cast<int>( args.indexOf( "--tempo-trace" ) );
+        if ( tt > 0 && tt + 1 < args.size() )
+        {
+            AudioAnalyzer::M_TempoTrace = fopen( args[tt + 1].toLocal8Bit().constData(), "wb" );
+            if ( !AudioAnalyzer::M_TempoTrace )
+            {
+                fprintf( stderr, "features: cannot write %s\n", qPrintable( args[tt + 1] ) );
+                return 1;
+            }
+        }
+        const int rc = dumpFeatures( args[1], args[2], every );
+        if ( AudioAnalyzer::M_TempoTrace )
+            fclose( AudioAnalyzer::M_TempoTrace );
+        return rc;
     }
 
     // Headless self-test: load a preset and write it back out (no GUI / GL).
