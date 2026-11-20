@@ -21,7 +21,7 @@ void main()
     float gm = luma(mean_);
     vec3 rec = c / max(mean_, vec3(0.05)) * (0.35 + 0.4 * gm) * 1.2;
     float ang = 1.2;
-    float pos = 0.3 * sin(0.6 * sceneAdvance + 0.012 * sceneTime);
+    float pos = 0.3 * sin(1.6 * sceneAdvance + 0.012 * sceneTime);
     float d = dot(p, vec2(cos(ang), sin(ang))) - pos;
     float m = smoothstep(-0.015, 0.015, d);
     float line = exp(-pow(d / 0.004, 2.0));

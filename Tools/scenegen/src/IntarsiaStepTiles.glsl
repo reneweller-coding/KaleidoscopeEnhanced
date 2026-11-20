@@ -22,7 +22,7 @@ void main()
     vec2 b = mod(q - h, r) - h;
     vec2 gv = dot(a, a) < dot(b, b) ? a : b;
     vec2 id = q - gv;
-    float ang = atan(gv.y, gv.x) + 1.3 * sceneAdvance + 0.008 * sceneTime + 1.5707963;
+    float ang = atan(gv.y, gv.x) + 2.5 * sceneAdvance + 0.008 * sceneTime + 1.5707963;
     float sec = floor(mod(ang / 6.2831853 + 8.0, 1.0) * 3.0);
     float fs = fract(mod(ang / 6.2831853 + 8.0, 1.0) * 3.0);
     vec3 c = imgLod((id * S) * 0.85 + 0.5, 1.2);
