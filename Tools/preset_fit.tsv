@@ -14,9 +14,9 @@ AlienPlanetOrbit	5	7	1	4	1	3	5	1	0	6	2
 AlienWorldSurface	7	8	2	5	2	6	6	1	1	7	3
 AnamorphicMirrorLabyrinth	5	4	5	3	8	5	6	4	7	2	5
 AnechoicChamberWedges	4	2	5	5	3	4	5	7	4	1	2
-AnglerfishAbyss	5	3	2	7	1	5	5	0	0	3	1
+AnglerfishAbyss	6	3	2	7	1	5	5	0	0	3	1
 AnomalousFloquetTopologicalInsulator	5	5	4	5	5	4	5	4	5	2	4
-AntimatterWeapon	3	7	5	6	2	3	5	5	3	3	1
+AntimatterWeapon	2	2	2	2	2	3	5	2	2	2	1
 Aperture	4	3	4	6	3	5	5	2	2	2	1
 ApollonianGasketNebulaFlight	5	5	4	6	5	4	5	4	5	3	3
 ApollonianSpherePackingDive	3	5	6	6	9	3	8	5	8	3	3
@@ -214,7 +214,7 @@ EndOfTheUniverse	6	9	1	7	2	4	8	2	1	7	4
 EnneperMinimalSurfaceHyperfold	6	5	3	4	4	7	6	3	3	4	5
 ErodedLand	7	2	1	3	1	6	8	0	0	8	3
 EscalatorHallCrossing	4	0	3	5	2	4	3	2	1	3	2
-EscherRelativityMatrix	5	0	1	2	3	8	6	2	1	4	3
+EscherRelativityMatrix	2	0	1	2	2	8	6	2	1	2	2
 EuropaChaosTerrain	5	6	2	5	2	4	5	1	0	5	3
 EventHorizon	4	8	5	7	5	4	8	4	5	5	4
 EventHorizonSingularityPlunge	4	6	6	4	7	4	7	5	6	3	4
@@ -238,7 +238,7 @@ FiberopticLightLoom	5	3	6	3	5	5	7	7	6	2	4
 FireflyField	5	4	3	5	2	4	4	3	2	4	4
 FireWhirlTornado	3	2	5	4	3	3	4	2	3	3	2
 Fireworks	4	3	6	4	4	4	5	4	4	4	4
-Fleet	3	8	5	6	1	4	6	2	0	4	2
+Fleet	3	8	2	6	1	4	6	2	0	4	2
 FleetJump	3	7	3	6	0	3	3	3	1	2	1
 FlowingWires	5	5	5	5	5	5	6	6	5	2	4
 FlowRibbons	5	2	6	2	5	5	6	4	4	3	5
@@ -248,7 +248,7 @@ FluidChromaMarangoniConvection	5	2	6	3	8	5	7	5	6	3	6
 FluidInkMandala	7	3	2	3	5	6	4	2	4	4	6
 FluidInkMarble	5	1	7	1	7	5	7	3	5	3	5
 FluidPhotoMarblingEbru	7	1	3	3	6	7	6	2	3	4	5
-ForaminiferaSpiralShells	4	3	1	4	2	4	3	1	1	3	4
+ForaminiferaSpiralShells	2	2	1	2	2	4	3	1	1	2	2
 FormantVowelSpace	7	7	2	3	2	3	3	3	1	2	3
 FortressStation	4	8	4	6	1	4	6	2	0	4	1
 FourierEpicycleDraw	6	4	2	5	3	5	4	3	2	4	4
@@ -258,7 +258,7 @@ FractalKIFS	5	4	6	5	8	6	7	6	8	2	4
 FractalMorphoDendrite	4	2	4	3	5	5	4	3	4	2	4
 FractalPortalRecursionHall	3	3	8	4	8	3	7	5	6	3	5
 FrescoRestorationReveal	5	0	0	3	1	8	6	0	0	6	2
-FrozenMethaneLakes	6	8	3	5	4	5	6	2	1	6	4
+FrozenMethaneLakes	6	8	2	5	4	5	6	2	1	6	4
 FullereneC60BuckyballCrystalLattice	4	4	3	5	2	3	3	4	3	2	3
 FuturisticCityFlight	2	1	7	7	2	3	6	7	5	3	4
 GalacticAccretionStreamFlight	4	8	5	6	5	4	7	4	5	4	4
@@ -267,7 +267,7 @@ GalaxyCollision	7	9	2	6	3	5	6	2	3	6	5
 GalaxyMergerNBody	5	7	1	5	1	3	3	2	1	5	3
 GalleryHall	4	2	2	7	1	7	5	3	1	6	3
 GaltonBoardBeads	3	1	2	4	1	3	3	4	1	2	3
-GammaRayBurst	2	6	6	5	2	2	4	5	4	3	3
+GammaRayBurst	2	2	2	2	2	2	4	2	2	2	2
 GasGiantAtmosphere	7	8	1	3	1	5	8	0	0	7	3
 GasGiantCloudCity	5	6	1	4	1	3	3	0	0	3	2
 GearWorks	3	1	6	5	3	4	5	4	3	3	2
@@ -362,7 +362,7 @@ Jellyfish	7	6	3	6	3	6	6	3	2	5	6
 JellyfishBioluminescenceAbyss	6	6	4	6	4	5	7	5	4	4	5
 JosephsonVortexFluxonLattice	2	1	6	1	5	2	4	6	4	1	2
 JosephsonVortexLattice	3	1	7	2	8	4	6	7	7	2	5
-JukeboxBubbleTubes	3	0	3	3	2	4	3	5	2	2	4
+JukeboxBubbleTubes	2	0	2	2	2	4	3	2	2	2	2
 JuliaAudioMorph	6	4	3	4	6	6	6	4	5	3	5
 JupiterJunoSwirls	7	8	4	3	7	8	8	1	3	7	5
 KaleidocycleFold	4	1	2	3	3	5	4	2	1	3	3
@@ -383,7 +383,7 @@ KilonovaRadioactiveAfterglow	6	6	3	4	5	5	5	2	3	4	4
 KineticMirrorHexagonArray	5	5	6	5	6	5	7	7	6	2	5
 KineticTesseractOrigami	4	1	5	1	5	5	5	6	5	2	5
 KineticTileMosaicMatrix	3	1	7	2	5	4	6	8	5	1	4
-KintsugiGoldSeams	5	1	1	6	1	6	3	1	1	5	4
+KintsugiGoldSeams	2	1	1	2	1	6	3	1	1	2	2
 KirlianAura	4	1	3	3	4	4	3	3	5	2	4
 KiteFestival	4	0	2	1	2	4	3	0	0	4	3
 KleinBottleFlythrough	5	3	3	4	4	4	4	2	3	3	3
@@ -417,7 +417,7 @@ LiquidCrystalBluePhaseLattice	3	1	7	2	6	3	6	7	6	1	4
 LiquidCrystalOptics	3	2	8	3	8	4	7	7	7	2	5
 LiquidMarbleEbruAcidWash	5	1	5	3	7	6	6	4	6	2	4
 LiquidMercuryFerrofluidChamber	6	2	4	4	4	6	6	3	3	4	5
-LiquidMetal	4	3	2	5	2	3	3	2	2	3	3
+LiquidMetal	2	2	2	2	2	3	3	2	2	2	2
 LissajousOrbits	6	7	3	6	3	4	4	4	3	3	4
 LogarithmicSpiralChamberZoom	5	3	5	3	8	5	6	6	8	1	3
 LorenzAttractorHyperLoom	3	1	6	1	7	3	5	4	5	2	4
@@ -454,9 +454,9 @@ MeshBellTower	6	1	2	7	1	6	6	1	0	6	3
 MeshCandleChapel	6	1	1	7	1	6	5	1	0	6	3
 MeshCoolingTowers	5	0	2	6	1	6	5	1	0	4	2
 MeshDominoWave	3	0	2	5	1	3	3	2	0	3	2
-MeshFoundryPour	4	0	3	7	1	5	5	2	0	4	2
+MeshFoundryPour	4	0	2	7	1	5	5	2	0	4	2
 MeshGearTrain	3	0	4	6	2	5	5	3	2	2	3
-MeshHeliostatField	5	0	1	3	1	6	5	1	0	4	2
+MeshHeliostatField	2	0	1	2	1	6	5	1	0	2	2
 MeshKaleidoscope	5	5	3	6	5	5	6	3	3	3	4
 MeshMetronomes	4	0	3	6	1	4	3	3	1	2	3
 MeshPeacockDisplay	7	0	2	3	3	9	8	0	0	6	3
@@ -464,7 +464,7 @@ MeshPendulumWave	5	1	3	6	1	5	4	3	1	3	3
 MeshPipeOrgan	6	1	2	7	1	7	6	2	0	5	3
 MeshRocketLaunch	5	5	4	6	1	5	6	2	0	4	2
 MeshSandSculpture	5	1	1	3	1	6	4	0	0	4	2
-MeshSeismograph	4	0	1	5	1	4	3	1	0	2	2
+MeshSeismograph	2	0	1	2	1	4	3	1	0	2	2
 MeshServerAisle	2	1	6	7	1	3	5	6	3	2	3
 MeshTermiteMound	5	0	2	5	1	6	5	0	0	4	2
 MeshTerrain	6	4	2	6	1	6	6	1	0	5	2
@@ -538,7 +538,7 @@ OpticalDispersionCausticVault	3	1	4	3	5	3	4	2	3	2	3
 OpticalLatticeAtoms	4	4	5	4	4	3	4	7	4	2	3
 OrbitalDebrisField	4	7	3	6	2	3	5	3	1	3	2
 OrbitalDrop	5	5	4	5	3	4	5	3	3	2	3
-OrbitalRingStation	6	9	3	4	1	6	7	2	0	5	2
+OrbitalRingStation	6	9	2	4	1	6	7	2	0	5	2
 OrbitalShells	6	7	4	5	5	5	6	4	3	4	4
 OrbitalSunrise	8	9	1	5	1	6	6	0	0	8	3
 OrganicFlow	6	2	5	3	7	6	6	3	6	4	6
@@ -577,7 +577,7 @@ PhysarumGalaxy	6	7	1	5	3	4	4	2	1	4	3
 PhytoplanktonEddies	7	4	2	5	5	6	6	1	2	4	5
 PianoRollWaterfall	3	0	3	4	1	3	3	5	1	4	4
 PillarHall	6	2	3	6	2	6	5	6	4	4	5
-PillarsOfCreationFlight	5	8	1	6	1	3	3	1	1	4	2
+PillarsOfCreationFlight	2	2	1	2	1	3	3	1	1	2	2
 PivotIrrigationCircles	4	2	2	4	3	4	3	2	1	3	3
 PixelMelt	4	1	6	2	5	4	5	6	5	2	4
 Planet4D	6	7	4	5	6	5	6	5	5	3	5
@@ -661,7 +661,7 @@ RiemannSphereInfinityFlight	4	4	7	3	8	5	7	6	8	2	4
 RingSpokesAndWakes	6	8	2	5	2	5	6	2	1	5	3
 RingStation	6	9	2	5	1	5	7	1	0	5	2
 RingworldHabitat	6	8	1	3	1	5	8	1	0	6	3
-RoguePlanet	5	7	1	6	1	3	3	1	1	4	2
+RoguePlanet	2	2	1	2	1	3	3	1	1	2	2
 RogueWanderer	5	7	2	6	2	4	5	3	3	3	3
 RollerCoaster	2	4	9	5	6	2	7	8	7	1	3
 Rorschach	6	1	2	6	4	7	5	2	3	4	4
@@ -690,7 +690,7 @@ SensorStation	4	8	2	6	1	4	4	2	0	3	2
 ShadowForest	6	1	2	7	1	6	5	2	0	5	3
 ShadowTheatre	6	2	2	9	1	7	7	1	0	6	3
 ShatterField	3	2	7	5	4	3	5	7	4	1	3
-ShatterSculpture	4	2	4	7	2	6	6	1	0	5	2
+ShatterSculpture	4	2	2	7	2	6	6	1	0	5	2
 ShepardPitchHelix	5	5	3	5	4	4	5	4	3	5	5
 ShipDocking	5	10	3	5	1	5	8	2	0	6	3
 ShipFlyby	5	10	4	6	1	5	9	2	1	6	3
@@ -850,7 +850,7 @@ VacuumDecayBubble	5	7	2	5	4	4	4	3	3	4	4
 VideoRelief	7	2	3	2	3	8	7	3	2	6	6
 VillarceauCirclesHyperFlow	5	3	6	4	7	5	6	7	7	2	5
 VinylGrooveMicroscope	5	2	2	6	2	4	4	5	2	3	5
-VoidLeviathan	5	7	3	6	3	4	5	3	2	4	3
+VoidLeviathan	5	7	2	6	3	4	5	2	2	4	3
 VolcanicBasaltColumnarJointingHexagon	4	3	6	5	5	4	5	6	4	2	4
 VolcanicLightningAshColumn	2	2	8	4	6	3	6	6	5	2	3
 VolcanicLightningPlume	4	4	4	6	3	3	4	4	2	3	3
@@ -1217,7 +1217,7 @@ CyclicAutomatonSpirals	3	1	7	3	7	4	6	5	6	1	4
 GreenbergHastingsWaves	5	1	6	3	7	6	6	6	6	2	4
 LangtonTurmiteHighways	3	2	5	5	4	3	4	6	4	1	3
 ElementaryRuleTapestry	2	0	6	3	6	3	4	6	5	1	2
-WireworldCircuitry	3	2	2	7	2	2	3	7	2	1	2
+WireworldCircuitry	2	2	2	2	2	2	3	2	2	1	2
 BriansBrainStorm	2	3	8	6	6	3	6	8	6	1	2
 LifeRuleMorph	5	1	3	4	5	5	5	3	3	2	3
 SandpileIdentityMandala	4	0	4	3	6	5	5	3	4	3	4
@@ -1238,7 +1238,7 @@ FaradayQuasipattern	5	1	3	5	4	4	4	3	3	2	3
 TuringHopfBlinkers	3	1	6	2	6	5	5	6	6	2	4
 PhotoGuidedTuringStripes	4	0	6	4	7	6	7	4	6	3	5
 BistableLabyrinths	5	1	4	4	7	5	6	3	6	2	5
-PhaseFieldCrystalGrains	5	2	3	4	4	5	5	2	2	3	4
+PhaseFieldCrystalGrains	2	2	2	2	2	5	5	2	2	2	2
 WilliamsDomainsElectroconvection	5	1	4	4	6	5	5	3	4	3	4
 SmecticFocalConicMosaic	3	1	6	2	8	4	6	5	6	1	4
 HerringboneWrinkles	4	0	5	4	6	5	6	4	4	3	5
@@ -1258,7 +1258,7 @@ RotatingPolygonVortex	4	1	5	3	5	4	5	3	4	2	4
 CellularFlowMixing	5	0	4	2	5	6	5	3	3	2	4
 OrszagTangPlasma	4	3	5	4	6	4	5	3	4	2	3
 RayleighTaylorBlend	5	0	5	1	7	6	6	2	5	3	5
-RichtmyerMeshkovSpikes	3	1	5	5	3	3	4	3	2	2	2
+RichtmyerMeshkovSpikes	2	1	2	2	2	3	4	2	2	2	2
 FerrofluidLabyrinth	4	1	4	6	5	4	5	2	3	2	4
 DoubleDiffusiveStaircase	5	0	2	5	3	4	3	4	3	3	4
 ElasticTurbulenceRibbons	5	0	4	3	6	5	5	2	3	2	4
@@ -1298,7 +1298,7 @@ ScarredMembraneDrum	4	1	4	4	3	4	4	3	2	2	3
 HolographicReconstruction	4	2	4	5	5	3	4	3	3	2	3
 WaveFrontFolding	5	2	4	4	7	5	5	3	6	3	5
 QuantumRevivalRing	4	3	4	6	5	3	4	3	4	2	3
-HarmonicOscillatorCoherent	5	3	3	6	4	4	4	2	2	3	3
+HarmonicOscillatorCoherent	2	2	2	2	2	4	4	2	2	2	2
 CausticWeb	8	2	4	3	5	7	7	5	4	4	6
 DispersivePrismField	5	1	4	3	6	5	5	4	4	3	5
 LightFieldParallaxLattice	5	0	3	5	4	4	3	3	3	2	3
@@ -1357,13 +1357,13 @@ TextureSynthesisGrowth	3	0	6	3	7	5	6	3	5	3	4
 PoissonGradientRemix	6	1	2	5	3	5	4	1	1	4	3
 SuperpixelMosaicFlow	5	0	2	5	2	5	3	1	1	4	3
 DistanceFieldEcho	6	0	4	4	5	6	5	3	4	3	5
-BilateralDreamGrid	6	0	2	4	5	5	4	2	4	2	5
+BilateralDreamGrid	2	0	2	2	2	5	4	2	2	2	2
 ColorTransferTide	6	0	2	4	3	6	4	1	1	3	4
-PhotoMeanShiftBlooms	5	0	3	4	5	5	4	1	2	3	4
+PhotoMeanShiftBlooms	2	0	2	2	2	5	4	1	2	2	2
 StructureTensorLens	6	0	2	5	3	6	4	1	1	4	3
 PhotoSpectralWarp	5	1	4	5	4	4	4	3	3	3	3
 DepthFromFocusLayers	6	0	3	4	4	7	5	1	1	4	4
-MorphologicalBreath	5	0	2	4	3	4	3	1	1	3	4
+MorphologicalBreath	2	0	2	2	2	4	3	1	1	2	2
 PhotoWatershedFlood	5	1	2	5	2	4	3	1	1	4	3
 PatchShuffleKaleido	4	0	4	3	4	4	3	2	3	2	3
 ToneMappingTide	6	0	2	3	3	7	5	0	1	5	4
@@ -1377,14 +1377,14 @@ GranularGasCooling	5	5	5	5	4	4	5	5	3	1	3
 MagneticDipoleSwarm	4	2	6	4	5	5	5	5	4	2	4
 ElectrohydroDropletRain	5	1	4	3	5	6	6	3	4	3	5
 ThomsonProblemShells	6	7	3	6	4	5	6	3	2	4	4
-BrownianTreeRain	5	2	2	6	3	4	3	2	2	2	3
+BrownianTreeRain	2	2	2	2	2	4	3	2	2	2	2
 SwarmalatorRings	5	6	4	5	5	5	6	4	4	3	5
 CoulombExplosionBloom	4	5	5	5	5	4	5	5	4	2	3
 StokesianSedimentation	6	4	3	5	4	5	5	3	2	3	4
 EuclideanRhythmMandala	6	4	6	4	4	6	6	5	4	3	6
 PolyrhythmLissajousLattice	4	2	6	4	6	5	6	7	6	2	5
 ChromaVectorField	5	0	2	4	3	4	3	1	1	2	3
-KeySpiralArray	5	6	3	6	3	5	5	3	2	4	4
+KeySpiralArray	2	2	2	2	2	5	5	2	2	2	2
 TimbreSculpture	5	1	3	4	5	4	4	2	2	3	4
 HarmonicLatticeFlight	4	4	4	6	3	3	4	3	2	3	3
 CadenceGravity	5	0	3	4	5	5	4	2	3	2	4
@@ -1407,7 +1407,7 @@ SilkMothScales	5	0	3	4	4	5	4	2	2	3	4
 SnowflakeFieldGrowth	6	4	4	4	4	6	6	3	3	4	5
 SolarGranulationField	5	4	4	4	5	5	4	3	3	3	4
 NebulaDustPillarsField	5	5	4	5	5	4	5	1	2	3	4
-CloudChamberField	4	4	3	7	2	3	3	3	2	2	2
+CloudChamberField	2	2	2	2	2	3	3	2	2	2	2
 MagmaConvectionTop	4	3	6	6	5	5	6	4	4	3	5
 SilkSpinningLoom	5	0	4	3	4	4	4	4	2	2	3
 PollenStormMacro	5	3	5	3	4	6	6	4	3	3	5
@@ -1453,7 +1453,7 @@ MengerVoidLight	3	2	6	5	6	5	6	6	6	4	3
 CantorDustCurtains	5	2	5	4	5	5	5	5	5	3	5
 MandelbulbAuraShell	4	5	5	4	7	6	7	5	6	4	4
 TricornGlowFilaments	4	2	3	5	4	4	3	3	3	2	4
-HenonOrbitDust	5	3	3	5	4	4	4	3	3	3	5
+HenonOrbitDust	2	2	2	2	2	4	4	2	2	2	2
 PickoverStalksField	4	1	4	4	5	5	5	4	4	2	4
 AttractorLightRibbons	5	3	4	4	5	5	5	5	4	2	5
 KochSnowflakeBloom	4	1	5	4	6	5	6	5	5	2	4
@@ -1542,7 +1542,7 @@ SteelWoolSpiralSparks	3	1	4	5	3	3	3	4	3	2	3
 Harmonograph3DLight	4	2	4	4	5	4	5	4	4	2	4
 ChoreographyOrbitTrails	4	1	5	4	5	5	5	6	5	1	4
 BilliardCausticRays	4	2	4	4	5	5	5	5	4	2	4
-CupCausticEnvelopes	4	1	3	4	4	4	4	4	3	2	4
+CupCausticEnvelopes	2	1	2	2	2	4	4	2	2	2	2
 AsawaLoopedWire	4	1	2	5	3	4	4	2	2	2	4
 PoiFlowerPatterns	3	1	5	4	5	4	4	5	5	2	3
 SphericalSpirograph	4	2	5	4	5	4	5	5	5	2	4
@@ -1580,7 +1580,7 @@ MagneticBottleOrbits	4	3	4	4	4	4	4	4	4	2	4
 PearlChainVortices	5	2	4	4	5	5	5	4	4	3	5
 HypersphereDotRotation	4	3	4	4	5	4	4	4	4	2	4
 PhononLatticeWaves	3	1	4	4	3	3	3	4	4	1	3
-BeadsOnSpinningHoops	4	2	4	4	4	4	4	5	4	1	3
+BeadsOnSpinningHoops	2	2	2	2	2	4	4	2	2	1	2
 CherenkovRingDetector	4	2	5	5	4	4	4	5	4	2	4
 LennardJonesDroplets	4	1	4	4	4	4	4	4	4	2	4
 GyroidSurfaceSwarm	5	4	5	4	6	6	6	5	5	4	5
@@ -1637,7 +1637,7 @@ SpiculeStarDrift	4	2	4	4	5	5	5	4	4	2	4
 LarvaceanMucusHouse	4	2	3	5	4	4	4	3	3	3	4
 CoccolithSpheres	5	3	3	4	4	5	5	3	3	4	5
 LobsterEyeReflector	4	2	5	4	4	4	4	5	4	2	4
-HeliozoanRaySpheres	4	1	4	4	4	4	4	4	4	1	4
+HeliozoanRaySpheres	2	1	2	2	2	4	4	2	2	1	2
 HankinStarBreath	4	1	4	4	6	6	6	5	5	2	4
 LotusLayerUnfold	5	1	3	4	5	6	6	3	4	4	5
 StampfliDodecagonalBloom	4	1	4	4	5	5	5	4	4	2	4
@@ -1671,7 +1671,7 @@ StElmoCoronaTufts	4	2	4	5	4	4	4	4	4	2	4
 GlowDischargeVeils	4	3	3	5	3	3	3	3	3	2	4
 FusorStarMode	4	5	6	4	6	5	6	6	6	4	4
 HallThrusterSpokes	4	3	6	4	6	5	6	6	6	3	4
-GeisslerTubeSpirals	4	1	5	4	4	4	4	5	4	2	4
+GeisslerTubeSpirals	2	1	2	2	2	4	4	2	2	2	2
 ElectrospinningWhips	3	1	4	5	4	4	4	5	4	2	3
 ReactorPoolBlueGlow	4	2	3	4	4	4	3	3	3	2	4
 CoronaBeadWires	4	3	4	5	4	4	4	5	4	3	4
@@ -1689,7 +1689,7 @@ PulsatingAuroraPatches	4	2	3	4	3	3	3	3	3	2	4
 ExBDriftCycloids	4	2	4	5	4	4	4	4	4	2	4
 SpheromakTwist	4	3	4	5	4	4	4	4	4	2	4
 ColourSolidFlight	4	3	3	5	4	4	4	3	3	3	4
-PhotoColourSpaceCloud	4	4	3	4	4	4	4	3	3	3	4
+PhotoColourSpaceCloud	2	2	2	2	2	4	4	2	2	2	2
 TaylorColumnDyeCurtains	5	1	3	5	4	5	5	3	3	4	5
 LuminousFogStrata	6	4	2	5	3	4	4	2	2	5	6
 BlackbodyTemperatureField	4	2	4	4	5	4	4	4	4	3	4
@@ -1802,7 +1802,7 @@ LightBrushStrokes3D	4	2	4	4	5	5	5	4	4	3	4
 PureBokehStreams	5	2	4	4	4	5	5	4	4	3	5
 GelSheetsOverlap	5	1	3	3	3	4	4	3	3	2	5
 ColoredShadowsRGB	4	1	3	3	3	4	4	3	3	2	4
-TurrellGanzfeld	6	2	1	4	2	3	3	1	1	3	6
+TurrellGanzfeld	2	2	1	2	2	3	3	1	1	2	2
 LightCurtainLayers	5	1	3	5	3	4	4	3	2	3	5
 SotoPenetrable	4	1	4	4	4	4	4	4	4	3	4
 LumiaWilfred	6	2	2	4	4	5	5	2	2	5	6
@@ -1889,7 +1889,7 @@ FenceCorridorMoire	5	2	4	4	5	5	4	4	4	4	5
 IkatFeather	7	1	3	4	5	7	4	3	4	4	6
 KilimStepEdges	4	1	5	3	5	7	4	4	4	2	4
 JacquardPunchcardLoop	3	1	6	3	4	6	4	5	4	2	3
-QuillingCoils	5	1	4	3	5	7	4	3	4	3	5
+QuillingCoils	2	1	2	2	2	7	4	2	2	2	2
 CrossStitchSwell	5	1	4	3	4	7	4	3	4	2	5
 WateredSilkPhoto	8	1	2	4	4	7	4	2	3	5	6
 SmockingDiamonds	7	1	3	4	5	7	5	3	4	4	6
@@ -1932,13 +1932,13 @@ MeanderChannelPhoto	8	2	4	4	6	7	5	3	4	5	6
 SourceSinkLattice	8	2	4	4	6	7	5	3	4	5	6
 OverturningWaveFold	6	1	5	4	7	7	6	4	5	4	6
 KolmogorovCascadePhoto	5	1	5	4	7	7	5	4	5	3	5
-TidalRaceEddies	8	2	4	4	6	7	5	3	4	5	6
+TidalRaceEddies	8	2	2	4	6	7	5	2	2	5	6
 WallStreakCombs	8	2	4	4	6	7	5	3	4	5	6
 DensityWaveArms	8	2	4	4	6	7	5	3	4	5	6
-PlumeCapRollups	8	2	4	4	6	7	5	3	4	5	6
+PlumeCapRollups	8	2	2	4	6	7	5	2	2	5	6
 StommelGyreBasin	8	2	4	4	6	7	5	3	4	5	6
 BickleyJetFlapping	8	2	4	4	6	7	5	3	4	5	6
-ReverseKarmanWake	8	2	4	4	6	7	5	3	4	5	6
+ReverseKarmanWake	8	2	2	4	6	7	5	2	2	5	6
 ImpingingJetSpread	8	2	4	4	6	7	5	3	4	5	6
 TaylorVortexStack	8	2	4	4	6	7	5	3	4	5	6
 LeeWaveRidges	8	2	4	4	6	7	5	3	4	5	6
@@ -1949,7 +1949,7 @@ TrapezoidMirrorColumns	6	1	4	4	6	7	5	3	4	4	6
 ConvexMirrorMeadow	6	1	4	4	6	7	5	3	4	4	6
 BubbleWrapRefraction	5	1	4	3	5	7	4	3	4	3	5
 FrostedGlassFocusRack	8	1	2	4	4	7	4	2	3	5	6
-LensBlurGhostBokeh	8	1	3	3	5	6	4	3	4	5	6
+LensBlurGhostBokeh	8	1	2	3	5	6	4	2	2	5	6
 WaterDropCurtainRefract	8	1	3	4	5	7	5	3	4	5	6
 MirrorTileAnamorphosis	3	1	5	3	6	7	5	4	4	2	3
 ParabolicDishField	4	3	5	5	5	6	4	5	4	4	4
@@ -2000,7 +2000,7 @@ DotShapeMorphScreen	3	2	6	3	6	6	5	6	5	2	4
 RisoSpotLayers	4	2	4	3	4	7	4	4	3	4	5
 ScreentoneBands	3	2	4	6	3	6	3	4	2	3	3
 PerforatedPlateLight	3	3	6	5	4	6	4	6	4	4	4
-DotMatrixPrinterPass	3	2	5	5	4	5	3	5	4	3	3
+DotMatrixPrinterPass	2	2	2	2	2	5	3	2	2	2	2
 GrainPaperPressure	5	3	3	5	3	7	4	3	2	5	6
 TerrazzoChipField	4	2	4	2	5	7	5	4	4	2	5
 WoodblockBokashi	4	2	3	3	4	7	4	3	2	4	5
@@ -2020,7 +2020,7 @@ ClaveSpiralArms	3	2	7	3	6	4	4	6	6	2	3
 BuildUpFunnelRelease	3	5	7	4	7	3	6	7	7	6	3
 DetailTideBreakdown	5	4	5	4	4	5	4	5	4	7	6
 BarCanonLayers	4	3	5	3	5	6	5	5	4	3	5
-SubdivisionDotLadder	3	3	5	6	5	4	4	6	5	3	3
+SubdivisionDotLadder	2	2	2	2	2	4	4	2	2	2	2
 PendulumWavePhoto	4	2	5	3	5	6	5	5	4	2	5
 LoopLayerAccumulation	3	3	5	3	5	5	5	5	4	3	4
 QuarterNoteDelaySpiral	4	4	6	3	6	4	4	5	5	4	5
@@ -2052,7 +2052,7 @@ MovementInSquaresWave	3	2	6	3	6	7	6	5	5	2	3
 ApollonioRingPulse	3	2	6	5	6	6	5	6	5	2	3
 KanizsaPolygonField	3	1	4	4	4	6	4	4	4	2	3
 DriftRampBands	3	1	5	3	6	5	5	5	5	1	3
-CheckerShadowSweep	4	1	3	3	4	6	4	3	3	2	4
+CheckerShadowSweep	2	1	2	2	2	6	4	2	2	2	2
 CornsweetPlateaus	4	2	4	3	5	6	4	4	4	3	5
 MachBandRamps	4	2	4	4	5	6	4	5	4	3	5
 GradientRefractionDuet	4	3	5	4	6	7	6	5	5	5	5
@@ -2206,7 +2206,7 @@ AnorthoscopeSlitDistortion	3	3	6	5	5	5	7	5	6	3	3
 ViewMasterReelCarousel	3	1	4	3	4	5	3	3	1	2	4
 KinetoscopePeepholeIris	5	3	2	6	4	5	5	2	2	6	5
 FlipbookPageCascade	3	1	6	4	5	5	5	4	4	2	4
-RotoscopeLineBoil	3	1	4	5	4	5	5	3	2	3	4
+RotoscopeLineBoil	2	1	2	2	2	5	5	2	2	2	2
 MuybridgeGridSequence	3	1	6	4	4	5	5	5	2	2	3
 ZoetropeSlitStrips	3	3	7	5	8	5	7	6	7	2	3
 DctBlockBasisMosaic	3	1	6	4	5	5	7	6	4	2	3
@@ -2329,7 +2329,7 @@ TrichomeHairForest	5	1	2	4	4	5	5	2	2	3	5
 CuticleWaxCrystalPlates	7	3	2	3	5	7	5	2	4	4	6
 LeafMarginSerrationWave	5	1	4	5	4	5	5	3	2	3	5
 PlantCellWallVoronoi	5	1	4	3	5	7	5	3	2	2	4
-AntTrailStigmergyField	6	5	2	5	2	3	3	3	2	4	5
+AntTrailStigmergyField	2	2	2	2	2	3	3	2	2	2	2
 FishSchoolFlowField	7	3	2	3	5	5	5	3	4	3	6
 AmmoniteSutureFractal	6	5	2	6	5	7	7	3	6	6	5
 ChameleonIridophoreLattice	3	1	4	3	8	4	4	4	7	2	3
@@ -2367,7 +2367,7 @@ CloudStreetRolls	8	3	1	2	2	5	5	1	1	4	6
 MackerelRippleSky	8	3	2	2	4	5	5	2	2	3	6
 RayleighPlateauBeads	6	1	4	3	7	7	7	3	4	3	5
 MilkCrownCoronas	7	3	2	3	4	5	5	2	2	3	6
-TaylorConeJetField	3	1	4	4	4	5	5	4	2	2	4
+TaylorConeJetField	2	1	2	2	2	5	5	2	2	2	2
 StickSlipFrictionFronts	5	1	4	4	4	5	5	3	2	4	5
 BrazilNutConvectionRolls	5	1	4	4	5	5	5	3	4	3	5
 JammingForceChains	3	3	6	6	4	5	7	4	4	4	4
