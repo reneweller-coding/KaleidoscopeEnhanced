@@ -14,8 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        parallel: ['on', 'off']
-        part: [a, b, c]
+        parallel: ['on']
+        part: [a, b, c, d]
     steps:
       - uses: actions/checkout@v7
       - name: Packages
@@ -67,9 +67,9 @@ jobs:
               if [ $symbolised = 0 ]; then
                 symbolised=1
                 echo "--- main thread, symbolised:"
-                sudo env DEBUGINFOD_URLS=https://debuginfod.ubuntu.com timeout 600 gdb -p "$app" -batch \
-                  -ex "set debuginfod enabled on" -ex "thread apply 1 bt 40" -ex "thread apply 1 bt -15" 2>&1 \
-                  | grep -E "^#" | sed -E 's/^#[0-9]+ +//; s/0x[0-9a-f]+ in //' | uniq -c | head -n 60
+                sudo env DEBUGINFOD_URLS=https://debuginfod.ubuntu.com timeout 900 gdb -p "$app" -batch \
+                  -iex "set debuginfod enabled on" -ex "thread apply 1 bt 12" -ex "thread apply 1 bt -70" 2>&1 \
+                  | grep -E "^#" | sed -E 's/^#[0-9]+ +//; s/0x[0-9a-f]+ in //' | cut -c1-260 | uniq -c | head -n 90
               fi
               kill -9 "$app"
               sleep 2
