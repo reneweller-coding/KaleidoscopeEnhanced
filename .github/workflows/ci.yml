@@ -394,14 +394,30 @@ jobs:
           export KALEIDO_SETTINGS="$RUNNER_TEMP/settings-switch.ini"
           xvfb-run -a -s "-screen 0 1280x720x24" ./Kaleidoscope -w ../smoke.wav -c Club -s 0.25 -t 18091 > switch.log 2>&1 &
           pid=$!
-          for i in $(seq 1 40); do curl -fs http://127.0.0.1:18091/api/state > /dev/null && break; sleep 1; done
+          # A program that hangs is shown, not waited for: its threads' stacks, then the log.
+          hung() {
+            echo "::error::$1"
+            app=$(pgrep -x Kaleidoscope | head -n 1 || true)
+            if [ -n "$app" ]; then
+              sudo apt-get install -y -qq gdb > /dev/null 2>&1 || true
+              sudo gdb -p "$app" -batch -ex "thread apply all bt 25" 2>&1 | grep -E "^Thread|^#" | head -n 200
+              kill -9 "$app" || true
+            fi
+            tail -n 60 switch.log
+            exit 1
+          }
+          for i in $(seq 1 40); do curl -fs -m 5 http://127.0.0.1:18091/api/state > /dev/null && break; sleep 1; done
           sleep 5
           for i in 0 1; do
-            curl -fsS -H "X-Kaleido: 1" "http://127.0.0.1:18091/api/config?i=$i" > /dev/null   # an action needs the header
+            curl -fsS -m 30 -H "X-Kaleido: 1" "http://127.0.0.1:18091/api/config?i=$i" > /dev/null || hung "no answer to the switch to preset $i"
             sleep 8
             kill -0 "$pid" || { tail -n 40 switch.log; echo "the program ended at the switch to preset $i"; exit 1; }
-            curl -fsS -o state.json http://127.0.0.1:18091/api/state && head -c 300 state.json; echo
+            curl -fsS -m 30 -o state.json http://127.0.0.1:18091/api/state || hung "no answer after the switch to preset $i"
+            head -c 300 state.json; echo
           done
+          # KALEIDO_MAX_RUNTIME_SECS ends it 50 s after the start; a minute more is the limit.
+          for i in $(seq 1 90); do kill -0 "$pid" 2> /dev/null || break; sleep 1; done
+          kill -0 "$pid" 2> /dev/null && hung "the program did not end"
           set +e
           wait "$pid"
           code=$?
