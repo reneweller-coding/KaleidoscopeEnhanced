@@ -872,13 +872,14 @@ Top-level folders:
 - **`Engine\`** — internal pipeline passes (mood grade, feedback trails,
   bloom, the GPU fluid/reaction-diffusion/smoke simulations, compute kernels).
 - **`PresetEditor\`**, **`SetupTool\`** and **`ExportTool\`** — the
-  standalone companion tools (see [above](#presets), [above](#setup-tool),
-  [above](#video-export)).
+  standalone companion tools, Windows only (see [above](#presets),
+  [above](#setup-tool), [above](#video-export)).
 - **`AndroidRemote\`** — the Android remote app (no Gradle; plain SDK tools).
 - **`Presets\*.xml`** — presets; **`ThirdParty\SpoutGL\`** — vendored
   Spout2 SDK; **`docs\`** — this repo's documentation and the scene catalogue;
   **`Tools\`** — `verify.ps1` (smoke/roundtrip/transition self-tests) and the
-  catalogue/icon generators.
+  catalogue/icon generators; `Tools\appimage\` builds and tests the Linux
+  AppImage.
 
 Full engine architecture and per-technique notes (OIT, shadow maps, compute →
 indirect draw, tessellation, …): [docs/engine-internals.md](docs/engine-internals.md).
