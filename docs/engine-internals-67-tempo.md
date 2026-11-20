@@ -52,3 +52,12 @@ annotated demos, and the beat phase never measured at all.
   it looked as if a lead of 80 ms helped (F 40.8 %).  With BTrack's scheduling no lead is needed (48.6 %), and the
   same lead on the old kick phase made it worse (27.9 -> 22.7 %) -- the gain was the tracker's, the "lead" only
   repaired the slip.
+- *A5, section boundaries on the bar grid -- tried and dropped.*  The idea: with a trustworthy phase, a novelty
+  peak near a phrase boundary counts more.  Re-simulated from the per-block novelty and the conditioner's 8-bar
+  phrase position on the 43 demos (scored like `analyser_vs_cues.py`): a lower threshold near the phrase boundary
+  and a higher one elsewhere found more boundaries (best: 48 -> 53 %, Groove 37 -> 42 %) but always invented more as
+  well (58 -> 58..74 %), and the plan forbade more false alarms.  The re-simulation itself over-triggers against the
+  real detector (it lacks the absolute-novelty floor: 136 found, 180 invented, against the analyser's 125 and 132),
+  so not even its gain is certain.  The detector stays as it is (sections 44 % found, 52 % invented, Groove 31 %).
+  Timing was never the bottleneck: a boundary counts as found 2 s before to 6 s after it, and the detector fires
+  within about two seconds; what it misses, it misses because the novelty stays below its threshold.
