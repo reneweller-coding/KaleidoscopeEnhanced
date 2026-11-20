@@ -1400,7 +1400,21 @@ void runUpChecks()
         }
         return -1;
     };
-    const int built = drop_to( true, 460000.0 ), none = drop_to( false, 470000.0 );
+    // The scheduler rolls with rand(), seeded elsewhere: in some sequences the next scene is never a plain roll while
+    // the built spectacle is off screen within the 120 s, and drop_to() returns -1 -- no drop happened, nothing was
+    // tested (126 of 127 once on the Linux CI job, 20.11.2026).  An inconclusive run is repeated with the next of
+    // eight fixed seeds; only a drop that cut wrong fails.
+    auto conclusive = [&]( bool any_ready, double t0 )
+    {
+        int r = -1;
+        for ( unsigned int seed = 1; seed <= 8 && r == -1; ++seed )
+        {
+            srand( seed );
+            r = drop_to( any_ready, t0 );
+        }
+        return r;
+    };
+    const int built = conclusive( true, 460000.0 ), none = conclusive( false, 470000.0 );
     check(
         built == 3 && none >= 0 && none < 2,
         "a drop whose next scene is a plain roll cuts to a built spectacle instead; with none built it keeps the roll",
