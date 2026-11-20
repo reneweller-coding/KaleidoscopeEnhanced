@@ -97,7 +97,10 @@ void main()
     float edge_min = 1.0;
     float tile_index = 0.0;
 
-    vec2 q = rot2D( t_prog * 1.5 + t * 0.2 ) * p;
+    // The clock's share of the turn halved (0.2 -> 0.1): turning the pentagrid moves tiles across their index
+    // boundaries, each with its own delay, and that flickered at 1.30 a frame -- the calm genres allow 1.25 (C3 of
+    // docs/PLAN_2026-11-20.md).
+    vec2 q = rot2D( t_prog * 1.5 + t * 0.1 ) * p;
 
     // audioBass undulates the pentagonal tiling inflation scale.  It scales the
     // spatial projection only (the rotation's t term is untouched), and

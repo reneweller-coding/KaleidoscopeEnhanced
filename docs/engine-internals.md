@@ -7883,7 +7883,7 @@ What each package did and what it measured:
 | B3, B4, B5 | a similarity map (`Tools/scene_similarity.py`), look-alikes in the plan, near-duplicates | look-alikes follow each other in 0.01 % of 7,918 changes (no rule needed); one near-duplicate (ChainTunnelKaleido) leaves four genre presets |
 | B6, D3, H2 | rating walk on the web remote; the language follows the system; full side-by-side and top-bottom stereo, in the export too | the export writes stereo now (it wrote none), a fade between 3D and 2D keeps its depth; self test 136 then |
 | C1, C2 | transition pictures from inside the fade, and a strip of five frames each (`Tools/trans_frames.py`) | 420 pictures, 210 strips (9.5 MB), 8 s per transition |
-| C3 | the transitions above the calm genres' limits | 187 of 210 within; 23 listed, nothing changed |
+| C3 | the transitions above the calm genres' limits | 187 of 210 within; 23 listed; afterwards (the user's decision) the seven worth it softened: all 194 within, the flash of the dark ones was a hue turn |
 | D1, G2 | the CI's net: self test, analyser regression, scene plans, UI strings, shader docs; the jump tests under Mesa as a condition | green; a red test proven to stop it |
 | D2, D4 | a Linux build, self test, export and compile-all in the CI; an AppImage built and run in a bare container | all four jobs green; TwentyFourCellBreathing compiles under Mesa; Linux exports end cleanly |
 | E1 | the catalogue page: download links, `#Name` links, filters, the reactivity badge, the strips | static as before; `DEMO_VIDEO_URL` waits for the user's video |
@@ -8619,6 +8619,35 @@ they are tagged and where they run:
   0.35); four tagged dark flash and run in Noir -- WormholeSpaceFold (53), QuantumWaveCollapse (43), PoincareSpin (38,
   flicker 2.12), ReactionDiffusionTuring (31); DewettingFilmRupture (dark, core 0.38).  A `trVeil()`-like ceiling on
   the flash would suit the dark ones.  Nothing changed here (the plan's C3 is a report).
+- *Changed afterwards* (the user's decision of 20.11.: "yes, do it"), measured with `transition_profile.py --dry`
+  after each step (5 s for seven):
+  - *The four dark ones* (WormholeSpaceFold, QuantumWaveCollapse, PoincareSpin, ReactionDiffusionTuring).  The first
+    try held their added glow below the brighter scene (a `trVeil()` ceiling): flash 53/43/38/31 -> 22/15/15/20, but
+    on the strips the ring, the interference rings and the boundary lines were all but gone -- a ceiling for the
+    whole frame is too strict for a thin line, which may be bright without the frame flashing.  Reverted.  The glow
+    at a lower gain did not scale either (WormholeSpaceFold at 0.6 of its gain still flashed 36), so it was not the
+    main source: all four turn the hue of the WHOLE picture in the middle of the fade (`hueRot()` about the grey
+    axis), and blue turned toward green is ten times the luminance.  `hueRot()` keeps the brightness now (rescaled
+    to the old luminance, at most twice): flash 9/2.5/14/0 with the glow unchanged.  With the glow at its old gain
+    WormholeSpaceFold read 29.4 and QuantumWaveCollapse flickered 1.40 (its rings ride the clock), so their glow is
+    a little lower (1.1 and 0.8 instead of 1.5 and 1.2, PoincareSpin 1.3), and PoincareSpin's own spin a quarter of
+    what it was (it turned both pictures at 2.12 a frame).  Result: flash 21.8 / 11.2 / 22.9 / 0.6, flicker 0.87 /
+    1.20 / 0.76 / 1.08 -- all within the calm limits, the lines as visible as before.
+  - *PenroseMorph*: the pentagrid turns at half the clock speed (tiles crossing their index lines flickered): flicker
+    1.30 -> 0.68.
+  - *PosterBandRelease*: the bands are cut by the brightness's rank in the picture (16 fixed points, softened -- a
+    coarse histogram equalisation), not on 0..1, and neighbouring bands overlap a little: a photo of middle tones
+    had filled two of six bands.  Core 0.35 -> 0.63; the plain recentring on the mean (0.475) failed the jump test
+    (12.9x: empty bands, steps where nothing moved).
+  - *DewettingFilmRupture*: the bell came from the geometry, not the light (without rim and sheen 0.325): every hole
+    grew to 1.15 cells from the first half of the turn and cleared its neighbours' cells, so the early third of
+    the holes did nearly all the work.  Now a hole stays within its cell (0.8), the moments spread over 72 % of the
+    turn, the area grows evenly (radius as a square root): core 0.375 -> 0.50, jump 4.8x.
+  - All seven within the calm limits, `transcheck` 210 of 210, the profile table rewritten for the seven (the other
+    203 unchanged), new catalogue pictures and strips, `check_schedule.py --quick` 20 plans without a violation,
+    self test 137.  Into the calm genre presets came only PenroseMorph (Ambient, Downtempo, SpaceAmbient):
+    PosterBandRelease carries the preset-only tag `blocky`, which keeps a transition out of them whatever it
+    measures, and the other five are tagged dark -- they stay in Noir and Psychedelic, without the flash.
 
 ### D2, D4 -- Linux in the CI, and an AppImage
 

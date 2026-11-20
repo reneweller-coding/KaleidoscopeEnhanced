@@ -235,6 +235,24 @@ float trMeanLumaA()
     return s / 9.0;
 }
 
+/**  Where a brightness ranks in the outgoing scene: the share of 16 fixed points of the picture that are darker,
+ * softened so that the rank runs on between them -- a coarse histogram equalisation.
+ *
+ * @param l  The luminance, 0..1. (in)
+ *
+ * @return
+ *   The rank, 0..1.
+ **/
+float trLumaRankA( float l )
+{
+    float r = 0.0;
+    for ( int j = 0; j < 4; ++j )
+        for ( int i = 0; i < 4; ++i )
+            r += smoothstep( -0.06, 0.06,
+                             l - trLuma( texture( tex0, ( vec2( float( i ), float( j ) ) + 0.5 ) / 4.0 ).rgb ) );
+    return r / 16.0;
+}
+
 /**  The envelope of the middle of the transition: 0 at both ends, 1 in the middle.
  *
  * @param d  The progress, 0..1. (in)
@@ -312,8 +330,12 @@ vec4 trans( vec2 p, float d )
     vec4  a = tA( p );
     vec4  b = tB( p );
     float n = floor( 4.0 + 2.0 * gKA );
-    float q = ( floor( clamp( trLuma( a.rgb ), 0.0, 0.999 ) * n ) + 0.5 ) / n;
-    float w = trThresh( q, d, 0.5 / n * gKB );
+    // The bands are cut by the brightness's rank in the picture (trLumaRankA()), not on 0..1: a photo of middle tones
+    // filled two of six bands, and 80 % of the change came in 35 % of the fade (the calm genres ask for 45 %; C3 of
+    // docs/PLAN_2026-11-20.md).  By rank every band holds about the same share of the picture.
+    float l = clamp( trLumaRankA( trLuma( a.rgb ) ), 0.0, 0.999 );
+    float q = ( floor( l * n ) + 0.5 ) / n;
+    float w = trThresh( q, d, 0.8 / n * gKB ); // neighbouring bands overlap a little: no step where nothing moves
     return mix( a, b, w );
 }
 

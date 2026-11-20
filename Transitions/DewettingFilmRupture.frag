@@ -98,14 +98,18 @@ void main()
     for ( int j = -1; j <= 1; ++j )
         for ( int i = -1; i <= 1; ++i )
         {
-            vec2  id = gi + vec2( float( i ), float( j ) );
-            vec2  jitter = vec2( hash21( id + 3.1 ), hash21( id + 9.7 ) ) - 0.5;
-            vec2  c = ( id + 0.5 + jitter * 0.8 ) * cell;
-            float t0 = hash21( id + 21.3 ) * 0.55; // its moment, fixed
-            float grow = smoothstep( t0, t0 + 0.70 / rate, d );
-            // Holes open and keep opening; late in the turn they overlap and the
-            // ligaments between them are gone.
-            float r = cell * 1.15 * grow;
+            vec2 id = gi + vec2( float( i ), float( j ) );
+            vec2 jitter = vec2( hash21( id + 3.1 ), hash21( id + 9.7 ) ) - 0.5;
+            vec2 c = ( id + 0.5 + jitter * 0.8 ) * cell;
+            // Its moment, fixed, spread over most of the turn, and its AREA grows evenly over a short window (the
+            // radius as a square root).  Before, every hole grew to 1.15 cells from the first half of the turn: the
+            // early holes cleared their neighbours' cells as well, and 80 % of the change came in 37 % of the fade
+            // (the calm genres ask for 45 %; C3 of docs/PLAN_2026-11-20.md).  Now: 50 %.
+            float t0 = hash21( id + 21.3 ) * 0.72;
+            float grow = sqrt( clamp( ( d - t0 ) / ( 0.22 / rate ), 0.0, 1.0 ) );
+            // A hole stays within its own cell (0.8 cells), so each one opens its own share of the picture; the
+            // ligaments left between them go at the end.
+            float r = cell * 0.80 * grow;
             float dist = length( p - c ) - r;
             if ( dist < best )
             {
@@ -117,7 +121,7 @@ void main()
     // The film survives outside every hole.
     float film = smoothstep( -0.004, 0.006, best );
     film = mix( 1.0, film, smoothstep( 0.0, 0.04, d ) ); // unbroken at the start
-    film = mix( film, 0.0, smoothstep( 0.88, 1.0, d ) ); // nothing left at the end
+    film = mix( film, 0.0, smoothstep( 0.86, 1.0, d ) ); // the last ligaments go at the end
 
     // The rim: material swept up at the hole's edge, thicker as the hole grows.
     float rw = ( 0.012 + 0.016 * clamp( audioSwell, 0.0, 1.0 ) ) * rim_w

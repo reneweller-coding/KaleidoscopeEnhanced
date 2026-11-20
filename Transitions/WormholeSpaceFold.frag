@@ -60,7 +60,11 @@ vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
-    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
+    vec3  r = c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
+    // The brightness kept: turned about the grey axis, blue becomes green at ten times the luminance, and the
+    // whole picture flashed in the middle of the fade (C3 of docs/PLAN_2026-11-20.md).
+    vec3 w = vec3( 0.2126, 0.7152, 0.0722 );
+    return max( r, 0.0 ) * min( dot( c, w ) / max( dot( max( r, 0.0 ), w ), 1e-3 ), 2.0 );
 }
 
 /**  2D rotation matrix.
@@ -119,7 +123,7 @@ void main()
 
     // Exotic matter throat glowing ring
     float throat_glow = exp( -abs( r - throat_radius ) * 20.0 ) * mid_transition;
-    col.rgb += throat_glow * vec3( 0.4, 0.95, 1.0 ) * ( 1.5 + audioKick * 1.0 );
+    col.rgb += throat_glow * vec3( 0.4, 0.95, 1.0 ) * ( 1.1 + audioKick * 0.7 ); // was 1.5 + kick (C3)
 
     if ( audioChromaHue != 0.0 )
         col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );

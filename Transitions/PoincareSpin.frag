@@ -60,7 +60,11 @@ vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
-    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
+    vec3  r = c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
+    // The brightness kept: turned about the grey axis, blue becomes green at ten times the luminance, and the
+    // whole picture flashed in the middle of the fade (C3 of docs/PLAN_2026-11-20.md).
+    vec3 w = vec3( 0.2126, 0.7152, 0.0722 );
+    return max( r, 0.0 ) * min( dot( c, w ) / max( dot( max( r, 0.0 ), w ), 1e-3 ), 2.0 );
 }
 
 /**  2D rotation matrix.
@@ -99,7 +103,9 @@ void main()
     vec2  z = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y * disk_radius;
 
     // Hyperbolic rotation & translation: z' = (z - a) / (1 - conj(a)*z)
-    float rot_angle = ( t_prog * 3.14159265 + t * 0.5 ) * spn;
+    // The clock's share of the spin cut to a quarter (0.5 -> 0.12): it turned both pictures at 2.12 of change a frame,
+    // the calm genres allow 1.25 (C3 of docs/PLAN_2026-11-20.md).
+    float rot_angle = ( t_prog * 3.14159265 + t * 0.12 ) * spn;
     z = rot2D( rot_angle ) * z;
 
     // Möbius parameter a moving across the disk
@@ -122,7 +128,7 @@ void main()
     // Glowing geodesic circle rim
     float r = length( z_prime );
     float rim = exp( -abs( r - 1.0 ) * 15.0 ) * mid_transition;
-    col.rgb += rim * vec3( 0.1, 0.9, 1.0 ) * ( 1.5 + audioKick * 1.0 );
+    col.rgb += rim * vec3( 0.1, 0.9, 1.0 ) * ( 1.3 + audioKick * 0.8 ); // was 1.5 + kick (C3)
 
     if ( audioChromaHue != 0.0 )
         col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );

@@ -60,7 +60,11 @@ vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
-    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
+    vec3  r = c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
+    // The brightness kept: turned about the grey axis, blue becomes green at ten times the luminance, and the
+    // whole picture flashed in the middle of the fade (C3 of docs/PLAN_2026-11-20.md).
+    vec3 w = vec3( 0.2126, 0.7152, 0.0722 );
+    return max( r, 0.0 ) * min( dot( c, w ) / max( dot( max( r, 0.0 ), w ), 1e-3 ), 2.0 );
 }
 
 /** Entry point of this shader stage (the file description says what it draws). */
@@ -109,7 +113,7 @@ void main()
 
     // Glowing quantum phase rings
     vec3 phase_color = 0.5 + 0.5 * cos( vec3( 0.0, 2.0, 4.0 ) + interference * 6.28 + audioPhase );
-    col.rgb += interference * phase_color * mid_transition * ( 1.2 + audioKick * 1.0 );
+    col.rgb += interference * phase_color * mid_transition * ( 0.8 + audioKick * 0.6 ); // was 1.2 + kick (C3)
 
     if ( audioChromaHue != 0.0 )
         col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
