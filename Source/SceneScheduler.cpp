@@ -553,6 +553,7 @@ void SceneScheduler::tick( const Tick &t )
 {
     std::vector<EffectShader *> &tex = *m_textures;
     std::vector<EffectShader *> &comb = *m_fxShaders;
+    m_logClock += t.dt; // only for KALEIDO_FADE_LOG's time stamp
 
     // Musical novelty: a strong harmonic / section change (a drop, a key
     // change) forces an early cross-fade - rate-limited, only while music
@@ -1060,12 +1061,12 @@ void SceneScheduler::tick( const Tick &t )
                     // real run instead of trusting the arithmetic.
                     static const bool FadeLog = getenv( "KALEIDO_FADE_LOG" ) != nullptr;
                     if ( FadeLog )
-                        fprintf( stderr, "FADE %s via %s: %.2f s (beat/config %.2f, floor %.2f)\n",
+                        fprintf( stderr, "FADE %s via %s: %.2f s (beat/config %.2f, floor %.2f) at %.3f s\n",
                                  tex[m_nextTexture]->fragmentName(),
                                  ( m_transitions && m_actTransition < m_transitions->size() )
                                      ? ( *m_transitions )[m_actTransition]->fragmentName()
                                      : "-",
-                                 m_texFadeDur, cfg_t, floor_t );
+                                 m_texFadeDur, cfg_t, floor_t, m_logClock );
                 }
 
                 // Drop dramaturgy: the change came from a detected DROP.  A

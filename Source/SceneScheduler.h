@@ -462,6 +462,8 @@ public:
      *   Seconds.
      **/
     float texFadeDur() const { return m_texFadeDur; }
+    /** @return Seconds of scheduler time since the start (the sum of the ticks' dt; KALEIDO_FADE_LOG's stamp). */
+    double logClock() const { return m_logClock; }
     /**  The combine slot's running fade length (meaningful while fxState() != 0).
      *
      * @return
@@ -599,6 +601,7 @@ private:
                                ///< m_texState == 0, the fade span while m_texState == 1 (one dual-purpose field, as in
                                ///< the old inline code).
     float              m_fxFadeDur = 10.f;                   ///< Current Solo *or* Fade duration for the combine slot.
+    double             m_logClock = 0.0;                     ///< Sum of the ticks' dt (see logClock()).
     ClockT::time_point m_clockEffectTexture = ClockT::now(); ///< Reference clock for the effect slot's Solo/Fade
                                                              ///< timing.
     ClockT::time_point m_clockEffectFx = ClockT::now(); ///< Reference clock for the combine slot's Solo/Fade timing.
