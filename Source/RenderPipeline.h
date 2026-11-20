@@ -930,7 +930,32 @@ public:
      **/
     void trimMeshResidency();
 
+    /**  Keeps only a working set of 2D scenes compiled (see the comment at the definition).
+     *
+     * Called once per frame from beginFrame(), after trimMeshResidency(). Stamps the active and incoming scenes as
+     * used and returns the least recently used plain 2D scenes beyond the budget (KALEIDO_PROGRAM_BUDGET, default
+     * 160) to their state before the first use (EffectShader::cleanShaderPrograms()).
+     **/
+    void trimProgramResidency();
+
+    /** @return How many plain 2D scenes keep their program (KALEIDO_PROGRAM_BUDGET, default 160, minimum 16). */
+    static int programBudget();
+
+    /**  Whether a scene's program counts against programBudget().
+     *
+     * @param s  The scene. (in)
+     *
+     * @return
+     *   True for a plain 2D fragment scene that is not a walking lab (those take seconds to build).
+     **/
+    static bool programBudgeted( EffectShader *s );
+
 private:
+    QHash<EffectShader *, qint64> m_progLastUse; ///< Last frame stamp at which a 2D scene was active, fading in or
+                                                 ///< compiled ahead (trimProgramResidency()).
+    qint64 m_progUseClock = 0;                   ///< Monotonic frame counter behind m_progLastUse.
+    int    m_progResident = 0;                   ///< Budgeted programs kept at the last trimProgramResidency().
+    size_t m_warmCursor = 0;                     ///< Where the warm-up goes on compiling ahead (it goes round).
     QHash<EffectShader *, qint64> m_meshLastUse; ///< Last frame stamp at which a mesh scene was active or fading in.
     qint64                        m_meshUseClock = 0; ///< Monotonic frame counter behind m_meshLastUse.
 

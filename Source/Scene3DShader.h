@@ -163,6 +163,14 @@ public:
     bool meshResident() const override { return m_geomKind == GEOM_MESH && m_vbo != 0; }
     /** Frees the uploaded mesh (VBO, VAO, material textures) and rearms the warm-up; see the definition for why. */
     void releaseMesh() override;
+    /**  True while a procedural (non-mesh) scene holds its built geometry.
+     *
+     * @return
+     *   True while a procedural (non-mesh) scene holds its built geometry.
+     **/
+    bool geometryResident() const override { return m_geomKind != GEOM_MESH && m_vbo != 0; }
+    /** Frees a procedural scene's VBO, VAO and generator buffers (the programs stay); draw() rebuilds them. */
+    void releaseGeometry() override;
 
     // PER-ACTIVATION VARIETY: every time the scene is (re)activated it rolls
     // a fresh epoch — a large time offset (different camera/burst phases), a

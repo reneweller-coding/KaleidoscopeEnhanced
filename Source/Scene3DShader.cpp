@@ -568,6 +568,42 @@ void Scene3DShader::releaseMesh()
     m_warmState.store( WARM_NONE, std::memory_order_release );
 }
 
+// ---------------------------------------------------------------------------
+// The procedural scenes' share of the same problem (20.11.2026, F1 of docs/PLAN_2026-11-20.md).  Every 3D scene
+// builds its geometry when it is compiled -- and the warm-up compiles them all at the start -- and kept it for the
+// rest of the session: a points cloud 1.9 MB, a field of cubes 5.6 MB, an indirect scene's generator output 19.2 MB
+// plus its state.  The driver commits that memory when a scene is first drawn, so a long run grew by it scene after
+// scene (Tools/soak.py).  RenderPipeline::trimMeshResidency() keeps a working set of them as well and calls this for
+// the rest.  The programs stay (shared and compiled at the start; recompiling would stall); the geometry is built
+// again by draw() the next time the scene is due: CPU loops and an upload, a few ms.  An indirect scene's
+// persistent generator state starts from zero again, as on its first appearance.
+//
+// Only ever called for a scene that is neither on screen nor fading in.
+// ---------------------------------------------------------------------------
+void Scene3DShader::releaseGeometry()
+{
+    if ( m_geomKind == GEOM_MESH || m_vbo == 0 )
+        return;
+    glDeleteBuffers( 1, &m_vbo );
+    m_vbo = 0;
+    if ( m_vao )
+    {
+        glDeleteVertexArrays( 1, &m_vao );
+        m_vao = 0;
+    }
+    if ( m_cmdBuf )
+    {
+        glDeleteBuffers( 1, &m_cmdBuf );
+        m_cmdBuf = 0;
+    }
+    if ( m_stateBuf )
+    {
+        glDeleteBuffers( 1, &m_stateBuf );
+        m_stateBuf = 0;
+    }
+    m_vertexCount = 0;
+}
+
 Scene3DShader::~Scene3DShader()
 {
     // Async warm-up teardown BEFORE any member dies: drop a queued request,
@@ -1050,27 +1086,33 @@ void Scene3DShader::buildGeometry()
 // error — the scene simply draws nothing rather than taking the app down.
 bool Scene3DShader::setupIndirect()
 {
-    if ( m_genTried )
-        return m_genProg != 0;
-    m_genTried = true;
+    if ( !m_genTried )
+    {
+        m_genTried = true;
 
-    if ( !glcoreHasCompute || !glDrawArraysIndirect || m_compFilename.empty() )
-        return false;
+        if ( !glcoreHasCompute || !glDrawArraysIndirect || m_compFilename.empty() )
+            return false;
 
-    m_genProg = setComputeShader( m_compFilename.c_str() ); // 0 on any failure
+        m_genProg = setComputeShader( m_compFilename.c_str() ); // 0 on any failure
+        if ( m_genProg == 0 )
+            return false;
+
+        // The clamp pass is shared by every indirect scene, so it is compiled once
+        // for the whole process.
+        if ( M_ClampProg == 0 )
+            M_ClampProg = setComputeShader( "..\\Engine\\IndirectClamp.comp" );
+        if ( M_ClampProg == 0 )
+        {
+            glDeleteProgram( m_genProg );
+            m_genProg = 0;
+            return false;
+        }
+    }
+    // The buffers below go with the geometry: releaseGeometry() frees them, and the next call allocates them again.
     if ( m_genProg == 0 )
         return false;
-
-    // The clamp pass is shared by every indirect scene, so it is compiled once
-    // for the whole process.
-    if ( M_ClampProg == 0 )
-        M_ClampProg = setComputeShader( "..\\Engine\\IndirectClamp.comp" );
-    if ( M_ClampProg == 0 )
-    {
-        glDeleteProgram( m_genProg );
-        m_genProg = 0;
-        return false;
-    }
+    if ( m_cmdBuf )
+        return true;
 
     // DrawArraysIndirectCommand = { count, instanceCount, first, baseInstance },
     // plus a fifth slot the generator counts into.  instanceCount/first/
@@ -1453,6 +1495,16 @@ void Scene3DShader::draw()
         buildGeometry();
         if ( m_vbo == 0 )
             return;
+        bakeVao();
+    }
+    // A procedural scene whose geometry the residency budget gave back (releaseGeometry()): built again here.
+    if ( m_geomKind != GEOM_MESH && m_vbo == 0 )
+    {
+        buildGeometry();
+        if ( m_vbo == 0 )
+            return;
+        if ( m_geomKind == GEOM_INDIRECT )
+            setupIndirect();
         bakeVao();
     }
     // Perspective projection (55° vertical FOV, near 0.5, far 220).  The

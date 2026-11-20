@@ -2191,6 +2191,23 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
         // FX that come NEXT go first -- they are known one fade in advance.
         // Up to four builds run at a time.  Without the driver extension the
         // old one-per-frame blocking path below runs unchanged.
+        //
+        // Ahead of time only as many plain 2D scenes as the program budget
+        // holds (trimProgramResidency()).  The warm-up used to build every
+        // scene of the preset and keep it: 2,471 in Allround, about 2.5 MB of
+        // driver memory each, and an hour of growth before it was through
+        // (Tools/soak.py, F1 of docs/PLAN_2026-11-20.md).  It now goes round
+        // the preset from where it stopped, one scene per eviction, so the set
+        // that is ready for a cut (the drop takes only those) keeps changing.
+        const bool     roomAhead = m_progResident < programBudget();
+        const unsigned nextTex = m_scheduler.nextTexture();
+        auto           ahead = [&]( size_t i )
+        { return roomAhead || i == nextTex || !programBudgeted( m_effectTextures[i] ); };
+        auto background = [&]( EffectShader *s ) -> bool
+        {
+            return s->plainFragment() && s->fragmentFile() && !strstr( s->fragmentFile(), "Scene3D" )
+                   && shaderPrebuildAvailable();
+        };
         if ( !warmed && shaderPrebuildPoll() < 4 )
         {
             auto want = [&]( EffectShader *s ) -> bool
@@ -2202,17 +2219,20 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
                 return shaderPrebuildStart( s->fragmentFile() );
             };
             int started = 0;
-            if ( m_scheduler.nextTexture() < m_effectTextures.size()
-                 && want( m_effectTextures[m_scheduler.nextTexture()] ) )
+            if ( nextTex < m_effectTextures.size() && want( m_effectTextures[nextTex] ) )
                 ++started;
             if ( m_scheduler.nextFx() < m_effectFx.size() && want( m_effectFx[m_scheduler.nextFx()] ) )
                 ++started;
-            for ( EffectShader *s : m_effectTextures )
+            const size_t n = m_effectTextures.size();
+            for ( size_t k = 0; k < n && started < 2; ++k )
             {
-                if ( started >= 2 )
-                    break;
-                if ( want( s ) )
+                const size_t i = ( m_warmCursor + k ) % n;
+                if ( ahead( i ) && want( m_effectTextures[i] ) )
+                {
                     ++started;
+                    if ( programBudgeted( m_effectTextures[i] ) )
+                        m_warmCursor = ( i + 1 ) % n;
+                }
             }
             for ( EffectShader *s : m_effectFx )
             {
@@ -2223,28 +2243,29 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
             }
         }
         if ( !warmed )
-            for ( EffectShader *s : m_effectTextures )
-                if ( !s->isCompiled() && s->plainFragment() && s->fragmentFile()
-                     && !strstr( s->fragmentFile(), "Scene3D" ) && shaderPrebuildStart( s->fragmentFile() ) )
+            for ( size_t i = 0; i < m_effectTextures.size(); ++i )
+            {
+                EffectShader *s = m_effectTextures[i];
+                if ( !s->isCompiled() && background( s ) && ahead( i ) && shaderPrebuildReady( s->fragmentFile() ) )
                 {
-                    if ( !shaderPrebuildReady( s->fragmentFile() ) )
-                        continue;        // still building in the background
                     s->ensureCompiled(); // cache hit: instant
                     M_WarmLabel = QStringLiteral( "glsl " ) + QString::fromLocal8Bit( s->fragmentName() );
                     warmed = true;
                     break;
                 }
+            }
         if ( !warmed )
-            for ( EffectShader *s : m_effectTextures )
-                if ( !s->isCompiled()
-                     && !( s->plainFragment() && s->fragmentFile() && !strstr( s->fragmentFile(), "Scene3D" )
-                           && shaderPrebuildStart( s->fragmentFile() ) ) )
+            for ( size_t i = 0; i < m_effectTextures.size(); ++i )
+            {
+                EffectShader *s = m_effectTextures[i];
+                if ( !s->isCompiled() && !background( s ) && ahead( i ) )
                 {
                     s->ensureCompiled(); // GLSL only; a mesh build defers itself
                     M_WarmLabel = QStringLiteral( "glsl " ) + QString::fromLocal8Bit( s->fragmentName() );
                     warmed = true;
                     break;
                 }
+            }
         if ( !warmed )
             for ( EffectShader *s : m_effectFx )
                 if ( !s->isCompiled() )
@@ -2260,6 +2281,88 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
     }
 
     trimMeshResidency();
+    trimProgramResidency();
+}
+
+// ---------------------------------------------------------------------------
+// Program residency budget (20.11.2026, F1 of docs/PLAN_2026-11-20.md).
+//
+// A scene kept its program from its first compile until the preset was unloaded, and the warm-up compiled every
+// scene of the preset ahead of time.  Measured with Tools/soak.py (the app live, a scene every 6 s): walking
+// Allround the process grew by 6 GB of private memory and 3.3 GB of GPU memory in the first hour, still 1.48 and
+// 1.41 GB an hour after minute 10, while 25 scenes shown over and over for half an hour did not grow at all -- what
+// a scene once had, it kept: its program (and the background builds were never let go, see progStore()), and a 3D
+// scene its geometry (trimMeshResidency()).  On a card with 8 GB a day of Allround would not fit.  With both budgets
+// an hour of Allround in a shuffled order stays at 3.4..4.0 GB private and 2.2..2.8 GB GPU once the mesh working set
+// is full (616 changes, no GL error).  Now the plain 2D scenes keep a working set: the scene on screen, the one fading in, and the most recently used or compiled ahead
+// beyond them; the rest go back to their state before the first use (cleanShaderPrograms(), the hot reload's path)
+// and compile again when they are next due -- in the background, as on their first appearance.  An eviction trims
+// one below the budget, so the warm-up builds one more scene from where it stopped (beginFrame()).  Not for 3D
+// scenes (their own programs and buffers; the mesh budget above covers the big part) and not for the walking labs
+// (their programs take seconds to build).
+//
+// KALEIDO_PROGRAM_BUDGET overrides the count (minimum 16).
+// ---------------------------------------------------------------------------
+int RenderPipeline::programBudget()
+{
+    static const int Budget = []
+    {
+        const int v = qEnvironmentVariableIntValue( "KALEIDO_PROGRAM_BUDGET" );
+        return v > 0 ? std::max( 16, v ) : 160;
+    }();
+    return Budget;
+}
+
+bool RenderPipeline::programBudgeted( EffectShader *s )
+{
+    return s->plainFragment() && s->fragmentFile() && !strstr( s->fragmentFile(), "Scene3D" ) && !s->isWalkingLab();
+}
+
+void RenderPipeline::trimProgramResidency()
+{
+    const int Budget = programBudget();
+
+    ++m_progUseClock;
+    const unsigned act = m_scheduler.actTexture();
+    const unsigned nxt = m_scheduler.nextTexture();
+    if ( static_cast<size_t>( act ) < m_effectTextures.size() )
+        m_progLastUse[m_effectTextures[act]] = m_progUseClock;
+    if ( static_cast<size_t>( nxt ) < m_effectTextures.size() )
+        m_progLastUse[m_effectTextures[nxt]] = m_progUseClock;
+
+    int resident = 0;
+    for ( EffectShader *s : m_effectTextures )
+        if ( s->isCompiled() && programBudgeted( s ) )
+        {
+            ++resident;
+            if ( !m_progLastUse.contains( s ) )
+                m_progLastUse[s] = m_progUseClock; // compiled ahead (the warm-up): fresh, not the oldest
+        }
+    const int target = resident > Budget ? Budget - 1 : resident; // one below: room for the warm-up's next scene
+    while ( resident > target )
+    {
+        EffectShader *victim = nullptr;
+        qint64        oldest = std::numeric_limits<qint64>::max();
+        for ( size_t i = 0; i < m_effectTextures.size(); ++i )
+        {
+            EffectShader *s = m_effectTextures[i];
+            if ( !s->isCompiled() || !programBudgeted( s ) || i == static_cast<size_t>( act )
+                 || i == static_cast<size_t>( nxt ) )
+                continue;
+            const qint64 used = m_progLastUse.value( s, 0 );
+            if ( used < oldest )
+            {
+                oldest = used;
+                victim = s;
+            }
+        }
+        if ( !victim )
+            break;
+        victim->cleanShaderPrograms();
+        m_progLastUse.remove( victim );
+        --resident;
+    }
+    m_progResident = resident;
 }
 
 // ---------------------------------------------------------------------------
@@ -2292,33 +2395,47 @@ void RenderPipeline::trimMeshResidency()
     if ( static_cast<size_t>( nxt ) < m_effectTextures.size() )
         m_meshLastUse[m_effectTextures[nxt]] = m_meshUseClock;
 
-    // Cheap common case: nothing to do until the working set is actually full.
-    int resident = 0;
-    for ( EffectShader *s : m_effectTextures )
-        if ( s->meshResident() )
-            ++resident;
-    while ( resident > Budget )
+    // The procedural 3D scenes' geometry the same way, with a budget of its own (KALEIDO_GEOM_BUDGET, default 24):
+    // a points cloud is 1.9 MB, an indirect scene's generator output 19.2 MB, all of them built at the warm-up and
+    // committed by the driver at a scene's first draw (Scene3DShader::releaseGeometry(), F1 of 20.11.2026).
+    static const int GeomBudget = []
     {
-        EffectShader *victim = nullptr;
-        qint64        oldest = std::numeric_limits<qint64>::max();
-        for ( size_t i = 0; i < m_effectTextures.size(); ++i )
+        const int v = qEnvironmentVariableIntValue( "KALEIDO_GEOM_BUDGET" );
+        return v > 0 ? std::max( 4, v ) : 24;
+    }();
+
+    // Cheap common case: nothing to do until the working set is actually full.
+    auto trim = [&]( bool ( EffectShader::*resident_of )() const, void ( EffectShader::*release )(), int budget )
+    {
+        int resident = 0;
+        for ( EffectShader *s : m_effectTextures )
+            if ( ( s->*resident_of )() )
+                ++resident;
+        while ( resident > budget )
         {
-            EffectShader *s = m_effectTextures[i];
-            if ( !s->meshResident() || i == static_cast<size_t>( act ) || i == static_cast<size_t>( nxt ) )
-                continue;
-            const qint64 used = m_meshLastUse.value( s, 0 );
-            if ( used < oldest )
+            EffectShader *victim = nullptr;
+            qint64        oldest = std::numeric_limits<qint64>::max();
+            for ( size_t i = 0; i < m_effectTextures.size(); ++i )
             {
-                oldest = used;
-                victim = s;
+                EffectShader *s = m_effectTextures[i];
+                if ( !( s->*resident_of )() || i == static_cast<size_t>( act ) || i == static_cast<size_t>( nxt ) )
+                    continue;
+                const qint64 used = m_meshLastUse.value( s, 0 );
+                if ( used < oldest )
+                {
+                    oldest = used;
+                    victim = s;
+                }
             }
+            if ( !victim )
+                break; // only active/incoming left: nothing to give back
+            ( victim->*release )();
+            m_meshLastUse.remove( victim );
+            --resident;
         }
-        if ( !victim )
-            break; // only active/incoming left: nothing to give back
-        victim->releaseMesh();
-        m_meshLastUse.remove( victim );
-        --resident;
-    }
+    };
+    trim( &EffectShader::meshResident, &EffectShader::releaseMesh, Budget );
+    trim( &EffectShader::geometryResident, &EffectShader::releaseGeometry, GeomBudget );
 }
 
 void RenderPipeline::updateLiveInput()

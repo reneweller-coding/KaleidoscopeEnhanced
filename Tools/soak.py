@@ -9,6 +9,8 @@ counter "GPU Process Memory(pid_*)\Dedicated Usage"), the scene changes and the 
 
     python Tools/soak.py                              # Allround, a scene every 6 s, 62 minutes
     python Tools/soak.py --preset Club --hold 4 --minutes 90
+    python Tools/soak.py --shuffle 1                  # Allround in a shuffled order: 2D and 3D mixed as in a show
+    python Tools/soak.py --entries 25                 # the first 25 entries over and over: a cache levels off
 
 At the end: the growth per hour after the warm-up (a straight-line fit from minute 10 on), the GPU memory's range,
 the scene changes and the GL errors -- against the acceptance of docs/PLAN_2026-11-20.md F1 (under 20 MB an hour,
@@ -18,6 +20,7 @@ never takes the focus).  Work files in .screen/soak.
 import argparse
 import io
 import os
+import random
 import re
 import subprocess
 import sys
@@ -72,10 +75,35 @@ def main():
     ap.add_argument("--preset", default="Allround")
     ap.add_argument("--hold", type=int, default=6)
     ap.add_argument("--minutes", type=int, default=62)
+    ap.add_argument("--entries", type=int, default=0,
+                    help="only the preset's first N entries, repeated (a hidden preset): the walk shows the same N "
+                         "scenes again and again -- a cache levels off after the first round, a leak keeps growing")
+    ap.add_argument("--shuffle", type=int, default=0,
+                    help="walk the entries in an order shuffled with this seed (a hidden preset): the sweep follows "
+                         "the catalogue, whose first hour is almost all 3D; a show mixes them")
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
     os.makedirs(WORK, exist_ok=True)
     wav = long_wav(a.minutes)
+    small = None
+    if a.entries or a.shuffle:
+        name = "_soak%d" % a.entries if a.entries else "_soakmix%d" % a.shuffle
+        src = io.open(os.path.join(ROOT, "Presets", a.preset + ".xml"), encoding="utf-8").read()
+        head = src[:src.index(">", src.index("<configuration")) + 1]
+        head = re.sub(r'ConfigurationName="[^"]*"', 'ConfigurationName="%s"' % name, head)
+        if "hidden=" not in head:
+            head = head[:-1] + ' hidden="true">'
+        blocks = re.findall(r"[ \t]*<TextureShader\b[^>]*>.*?</TextureShader>[ \t]*\n", src, re.S)
+        if a.shuffle:
+            random.Random(a.shuffle).shuffle(blocks)
+        if a.entries:
+            blocks = blocks[:a.entries]
+            blocks = blocks * (a.minutes * 60 // (a.hold * len(blocks)) + 1)  # the walk shows them again and again
+        rest = "".join(re.findall(r"[ \t]*<(?:CombineShader|TransitionShader)\b[^>]*>.*?</(?:CombineShader|TransitionShader)>"
+                                  r"[ \t]*\n", src, re.S))
+        small = os.path.join(ROOT, "Presets", name + ".xml")
+        io.open(small, "w", encoding="utf-8").write(head + "\n" + "".join(blocks) + rest + "</configuration>\n")
+        a.preset = name
     stamp = time.strftime("%Y%m%d-%H%M")
     log = os.path.join(WORK, "soak-%s.log" % stamp)
     tsv = os.path.join(WORK, "soak-%s.tsv" % stamp)
@@ -116,6 +144,8 @@ def main():
             p.kill()
     fh.close()
     ps.close()
+    if small and os.path.exists(small):
+        os.remove(small)
     if not rows:
         print("no samples")
         return 1
@@ -127,7 +157,7 @@ def main():
     print("private memory: %.0f -> %.0f MB, after minute %g: %+.1f MB per hour" % (priv[0], priv[-1], WARMUP_MIN, sp))
     print("GPU memory: %s" % ("%.0f .. %.0f MB after the warm-up, %+.1f MB per hour" % (g.min(), g.max(), sg)
                               if len(g) else "no counter"))
-    ok = sp < 20.0 and int(r[-1, 5]) == 0 and int(r[-1, 4]) >= 600
+    ok = sp < 20.0 and int(r[-1, 5]) == 0 and (int(r[-1, 4]) >= 600 or a.entries)
     print("F1: %s" % ("met" if ok else "NOT met"))
     return 0
 

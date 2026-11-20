@@ -587,6 +587,18 @@ public:
      * make sure the scene is neither on screen nor fading in.
      **/
     virtual void releaseMesh() {}
+    /**  Does this effect hold the built geometry of a procedural 3D scene (every 3D kind but a mesh)?
+     *
+     * @return
+     *   True only for a procedural 3D scene whose vertex buffers can be given back; false for every other kind.
+     **/
+    virtual bool geometryResident() const { return false; }
+    /**  Frees a procedural 3D scene's geometry (vertex buffer, VAO, a generator's buffers); its programs stay.
+     *
+     * The scene builds it again on its next draw (a few ms). The caller must make sure the scene is neither on
+     * screen nor fading in.
+     **/
+    virtual void releaseGeometry() {}
     /** @} */
 
     // The 3D projection's clip planes, shared so a depth-reading effect can
