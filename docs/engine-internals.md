@@ -7863,6 +7863,1030 @@ and re-lit transitions, the tighter genre presets, the four scenes repaired for 
 - The notes are in English with the German text folded below, as v1.19.0's are now. Eleven transitions carry the
   progress curve (`evenProgress`), Luminance is normalised instead.
 
+## 20.11.2026 (67): the plan of 20.11. -- tempo and beat, how the scenes answer the music, look-alikes, the transitions in the catalogue, Linux, stereo, memory over hours
+
+`docs/PLAN_2026-11-20.md` in one go: blocks A to H as the user decided them on 20.11. (H2 stereo, D4 AppImage and B5
+near-duplicates yes; projector correction H1, VR H3 and room light no; the demo video comes from the user, the
+catalogue page only has its slot).  Built partly in worktrees (`kaleido-wt\{linux,catalog,ui,sim,b2}`, all merged).
+What each package did and what it measured:
+
+| package | what | result |
+|---|---|---|
+| A0 | the tempo moved into `Source/TempoTracker.{h,cpp}`; a trace (`--tempo-trace`) and a lab (`Tools/tempo_lab.py`) | features and traces of 82 files byte-identical before and after |
+| A1 | a yardstick for the beat phase (`Tools/beat_vs_cues.py`: F-measure, CMLt, AMLt, hold) | baseline of the PLL: F 27.5 %, CMLt 20.7 %, AMLt 28.0 %, hold 26 % (chance 25 %) |
+| A2 | the tempo chosen by pulse trains (Percival & Tzanetakis 2014) | right within 4 %: 49 -> 66 %; real tracks up or equal, *Ironic 28 -> 14 %* (open: its truth of 114 is unconfirmed) |
+| A3 | the beat phase by beat tracking (BTrack, Stark, Davies & Plumley 2009), counted in envelope samples | through the PLL F 27.9 -> 48.5 %, CMLt 25.8 -> 43.8 %, AMLt 32.9 -> 61.1 %, hold 25 -> 39 %; no pulse on calm music |
+| A4 | the fold into 70..180 BPM measured on the beat grid | on the grid 60 -> 69 %; the fold stays |
+| A5 | section boundaries on the bar grid | tried and dropped: more found, always more invented |
+| B1 | how much each scene answers the music (`Tools/reactivity.py`, music against silence, same seed, one photo) | 2,474 scenes in `Tools/scene_reactivity.tsv`; a badge in the catalogue; ratings and reactivity correlate at 0.12 |
+| B2 | music into the structure of the 50 least reactive scenes | 50 scenes changed; 26 filed as calm, 35 in Allround only |
+| B3, B4, B5 | a similarity map (`Tools/scene_similarity.py`), look-alikes in the plan, near-duplicates | look-alikes follow each other in 0.01 % of 7,918 changes (no rule needed); one near-duplicate (ChainTunnelKaleido) leaves four genre presets |
+| B6, D3, H2 | rating walk on the web remote; the language follows the system; full side-by-side and top-bottom stereo, in the export too | the export writes stereo now (it wrote none), a fade between 3D and 2D keeps its depth; self test 136 then |
+| C1, C2 | transition pictures from inside the fade, and a strip of five frames each (`Tools/trans_frames.py`) | 420 pictures, 210 strips (9.5 MB), 8 s per transition |
+| C3 | the transitions above the calm genres' limits | 187 of 210 within; 23 listed, nothing changed |
+| D1, G2 | the CI's net: self test, analyser regression, scene plans, UI strings, shader docs; the jump tests under Mesa as a condition | green; a red test proven to stop it |
+| D2, D4 | a Linux build, self test, export and compile-all in the CI; an AppImage built and run in a bare container | all four jobs green; TwentyFourCellBreathing compiles under Mesa; Linux exports end cleanly |
+| E1 | the catalogue page: download links, `#Name` links, filters, the reactivity badge, the strips | static as before; `DEMO_VIDEO_URL` waits for the user's video |
+| F1 | memory over hours (`Tools/soak.py`); working sets for 2D programs and procedural 3D geometry, the program cache's reference count | before +1.48 GB private and +1.41 GB GPU an hour after minute 10; now flat (3.3..4.1 GB, 2.2..2.9 GB GPU) over 616 changes, 0 GL errors -- met |
+| G1 | the wedge fold of HyperbolicKaleidoscope (`a - abs(...)`) | fixed, `Tools/hyperfold_check.py` |
+
+The packages follow, each as it was written down when it was done.
+
+### Block A -- tempo and beat (A0-A3)
+
+The plan (docs/PLAN_2026-11-20.md) began with the tempo: right within 4 % in 49 % of the rhythmic time of the 43
+annotated demos, and the beat phase never measured at all.
+
+- *A lab first* (`Tools/tempo_lab.py`).  `PresetEditor --features ... --tempo-trace FILE` writes, for every 10-ms block,
+  what the tempo sees and what it published (`AudioAnalyzer::M_TempoTrace`, 14 float32: the SuperFlux samples, the
+  kick and its interval, track change, the autocorrelation's tempo and confidence, the published tempo and phase, the
+  kick tempo and its explained share), and three new feature columns `beat_phase`, `beat_phase_c` (the conditioner's
+  PLL, what the shaders see) and `beats`.  The lab replays a method in Python on those inputs and scores it exactly
+  like `tempo_vs_cues.py`: 37 s per method (10 s with four workers) instead of a build and minutes of analysis.  The
+  port of the method of 10.11. matched the C++ in every demo (no demo with more than 1 % of its blocks off by
+  0.5 BPM) and reproduced the table to the percent.  `--real` scores seven real tracks against `Tools/tempo_truth.tsv`
+  (the values come from the analyser's medians and a whole-track autocorrelation where both agree, Ironic's 114 from
+  the documentation; *the user has still to confirm them*), `--calm` the confidence on nine calm tracks (three
+  Noctuary renders, five additive-synth demos, the chord test track).
+- *A0, the move.*  The autocorrelation and the fusion with the kicks went into `Source/TempoTracker.{h,cpp}` unchanged:
+  the feature files and traces of the 41 beat demos and the seven real tracks (82 files) were byte-identical before
+  and after, analyzer_regress as the baseline, self test 127 of 127.  All inputs are known before the old
+  autocorrelation section, and nothing between it and the fusion read the tempo, so one `update()` per block keeps
+  the order.
+- *A1, a yardstick for the phase* (`Tools/beat_vs_cues.py`).  F-measure (+-70 ms), CMLt and AMLt after Davies, Degara &
+  Plumley 2009 (the definitions of mir_eval), for the kicks, the analyser's phase and the PLL, plus "hold": annotated
+  beats inside stretches of 8 s or more without a kick, phase within an eighth of a beat.  Baseline over 25,034 beats:
+  the PLL F 27.5 %, CMLt 20.7 %, AMLt 28.0 %, hold 26 % -- chance is 25 %.
+- *A2, the tempo by pulse trains* (`TempoTracker::choose()`).  Candidates: the strongest five peaks of the
+  autocorrelation over the last 12 s and their x2, /2, x3/2, x2/3; each scored by a pulse train laid over the onset
+  envelope at its best phase -- how far the envelope at the pulses stands above its mean over all phases (Percival &
+  Tzanetakis 2014) -- plus 0.3 x the trains at twice and half the period, times the old prior around 120 BPM.  The
+  gate (peak, prominence, kurtosis of the 4-s window) is untouched.  Tried in the lab: the plain pulse train (64 %
+  right but Astrix 97 -> 88 %, Ironic 28 -> 0: they switched to their 3:4 and dotted readings), half-beat pulses,
+  an 8-s window, only binary relatives, no prior, a wider prior, without the kicks' 3:2 (identical on the demos),
+  margins 1.15/1.25/1.35, multi-level weights 0.3/0.5.  Kept: multi-level 0.3, and a reading outside the 4-s pick's
+  octave family must score 1.25 times as high.  Measured (tempo_vs_cues.py): right 49 -> 66 %, 90..135 BPM 81 -> 87 %,
+  over 135 78 -> 80 %, under 90 25 -> 51 % (on the beat grid 60 -> 69 %, A4: the fold stays), folded 55 -> 74 %.
+  Real tracks: Astrix 97 -> 98, Daft Punk 100, DMT 92, Kadafi 80 -> 93, Prodigy 97 -> 100, Thunderstruck 100.
+  *Worse: Ironic 28 -> 14 %* (the plan asked for 48).  Every source reads its ternary grid -- the autocorrelation,
+  the pulse trains and the kick intervals all say 171 or 86 -- so either the music's pulse really is ternary or its
+  truth of 114 is wrong; the user can tell by ear.  Calm material: the confidence exactly as before (the gate is the
+  same).  Features run 4.6 s (4.8 before).  self test 127/127, check_schedule 20 plans without a violation.
+- *A3, the beat phase by beat tracking* (`TempoTracker::beatStep()`).  The phase restarted at every kick and ran at the
+  tempo in between: a syncopated kick moved it off the beat, a break let it drift.  Now BTrack's cumulative score and
+  predicted beat (Stark, Davies & Plumley 2009) on the SuperFlux envelope and the published tempo, with the paper's
+  constants (alpha 0.9, tightness 5); tap tempo and the external clock still win.  A second lab
+  (`Tools/beat_lab.py`) replays phase methods and the conditioner's PLL in Python (the PLL model matches the C++ column
+  in all but 0.07 % of the blocks; the C++ build reproduces the lab to the digit).  Through the PLL: F 27.9 -> 48.5 %,
+  CMLt 25.8 -> 43.8 %, AMLt 32.9 -> 61.1 %; hold 25 -> 39 % -- better than chance, but not "held", which the plan asked
+  for.  Tightness 2 and 3 measured within two points.  No pulse on calm material (the conditioner's beat pulse equal or
+  lower on all nine calm tracks).  One baseline change accepted: broadband120's conditioned beat pulse p90 0.718 ->
+  0.645 (the PLL's pulse now falls on the kicks instead of between them).
+  *A slip on the way:* the first lab version predicted the next beat right after a beat instead of half a beat later;
+  it looked as if a lead of 80 ms helped (F 40.8 %).  With BTrack's scheduling no lead is needed (48.6 %), and the
+  same lead on the old kick phase made it worse (27.9 -> 22.7 %) -- the gain was the tracker's, the "lead" only
+  repaired the slip.
+  *Counted in envelope samples since* (after the crash of section 67, fix): the first version stepped once per
+  analysis block and took the period in blocks, and live a block is whatever the capture hands over -- a 1-ms
+  WASAPI packet made the period 500 blocks and overran `predictBeat()`'s scratch.  Now `pushOnset()` keeps the
+  block's envelope samples and `update()` steps the tracker once per sample (100 Hz), the period in samples (at most
+  86 at 70 BPM); the phase is taken from the block's start time as before, the clamp stays as a guard.  Offline a
+  block holds exactly one sample, so nothing measured moved: `beat_lab.py --method trace` again F 48.5 %, CMLt
+  43.8 %, AMLt 61.1 %, hold 39 %; `tempo_lab.py --check` 66 % right and 0 of 41 demos off the port; self test 137
+  of 137 with the 1-ms packets of check 7.
+- *A5, section boundaries on the bar grid -- tried and dropped.*  The idea: with a trustworthy phase, a novelty
+  peak near a phrase boundary counts more.  Re-simulated from the per-block novelty and the conditioner's 8-bar
+  phrase position on the 43 demos (scored like `analyser_vs_cues.py`): a lower threshold near the phrase boundary
+  and a higher one elsewhere found more boundaries (best: 48 -> 53 %, Groove 37 -> 42 %) but always invented more as
+  well (58 -> 58..74 %), and the plan forbade more false alarms.  The re-simulation itself over-triggers against the
+  real detector (it lacks the absolute-novelty floor: 136 found, 180 invented, against the analyser's 125 and 132),
+  so not even its gain is certain.  The detector stays as it is (sections 44 % found, 52 % invented, Groove 31 %).
+  Timing was never the bottleneck: a boundary counts as found 2 s before to 6 s after it, and the detector fires
+  within about two seconds; what it misses, it misses because the novelty stays below its threshold.
+
+### B1 -- how much each scene answers the music
+
+The screening's numbers could not say it (66): the brightness ratio loud/quiet reads 1.0 for a scene that answers
+with its geometry.  `Tools/reactivity.py` renders every scene twice by the video export on the frame clock, with the
+same seed and parameter rolls -- once over the screening music (chord bed, lead, bass and drums at 128 BPM, loud and
+quiet halves of an 8-s cycle), once over silence of the same length -- and compares the two.  Whatever differs, the
+music did.
+
+- `react_struct`: each frame normalised to zero mean and unit spread, the mean absolute difference music against
+  silence (0 = the same picture, about 1.1 = unrelated pictures) -- brightening alone reads near 0.
+- `react_sync`: the change the music adds from frame to frame (the music run's frame difference minus the silent
+  run's) against the music's onset envelope, Pearson, best of lags 0..3 frames.
+- `react`: the rank of the mean of both ranks, 0..1 (the catalogue page shows it as a badge).
+- *The controls.*  No scene of the catalogue is free of audio (every scene reacts, by the house rules), so the still side
+  was made: the photo itself as a scene (`Engine/ProfileStill.frag`) and null pairs -- ten heavily reactive scenes
+  rendered silence against silence.  The null pairs read exactly 0.000 (the export is deterministic), the photo 0.16
+  (the engine's own small answer), the ten reactive scenes 0.32..0.82: a clean separation.
+- *Two traps found on the way.*  Photo changes fall on the music's phrases, so with free photos the two runs showed
+  different pictures and the static photo read 1.06 -- the photo is fixed now (`KALEIDO_FIXED_PHOTO`, the snapshot
+  baseline's).  And a scene's own periodic motion correlated with the 4-s loud/quiet cycle by chance (a null pair
+  read a sync of 0.29), so the sync uses the music run's change minus the silent run's.
+- *The run.*  2,474 of 2,475 scenes in 52 minutes (480 x 270 at 15 fps, 8 s per scene, 0.8 s per scene and run;
+  TunnelPlain fell into a sacrificial window).  react_struct p5 0.14, median 0.45, p95 0.83; 160 scenes stay below
+  the static photo's 0.16; react_sync is 0 for 129.  The two measures are nearly independent (r = -0.15).
+- *Against the ratings.*  interest and react: rank correlation 0.12 -- the ratings came from contact sheets, which
+  cannot show an answer to music.  25 scenes rated 7 or 8 sit in the bottom 5 % (KlimtGoldMosaic, RooftopRainTokyo,
+  StarshipPlanetaryOrbit, KardashevTypeIIICity, ApollonianSpherePackingGasket, ...), 17 rated 3 or 4 in the top 5 %
+  (KolmogorovMeanders, RockPaperScissorsSpirals, BeeWaggleDance, ...).  Contact sheets "with music / with silence" of
+  the bottom 5 % (124 scenes, react < 0.05) are in `.screen/reactivity/sheets`; for most of them the two halves look
+  the same.  Only 8 of the 124 are 3D scenes (13 % of the catalogue is 3D).
+
+### B2 -- music into the structure of the least reactive scenes, the rest sorted
+
+Plan 20.11.2026, package B2.
+
+#### What was found
+
+- *Input:* the bottom 5 % of `Tools/scene_reactivity.tsv` (B1): 124 scenes below react 0.050, 25 of them rated
+  interest 7 or 8. Each was looked at on the B1 contact sheets (music left, silence right) and in its source.
+- *The measure moves with the scene's place in its set.* `Tools/reactivity.py --scenes` renders the names in sorted
+  order, and the rolls under `KALEIDO_SEED`, the analyser's state and the encoder's noise depend on that place. One
+  set measured twice gives the same numbers (three untouched controls repeated to 0.003), but the same scene in
+  another set does not: KardashevTypeIIICity read react 0.018 in B1, 0.261 and 0.002 in two other sets (its sync
+  0.14 / 0.43 / 0.09; its struct 0.08 every time). Sync is the noisy half: for a scene the music does not touch, the
+  music run's extra frame difference is encoder noise, and its correlation with the onsets is anything from 0 to 0.4.
+  Hence every before/after below is one set measured twice, at the base commit (3927e55a) and with the change.
+- *Two more readings of the untouched scenes* (`all124base`: all 117 measurable ones in one go; `rest3`: the 73 left
+  after the changes): 48 of 117 stayed below 0.05 in the second reading; with the median of the three readings, 46 of
+  the 73 left are below 0.05 and 27 above (B1's low value was the position).
+- *Why they were deaf -- the numbers of the screening music.* A probe scene that drew the uniforms as bars
+  (bar heights survive the exposure and the encoder; grey levels did not) gave, per 8-s window of the screening WAV
+  (4 s loud, 4 s quiet): `sceneAdvance` about 0.3-0.4 (0.05 a second), `audioPhase` about 2.5 rad, `audioHarmAdvance`
+  about 1.2 on the chord bed, `audioSwell` 0 -> 1 in the loud half and back to 0.1-0.3, the kick only in the loud half.
+  In silence all of them stand. The generated scenes ran their clocks as `0.03 * audioAdvance + 0.03 * sceneTime`:
+  the music carried about 5 % of the motion, the swell a size, the kick nothing. The hand-made ones flew and turned
+  on `sceneTime + 0.4 * sceneAdvance` (2 %), and several were still lifes with the music only in the light
+  ("Nothing moves but the light", KlimtGoldMosaic's header).
+- *The machine's media session got into the measurement.* The app asks the system what it plays (`NowPlaying`) and
+  weaves title, lyrics and artist into the picture -- in the video export too. The final set, measured once while a
+  track played on this machine and once with `KALEIDO_NP_FAKE` (a scripted session that never names a track), read
+  up to 0.19 apart in struct or sync; two runs with the scripted session agree to 0.0005. `Tools/screen.py` (and so
+  `reactivity.py`) and `Tools/scene_snapshots.py` now set it themselves. The numbers of the decisions below are from
+  clean runs; the second and third readings of the untouched scenes (`all124base`, `rest3`) may carry it -- a fourth,
+  clean one (`rest_np`) differs from `rest3` by 0.075 react on average. When B1 ran is not known to me; if something
+  played overnight, B1 carries it too.
+- *Blind spots of the measure:* it looks at 160 x 90. Patterns finer than that (SphericalWaveCrossStitch's
+  interference stitches, 2-6 px at 1080p) or a mask moving over a fixed photo (PaisleyBotehDrift's drops turned,
+  their photo did not) hardly register. The mesh scenes need the model pack (`Models/`, not in the worktree): the
+  seven of them were judged on the B1 sheets and the B1 value alone.
+
+#### How the music went in
+
+- *The clock re-weighted:* the scene's own clock keeps 40-60 % of its rate, and an integrated music term is added
+  that carries most of the motion while music plays -- e.g. `0.012 * sceneTime + 0.6 * sceneAdvance` for
+  `0.03 * audioAdvance + 0.03 * sceneTime`: with music about the old speed, in silence a creep, never a stop.
+  Positions and flights ride `sceneAdvance` (per activation, small, never jumps), turns and ripples `audioPhase`,
+  changes that belong to the harmony `audioHarmAdvance`, sizes, depths and thresholds `audioSwell` (seconds), and the
+  kick is light only -- on crests, rims, seams, top faces, glows, never on the frame.
+- *Scenes with a state pass:* the swell scales the step of the integrator (AllenCahnCoarsening,
+  DifferentialGrowthFolds, PhotoGapFingering): loud music drives the growth on, silence lets it rest -- a true
+  integrator, not a speed multiplied into a clock.
+- *Cameras stay on their clocks* where the scene is a view of an object: StarshipPlanetaryOrbit's planet turns on the
+  music, the camera above it keeps `time`; FusorStarMode's cage turns, the eye does not. Flights that were already
+  on `audioAdvance` moved to `sceneAdvance` with a larger share (ApollonianSpherePackingGasket, HistogramTerrainFlight,
+  SupermassiveBlackHoleOrbit's orbit).
+- *Found on the way:* VoronoiSpinBlur passed its clock to a function that never used it (the scene was a still photo
+  with a swell-dependent blur); GongShimmerBloom's two nodal modes ran on `t` and `1.1 t`, so the hand-over at each
+  wrap of the mode index jumped -- one clock now; FatouParabolicFlowers computed its harmony value and never used it;
+  StarshipPlanetaryOrbit's cloud deck scaled its weather by `audioBass`, a fast signal on a spatial scale that makes
+  the whole field shiver -- `audioSwell` now (OrbitalRingStation has the same line; its change was dropped, see
+  below, so it is still there).
+- *Generated scenes* were changed in `Tools/scenegen/src/<Name>.glsl` and rebuilt one by one
+  (`gen.py <Name>`). Rebuilt unchanged, 19 of the 85 generated scenes of the list differ from their committed file
+  (functions added to the libraries since -- famExpose() in the colour-family library, stCarry/stUV/stLod in the
+  state library -- and "0..1" in knob comments); nine of them are among the changed ones (ChihulyPersianCeiling,
+  DifferentialGrowthFolds, FatouParabolicFlowers, FusorStarMode, LoneStarQuilt, MoireReveal, OilCellKaleidoscope,
+  PhytoplanktonSpirals, WaterRippleProjector) and carry that drift now: an uncalled famExpose() and comments, checked
+  by rebuilding each one's base source with today's generator. No other scene was rebuilt.
+
+#### Decisions
+
+124 scenes: **(a) 50** got the music into their structure; **(b) 26** are calm by nature and stay as they are, with
+club, electronic and psytrance capped at 2 in `Tools/preset_fit.tsv` (ambient raised to 6 or space to 7 where needed);
+**(c) 35** are weak and go to Allround only (every genre column capped at 2, interest unchanged); **13** read above
+the threshold in both re-measurements and stay untouched.
+
+**(a)** -- one set of all 50, measured at the base commit and with the change (both without the machine's media
+session, see Open), each ranked against the B1 table (the other rows unchanged). Before: 0.002 .. 0.451, median
+0.064, 20 below 0.050. After: 0.093 .. 0.979, median 0.447, none below; measured twice, the two runs agree to
+0.0005.
+
+| scene | int | B1 react | before: struct / sync / react | after: struct / sync / react | what the music does now |
+|---|---|---|---|---|---|
+| ApollonianSpherePackingGasket | 8 | 0.010 | 0.28 / 0.24 / 0.174 | 0.42 / 0.35 / 0.549 | flight on sceneAdvance; gem colours on audioPhase; kick on rims |
+| KardashevTypeIIICity | 8 | 0.018 | 0.09 / 0.44 / 0.280 | 0.18 / 0.37 / 0.242 | turn and packets on sceneAdvance; the swell winds the arms and lights links |
+| KlimtGoldMosaic | 8 | 0.018 | 0.25 / 0.38 / 0.333 | 0.44 / 0.41 / 0.686 | the light travels on sceneAdvance, spirals turn and eyes ripple on audioPhase |
+| RooftopRainTokyo | 8 | 0.047 | 0.27 / 0.20 / 0.120 | 0.26 / 0.23 / 0.136 | rain, glyphs and clouds on sceneAdvance; swell lights windows; kick on the rain |
+| StarshipPlanetaryOrbit | 8 | 0.015 | 0.11 / 0.13 / 0.016 | 0.24 / 0.35 / 0.275 | the planet turns on audioAdvance (the camera keeps its clock); swell scales weather |
+| AllenCahnCoarsening | 7 | 0.016 | 0.31 / 0.21 / 0.175 | 0.37 / 0.30 / 0.371 | the swell paces the coarsening (state step); kick on the walls |
+| AnorthoscopeSlitDistortion | 7 | 0.022 | 0.28 / 0.30 / 0.254 | 0.48 / 0.38 / 0.707 | the slits turn on sceneAdvance; kick on the slit picture |
+| ChordColourTransitions | 7 | 0.032 | 0.22 / 0.06 / 0.013 | 0.27 / 0.28 / 0.209 | pairs wander on harmAdvance + sceneAdvance, ring turns; swell widens ribbons; kick |
+| FiberOpticChandelier | 7 | 0.019 | 0.19 / 0.18 / 0.055 | 0.24 / 0.20 / 0.093 | pulses on sceneAdvance, the crown turns on audioPhase and fans with the swell |
+| GongShimmerBloom | 7 | 0.049 | 0.23 / 0.39 / 0.324 | 0.35 / 0.27 / 0.304 | ripples on audioPhase, modes on harmAdvance (one clock for both modes now) |
+| PaintPourCells | 7 | 0.020 | 0.24 / 0.05 / 0.015 | 0.75 / 0.10 / 0.600 | the flow on sceneAdvance, the swell stretches the paint |
+| PrecessionStarRosette | 7 | 0.007 | 0.26 / 0.40 / 0.387 | 0.50 / 0.59 / 0.883 | stars run on sceneAdvance, centres on harmAdvance; kick on the stars |
+| QamConstellationDust | 7 | 0.038 | 0.36 / 0.06 / 0.082 | 0.54 / 0.22 / 0.555 | lattice order on harmAdvance, scatter on the swell, turn on sceneAdvance; kick |
+| RosslerFunnelDensity | 7 | 0.038 | 0.21 / 0.29 / 0.178 | 0.26 / 0.49 / 0.472 | c on harmAdvance, the turn on sceneAdvance, swell lifts the funnel; kick |
+| RubensTubeFlameRow | 7 | 0.042 | 0.23 / 0.03 / 0.008 | 0.29 / 0.32 / 0.290 | the mode on harmAdvance + sceneAdvance; kick on the flames |
+| SeigaihaWaveScales | 7 | 0.049 | 0.30 / 0.00 / 0.017 | 0.80 / 0.50 / 0.979 | the rows slide on sceneAdvance; kick on the ring lines |
+| SphericalWaveCrossStitch | 7 | 0.011 | 0.25 / 0.00 / 0.003 | 0.29 / 0.34 / 0.325 | sources wander on sceneAdvance, separation on harmAdvance; kick on photo and stitches |
+| StomataGuardCellMosaic | 7 | 0.023 | 0.22 / 0.16 / 0.049 | 0.53 / 0.24 / 0.577 | cells shift and the opening wave runs on sceneAdvance; kick on the rims |
+| StreamgraphLayersFlow | 7 | 0.028 | 0.36 / 0.05 / 0.076 | 0.44 / 0.16 / 0.268 | the surge on sceneAdvance; kick on the crests |
+| SupermassiveBlackHoleOrbit | 7 | 0.001 | 0.34 / 0.16 / 0.134 | 0.42 / 0.28 / 0.434 | orbit on sceneAdvance, disk flow on audioPhase, swell spreads the disk; kick |
+| ChihulyPersianCeiling | 6 | 0.019 | 0.21 / 0.00 / 0.002 | 0.55 / 0.48 / 0.864 | light and layers drift on sceneAdvance; kick on the rims |
+| DifferentialGrowthFolds | 6 | 0.004 | 0.19 / 0.08 / 0.011 | 0.31 / 0.54 / 0.609 | the swell paces the growth (state step); kick on the edges |
+| FusorStarMode | 6 | 0.034 | 0.13 / 0.15 / 0.023 | 0.31 / 0.74 / 0.703 | the cage turns on sceneAdvance (the eye keeps its clock); kick on core and beams |
+| HistogramTerrainFlight | 6 | 0.010 | 0.25 / 0.05 / 0.015 | 0.44 / 0.58 / 0.810 | flight on sceneAdvance; kick on lit slopes |
+| PhytoplanktonSpirals | 6 | 0.050 | 0.27 / 0.06 / 0.023 | 0.57 / 0.16 / 0.473 | bloom wound and eddies wander on sceneAdvance, strengths on audioPhase |
+| ThomsonProblemShells | 6 | 0.004 | 0.15 / 0.11 / 0.015 | 0.23 / 0.24 / 0.123 | shells turn on audioPhase and widen with the swell; kick on the glow |
+| WaterRippleProjector | 6 | 0.031 | 0.31 / 0.37 / 0.400 | 0.56 / 0.53 / 0.905 | the discs turn on sceneAdvance; kick on the net |
+| BayerMosaicMoire | 5 | 0.024 | 0.31 / 0.10 / 0.064 | 0.50 / 0.11 / 0.303 | the photo's zoom through the grid on sceneAdvance (the moire) |
+| BraidWordLights | 5 | 0.029 | 0.28 / 0.30 / 0.262 | 0.29 / 0.42 / 0.447 | the plait runs on sceneAdvance; kick on the strands |
+| ChloroplastRingStreaming | 5 | 0.034 | 0.35 / 0.29 / 0.351 | 0.51 / 0.45 / 0.814 | the streaming on sceneAdvance; kick on the plastids |
+| CometTailStriaeFan | 5 | 0.003 | 0.15 / 0.05 / 0.004 | 0.15 / 0.36 / 0.220 | striae sweep on sceneAdvance, knots on audioPhase, swell opens the fan; kick |
+| FatouParabolicFlowers | 5 | 0.040 | 0.30 / 0.04 / 0.026 | 0.35 / 0.22 / 0.234 | harmAdvance + sceneAdvance turn the parameter off the axis, zoom on sceneAdvance; kick |
+| IntarsiaStepTiles | 5 | 0.030 | 0.32 / 0.30 / 0.316 | 0.36 / 0.33 / 0.425 | the cubes turn on sceneAdvance; kick on top faces and borders |
+| KMeansPaletteVoronoi | 5 | 0.043 | 0.31 / 0.09 / 0.057 | 0.54 / 0.21 / 0.518 | centres wander on sceneAdvance; kick on the borders |
+| KinetoscopePeepholeIris | 5 | 0.008 | 0.24 / 0.16 / 0.061 | 0.44 / 0.59 / 0.825 | eyepieces wander on sceneAdvance, swell sizes them; kick on the rims |
+| LeafMarginSerrationWave | 5 | 0.005 | 0.22 / 0.03 / 0.006 | 0.29 / 0.37 / 0.360 | leaves sway (photo turns with them) and teeth run on sceneAdvance, swell; kick |
+| LimpetShellGrowthLines | 5 | 0.028 | 0.34 / 0.23 / 0.239 | 0.41 / 0.24 / 0.366 | the growth bands run out on sceneAdvance; kick on the lines |
+| LoneStarQuilt | 5 | 0.013 | 0.25 / 0.05 / 0.017 | 0.34 / 0.55 / 0.655 | the shading rings flow on sceneAdvance; kick on the seams |
+| MedialAxisSkeletonBloom | 5 | 0.003 | 0.20 / 0.07 / 0.010 | 0.33 / 0.14 / 0.106 | the threshold wanders on audioPhase and the swell; kick on the skeletons |
+| MigmatiteSwirlBands | 5 | 0.047 | 0.37 / 0.03 / 0.061 | 0.52 / 0.06 / 0.254 | flow and band slide on sceneAdvance |
+| MoireReveal | 5 | 0.048 | 0.32 / 0.00 / 0.019 | 0.44 / 0.00 / 0.102 | the reveal band runs on sceneAdvance |
+| OilCellKaleidoscope | 5 | 0.017 | 0.30 / 0.10 / 0.060 | 0.40 / 0.18 / 0.231 | the fall on sceneAdvance |
+| PhotoGapFingering | 5 | 0.027 | 0.41 / 0.13 / 0.202 | 0.40 / 0.77 / 0.826 | the swell paces the fingers (state step); kick on the rims |
+| PickoverStalksField | 5 | 0.046 | 0.32 / 0.25 / 0.237 | 0.34 / 0.23 / 0.215 | the Julia constant wanders on sceneAdvance |
+| PivotChordModulationBridge | 5 | 0.031 | 0.35 / 0.18 / 0.178 | 0.37 / 0.18 / 0.188 | the bridge wanders on harmAdvance |
+| RetinexIlluminantShiftRecovery | 5 | 0.037 | 0.35 / 0.36 / 0.451 | 0.45 / 0.37 / 0.651 | light colour on harmAdvance, the border on sceneAdvance |
+| SchenkerNestedSlurArcs | 5 | 0.039 | 0.28 / 0.09 / 0.038 | 0.54 / 0.38 / 0.774 | the slide on harmAdvance + sceneAdvance; kick on the arcs |
+| StandardMapIslands | 5 | 0.041 | 0.41 / 0.00 / 0.083 | 0.51 / 0.00 / 0.174 | the portrait slides on audioPhase |
+| VenusYShapedCloudBands | 5 | 0.026 | 0.25 / 0.37 / 0.323 | 0.52 / 0.55 / 0.878 | the bands run on sceneAdvance; kick on the bright bands |
+| VoronoiSpinBlur | 5 | 0.011 | 0.35 / 0.07 / 0.073 | 0.70 / 0.06 / 0.467 | cells swing round their pivots on audioPhase (the clock was unused) |
+
+Six of the 50 gained less than 0.05 in this set although their struct rose (or held) -- the change the music adds
+now runs through the quiet half too, and the share of it that follows the onsets fell: KardashevTypeIIICity (0.280
+-> 0.242, struct 0.09 -> 0.18), GongShimmerBloom (0.324 -> 0.304, struct 0.23 -> 0.35), PickoverStalksField (0.237
+-> 0.215), RooftopRainTokyo, FiberOpticChandelier and PivotChordModulationBridge (+0.01 to +0.04). These are the
+first to look at with the eye (B6).
+
+In a second clean set of 84 names (the 50 and 34 untouched ones, so every scene at another place and with other
+rolls) all 50 read above 0.050 as well: 0.066 .. 0.984, median 0.431.
+
+**(b) calm by nature, 26** -- in brackets: interest; react in B1 / the second / the third reading (the mesh scenes
+only B1); genres before -> after (Amb Ambient, Space SpaceAmbient, Down Downtempo, Cine Cinematic, Psych
+Psychedelic). Staged views of the sky and of still places, slow flows and soft photo looks: the music's place there
+is the light, and the genres that play them are calm. 23 sit in Ambient and/or SpaceAmbient; three dark staged
+scenes (MezzotintBurnishedGlow, MeshFoundryPour, ShatterSculpture) keep Noir/Cinematic, their calm homes.
+
+AlienPlanetOrbit (5; 0.002 / 0.000 / 0.001; Space,Cine); AlienWorldSurface (6; 0.013 / 0.008 / 0.010;
+Amb,Space,Cine); AnglerfishAbyss (5; 0.036; Noir -> Amb,Noir); CenoteLightShaft (6; 0.013 / 0.006 / 0.186;
+Amb,Cine,Noir); DolomitesAlpenglow (7; 0.048 / 0.099 / 0.122; Amb,Cine); EInkParticleDrift (5; 0.047 / 0.015 / 0.354;
+Amb,Down,Cine); Fleet (6; 0.040; Space,Noir); FrozenMethaneLakes (6; 0.007 / 0.010 / 0.099; Amb,Space,Cine);
+HeliosSwirlBokeh (5; 0.035 / 0.159 / 0.017; Amb,Down,Cine); LensBlurGhostBokeh (4; 0.029 / 0.119 / 0.163; Amb);
+MeshFoundryPour (5; 0.023; Noir); MeshWindChime (4; 0.001; Amb); MezzotintBurnishedGlow (5; 0.040 / 0.112 / 0.025;
+Cine,Noir); NebulaCliffs (7; 0.006 / 0.186 / 0.052; Amb,Space,Cine); OrbitalRingStation (7; 0.032 / 0.013 / 0.108;
+Amb,Space,Cine); OrbitalSunrise (6; 0.008 / 0.000 / 0.000; Amb,Space,Cine); PlumeCapRollups (5; 0.030 / 0.125 /
+0.212; Amb,Down,Cine,Psych); ReverseKarmanWake (5; 0.049 / 0.014 / 0.033; Amb,Down,Cine,Psych); ShatterSculpture (6;
+0.016; Cine,Noir); SilenceSnowfallHush (5; 0.044 / 0.187 / 0.055; Amb,Cine); SolarEclipseTotality (7; 0.006 / 0.500
+/ 0.005; Amb,Space,Cine,Noir); SupernovaRemnant (4; 0.015 / 0.097 / 0.221; Space); TidalDisruptionEvent (4; 0.000 /
+0.036 / 0.004; Space,Noir); TidalRaceEddies (5; 0.038 / 0.135 / 0.030; Amb,Down,Cine,Psych); UnderIceLookingUp (7;
+0.021 / 0.245 / 0.048; Amb,Cine); VoidLeviathan (5; 0.044 / 0.086 / 0.022; Space,Noir).
+
+The fit caps changed few memberships today (none of them was in Club, Electronic or Psytrance; AnglerfishAbyss
+joins Ambient), but they keep the loud genres from filling up with them when their sizes change.
+
+**(c) weak, 35** -- Allround only. Flat or murky pictures (MorphologicalBreath, BilateralDreamGrid,
+PhotoMeanShiftBlooms, RotoscopeLineBoil -- its line boil is a few pixels), staged objects that fail the origin
+criteria (EscherRelativityMatrix, AntimatterWeapon, MeshHeliostatField,
+MeshSeismograph), sparse dots or lines on black (HeliozoanRaySpheres, HenonOrbitDust, KeySpiralArray,
+SubdivisionDotLadder, TaylorConeJetField), and the 14 rated 3, which DULL = 3 already keeps out of the genres -- their
+fits are now capped too, so that they stay out if DULL goes back to 2.
+
+AntTrailStigmergyField (3; 0.042 / 0.258 / 0.373); AntimatterWeapon (5; 0.012 / 0.011 / 0.025; Space,Noir);
+BeadsOnSpinningHoops (4; 0.020 / 0.017 / 0.439; Elec); BilateralDreamGrid (4; 0.026 / 0.012 / 0.025; Amb);
+BrownianTreeRain (3; 0.017 / 0.064 / 0.087); CheckerShadowSweep (4; 0.015 / 0.059 / 0.015; Amb,Down);
+CloudChamberField (3; 0.025 / 0.295 / 0.050); CupCausticEnvelopes (4; 0.014 / 0.017 / 0.019; Elec,Noir);
+DotMatrixPrinterPass (3; 0.032 / 0.046 / 0.066); EscherRelativityMatrix (6; 0.035 / 0.003 / 0.059; Amb);
+ForaminiferaSpiralShells (3; 0.014 / 0.009 / 0.187); GammaRayBurst (4; 0.046 / 0.153 / 0.037; Space,Club);
+GeisslerTubeSpirals (4; 0.025 / 0.091 / 0.011; Club,Elec); HarmonicOscillatorCoherent (4; 0.002 / 0.005 / 0.063;
+Noir); HeliozoanRaySpheres (4; 0.009 / 0.007 / 0.005; Elec,Psy); HenonOrbitDust (4; 0.012 / 0.005 / 0.013;
+Down,Noir); JukeboxBubbleTubes (3; 0.045 / 0.040 / 0.137); KeySpiralArray (5; 0.005 / 0.010 / 0.012; Space,Noir);
+KintsugiGoldSeams (3; 0.033 / 0.492 / 0.140); LiquidMetal (3; 0.034 / 0.189 / 0.020); MeshHeliostatField (5; 0.008;
+Amb); MeshSeismograph (3; 0.004); MorphologicalBreath (3; 0.021 / 0.004 / 0.006); PhaseFieldCrystalGrains (5; 0.021
+/ 0.015 / 0.120; Amb); PhotoColourSpaceCloud (4; 0.000 / 0.006 / 0.205; Space,Noir); PhotoMeanShiftBlooms (4; 0.025
+/ 0.008 / 0.051; Amb,Psych); PillarsOfCreationFlight (3; 0.036 / 0.009 / 0.075); QuillingCoils (4; 0.017 / 0.007 /
+0.011; Amb,Down); RichtmyerMeshkovSpikes (4; 0.037 / 0.039 / 0.448; Club,Noir); RoguePlanet (3; 0.002 / 0.011 /
+0.175); RotoscopeLineBoil (5; 0.036 / 0.258 / 0.024; Noir); SubdivisionDotLadder (4; 0.023 / 0.043 / 0.193;
+Elec,Noir); TaylorConeJetField (5; 0.027 / 0.027 / 0.346; Elec,Noir); TurrellGanzfeld (3; 0.006 / 0.051 / 0.032);
+WireworldCircuitry (3; 0.009 / 0.002 / 0.004). The genres named are the ones they left.
+
+**Untouched, 13** -- above 0.050 in both re-measurements (median of the three 0.072 .. 0.647), so B1's value was the
+measure's position, not the scene: ColorTransferTide, ExcitablePhotoRefraction, IridescentGradientBlob,
+MargolusBilliardGas, MiuraFoldField, MudclothBogolanBars, MutualDisplacement, NighthawksDiner, PaisleyBotehDrift,
+PixelBinningMosaic, PollenTubeGrowthTips, ReactionFrontsOnPhotoRelief, TidalFlatChannels. In the fourth, clean reading
+11 of them stayed above; MudclothBogolanBars (0.019) and NighthawksDiner (0.032) fell below -- borderline scenes
+(median of four 0.07 and 0.08), left as they are. Of the (b) scenes 9 of 21 measurable read below 0.05 in that run,
+of the (c) scenes 15 of 33.
+
+Genre sizes after `python Tools/make_genre_configs.py`: Ambient 847 -> 841, Downtempo 456 -> 453, Club 693 -> 690,
+Electronic 575 -> 569, Psytrance 645 -> 644, Psychedelic 1005 -> 1004, Noir 519 -> 509; SpaceAmbient 461, Cinematic
+446 and Allround 2690 unchanged in size. The generator rescales every preset's solo times to its mean of 55 s, so the
+preset diff touches most entries by a second or two.
+
+#### Tried and dropped
+
+- *TaylorConeJetField:* a wave of field strength along the rows and the jets on `audioPhase` -- 0.015 -> 0.039 in its
+  set, struct 0.26 -> 0.28; the cones are small and the picture stays the dimmed photo. Reverted, (c).
+- *PaisleyBotehDrift:* the tilt wave on `sceneAdvance`, then the photo inside each drop turned with it -- 0.004 ->
+  0.012, the two thumbnails differ by 5.7 / 255 on average; the drops cover too little and turn too little to read
+  at 160 x 90. Reverted; untouched (it re-measured 0.102 and 0.163).
+- *OrbitalRingStation:* planet and ring on `audioAdvance` -- struct 0.09 -> 0.14, sync 0.23 -> 0.06, react 0.069 ->
+  0.005 in its set. Reverted, (b).
+- *First passes too weak* (these runs may have carried the media session): in the final set seven changed scenes
+  still read below 0.05 (ThomsonProblemShells,
+  SphericalWaveCrossStitch, StarshipPlanetaryOrbit, ChordColourTransitions, LeafMarginSerrationWave,
+  FatouParabolicFlowers, HistogramTerrainFlight) after reading above in their batch sets. A second pass gave them more
+  structure (a larger music share, the swell on a size, the leaf's photo turning with the leaf) and kick light on a
+  larger area; ChordColourTransitions, SphericalWaveCrossStitch and FatouParabolicFlowers needed a third (kick light
+  on the photo behind, 12-25 %). LeafMarginSerrationWave, VoronoiSpinBlur, MedialAxisSkeletonBloom and
+  StomataGuardCellMosaic needed a second pass in their batch sets already (the first moved outlines or a threshold
+  too little to register). After the switch to clean runs: MedialAxisSkeletonBloom (0.051) got the kick on its shapes
+  as well (0.106); IntarsiaStepTiles and RetinexIlluminantShiftRecovery, below 0.05 in the clean second set (sync 0
+  there), a faster turn and a faster border (final set 0.425 and 0.651).
+- *A probe in grey levels:* the uniforms drawn as grey stripes came back distorted by the exposure; drawn as bars,
+  the heights survive (`sceneTime` as a control: 0.1 a second, exact in the silent run).
+
+#### Checks
+
+- `python Tools/temporal_budget.py`: 0 errors, the same 4 warnings as at the base (none in a changed scene).
+- `python Tools/shake_scan.py --summary --baseline Tools/shake_baseline.tsv`: 0 new SHAKE/FRAME/STEP hits, 74 known.
+- `python Tools/shadercheck.py` (static rules and the real compile of all 3221 files): 0 errors, 0 warnings.
+- `python Tools/doc_shaders.py --check`: 0 files would change; `python Tools/cgvr_format.py --check`: 3510 files
+  the same (the hand-written changes formatted with `cgvr_format.py <files>`, the generated ones by `gen.py`).
+- `PresetEditor --roundtrip` of all 12 preset files: ok; `PresetEditor --validate`: all 11 files complete against
+  Komplett.xml; `python Tools/check_schedule.py --quick`: 20 plans, 0 with violations.
+- Added lines grepped for `floor(audio`, `step(.., audio`, a clock multiplied by a clamped envelope: none (a bounded
+  `sin(..) * swell` amplitude in LeafMarginSerrationWave is the allowed form).
+- Snapshots: `python Tools/scene_snapshots.py render 2026-11-20-b2 --only <the 50> --photo
+  kristallhoehle-indigo-fuchsia-2.jpg` (silent, frozen at 600 fixed steps, the baseline's photo), compared with the
+  baseline of `Tools/snapshot_baseline.txt` (2026-11-10-all): 50 compared, 48 changed beyond the tolerance -- as
+  intended: the silent frame now stands where the slower silent clock leaves it -- 2 within it (AllenCahnCoarsening,
+  PhotoGapFingering: their state passes settle to nearly the same frame), 0 black, 0 newly black, 0 unstable; report
+  `report_vs_2026-11-10-all.html` in the set. The darkest new frames are ThomsonProblemShells (mean 6.0 / 255) and
+  ApollonianSpherePackingGasket (7.6), whose silent camera now stands elsewhere in the foam.
+  `Tools/snapshot_baseline.txt` stays as it is (the new set holds only the 50).
+
+#### Open
+
+- *The measure's position noise.* A scene's react depends on its place in the set (rolls, the analyser's state,
+  encoder noise when nothing reacts): one reading decides little near the threshold. Measuring every scene in two
+  places (two seeds or two orders) and taking the lower would make B1's bottom list sharper; the cost doubles.
+- *The mesh scenes* were not re-measured (no model pack in the worktree); their decisions rest on the B1 sheet and
+  one reading.
+- *The eye.* The changes were checked on 160 x 90 thumbnails and in the snapshot set; whether the faster motion under
+  loud music feels right (ChordColourTransitions' ribbons, SeigaihaWaveScales' rows, PaintPourCells' stretching)
+  wants the user's look, best in the B6 rating round. Kick light was added to 34 of the 50, mostly on crests, rims,
+  seams and glows; on a larger area in five (the leaves of LeafMarginSerrationWave +25 %, the dust of
+  QamConstellationDust +22 %, the dim photo behind in ChordColourTransitions, SphericalWaveCrossStitch and
+  FatouParabolicFlowers); `temporal_budget.py` sees no full-field flash above its limits, but the eye should judge
+  those five first.
+- *OrbitalRingStation* still scales its cloud deck by `audioBass` (a fast signal on a spatial scale); the fix went
+  with the dropped change. One line (`sc = 3.4 * ( 1.0 + 0.12 * audioBass )` -> `audioSwell`).
+- *Snapshots and the now-playing title:* `scene_snapshots.py` runs the app live, and the app's title reveal
+  (`NowPlaying`, the system's media session) wove whatever the machine was playing into about half of the first
+  B2 snapshot frames. The set was rendered again with `KALEIDO_NP_FAKE="none|none@999999"` (a scripted session that
+  never names a track, so the real one is not asked). The tool should set that itself (or `nowPlaying=false` in its
+  private settings); older sets were made while nothing played. The video export (`reactivity.py`, `screen.py`)
+  showed no title in the B2 thumbnails.
+
+### B3, B4, B5 -- which scenes look alike: a similarity map, look-alikes in the plan, near-duplicates
+
+Plan 20.11.2026, packages B3, B4 and B5.
+
+#### B3: the similarity map
+
+- *Tool:* `Tools/scene_similarity.py` (numpy and PIL, nothing new). A scene is its three catalogue frames
+  (`docs/Catalog/img/<Name>_A/_B/_C.jpg`); the 2475 scenes of kind 2D and 3D. The 210 transitions and 30 FX overlays
+  are left out: they are never a scene of their own (an overlay runs over whatever plays, a transition between two),
+  `SceneScheduler::pickScene` never picks them, and the catalogue shows them with frames of another kind.
+- *Descriptor of a frame* (each part a published one, named in the code): the colour layout -- mean CIE Lab of 8 x 5
+  cells (MPEG-7 Colour Layout, Kasutani & Yamada 2001, in Lab instead of the DCT of YCbCr); a histogram of oriented
+  gradients on a 4 x 4 grid with 8 unsigned orientations (Dalal & Triggs 2005), compared as its square root (Hellinger,
+  "RootSIFT"); the power spectrum in 12 log rings x 4 orientations (the spectral signature of Oliva & Torralba's
+  spatial envelope, 2001). Each part's distance is divided by its median over all frame pairs, mixed 0.35 / 0.40 /
+  0.25. Two scenes are compared by the modified Hausdorff distance of their frame sets (Dubuisson & Jain 1994), so a
+  look shown at another moment still matches. 27 ms a frame, three minutes for all 7425 (cached in
+  `.screen/similarity`).
+- *The bottom 12 rows are cut off:* 83 % of the C frames (409 of 495 sampled; 2 A, 2 B) end in a black strip of
+  about eight rows -- a mark of the render, which made the C frames of unrelated scenes alike.
+- *Known families come out near, different ones far* -- the scenes generated from one template library of
+  `Tools/scenegen/gen.py` against all pairs (all pairs: median 0.99):
+
+  | family | scenes | median within | nearest family member, median rank (chance) | of the 8 neighbours from the family (chance) |
+  |---|---|---|---|---|
+  | fractals (FRAC_LIB) | 20 | 0.82 | 8 (123) | 0.6 (0.06) |
+  | flows (LIC_LIB) | 31 | 0.94 | 2 (79) | 1.9 (0.10) |
+  | long exposures (EXPO_LIB) | 22 | 0.94 | 10 (112) | 0.5 (0.07) |
+  | rhythm carpets (RHY_LIB) | 38 | 0.93 | 22 (65) | 0.3 (0.12) |
+  | members of two different families | | 0.97 | | |
+
+  Every member has a relative far closer than chance (rank 2 to 22 among 2474), but a family is no tight cloud: a
+  template is a technique, and each scene drives it its own way. Tunnels are no group either: the 72 scenes named
+  "...Tunnel" lie at 0.93 from each other, and on the sheet a ring tunnel on black, a hexagonal throat and a cracked
+  yellow spiral do not look alike; CrystalThroatTunnel's nearest scene is WaterfallTunnel, and those two do.
+- *The photo was the strongest signal.* The 30 nearest pairs on the first contact sheets were almost all two scenes
+  that drew the same catalogue photo (the frames were rendered with a seeded photo sequence, so dozens of scenes show
+  the same foam, rose or curtain photo) and leave it largely as it is. Raw clusters were photo groups: the largest of
+  average linkage at 0.38 held the 13 scenes on the green and pink foam photo, among them a zoetrope and a fence
+  shadow that look nothing alike apart from the photo; at 0.62 one cluster of 196 swallowed every "textured all
+  over" frame. The distances are therefore hub-reduced (local scaling, Zelnik-Manor & Perona 2004; Schnitzer et al.
+  2012, "Local and Global Scaling Reduce Hubs in Space"): d / sqrt(s_a s_b) with s the distance to the seventh
+  nearest scene, times the median s. Near while everything around is near too (a crowd on one photo) counts for less
+  than near while everything else is far.
+- *Calibration by eye.* 95 pairs on contact sheets (the frames of both scenes side by side), judged "same picture",
+  "near" or "different", the verdicts kept in `Tools/scene_similarity_pairs.tsv`: drawn along the raw scale by log
+  rank up to the median (50), evenly in the raw band 0.20..0.34 and in the hub-reduced band 0.15..0.50 (32, eight of
+  them judged before). Result: 25 same, 15 near, 55 different. Of the 25 "same", 24 are photo-borne (both scenes show the shared photo nearly as it
+  is) and one has its own look in common (ActiveBrownianClusters / GranularGasCooling: blue swarms of dots on black).
+
+  | scale | AUC same vs. different | "same" from .. to | "different" from |
+  |---|---|---|---|
+  | raw | 0.85 | 0.10 .. 0.36 | 0.19 |
+  | hub-reduced | 0.92 | 0.18 .. 0.55 | 0.32 |
+
+  Hub-reduced, below 0.30: 6 same, 1 near, 0 different; below 0.35: 10 / 4 / 1 (the one: HoarfrostFeatherGarden and
+  OgeeTrellisSway, a ring trellis over the same photo); below 0.40: 14 / 6 / 6. Raw, nothing above 0.36 was the same
+  picture, but below 0.30 already 13 of 40 were different.
+- *Thresholds:* `DUP_CUT = 0.35` (hub-reduced, complete linkage: every two scenes of a group closer than 0.35) -- the
+  last step before "different" becomes common; it finds 10 of the 25 "same" pairs and one false one, on purpose: what
+  it groups may leave a genre. `CLUSTER_CUT = 0.55` (average linkage), a step looser; its largest clusters (5) were
+  looked at, every member shows the same picture.
+- *Result* (`Tools/scene_neighbours.tsv`, header `name cluster dup_group neighbours distances`, the eight nearest by
+  the hub-reduced distance): 2196 clusters, 1989 scenes alone, 207 groups with 486 scenes (155 of 2, 39 of 3, 6 of 4,
+  7 of 5); 11 near-duplicate groups with 24 scenes (9 pairs, 2 triples).
+- *What it cannot see:* two scenes that both leave the photo alone look the same only when they drew the same photo
+  for the catalogue; with different photos they are far apart. The near-duplicates found are real, but they are not
+  all there are. What a scene does in motion is not in three stills at all (B1 measures that).
+- *Tried and dropped:* matching every frame against the 977 photos of `Images/` (four mirrorings, the same
+  descriptor), to subtract the photo: the frames show the photo mirrored, tiled, dimmed and warped, and the best
+  matches were wrong photos (pebbles for a field of fireflies). An image model on the CPU (the plan's option) was not
+  tried: it would see the photo as well.
+
+#### B4: look-alikes one after the other in the scene plan -- measured, no rule needed
+
+- *Measured* on the 20 plans of `Tools/check_schedule.py` (the real scheduler on the virtual clock: 12 h of silence and
+  6 h of the structure track per genre preset, 0 violations), with `python Tools/scene_similarity.py --plans`: of each
+  change, whether the next scene is in the same cluster, the same near-duplicate group, a looser grouping (average
+  linkage at 0.70: 789 groups, largest 20 -- warm-toned photo patterns and the like, grouped by palette and texture
+  rather than by look; a sensitivity check) or among the eight nearest scenes, against a blind pick from the scenes
+  the plan shows.
+
+  | | changes | same cluster | same group | loose grouping | among the 8 nearest | longest run in one cluster |
+  |---|---|---|---|---|---|---|
+  | all 20 plans | 7918 | 1 (0.01 %) | 0 | 26 (0.33 %) | 36 (0.45 %) | 2 scenes |
+  | worst plan | | 0.23 % (Downtempo, music) | 0 | 1.05 % (Club, silence) | 1.17 % (Psytrance, silence) | 2 (loose: 2) |
+  | blind pick | | 0.00..0.06 % | | 0.18..0.48 % | 0.33..0.58 % | |
+
+  The one change inside a cluster: WaterGlassRowFlip -> PhotoDepthParallax (Downtempo on the structure track), two
+  scenes that leave the same mirrored photo nearly alone.
+- *Why so few:* the scheduler draws evenly from several hundred scenes, the no-repeat memory holds three quarters of
+  them, and look-alike groups have two to five members -- a blind pick lands in the running scene's group less than
+  once in a thousand changes, and the plans agree. "Among the 8 nearest" is two to three times the blind pick in a few
+  plans (perhaps moodAccept, which prefers scenes of a restlessness like the music's; not followed up) and stays near
+  1 %.
+- *Decision:* the plan's limit (more than 5 % of the changes, or runs of three) is not reached under any grouping
+  tried, so `SceneScheduler::pickScene` stays as it is, no cluster attribute goes into the presets, and no rebuild was
+  needed. The measurement stays repeatable: `python Tools/check_schedule.py` then `python Tools/scene_similarity.py
+  --plans`.
+
+#### B5: near-duplicates leave the genre presets (the user's decision of 20.11.)
+
+- *Rule* (`Tools/make_genre_configs.py`, overlay `Tools/scene_redundant.tsv`: name, group, source -- read like
+  `Tools/user_taste.tsv`): the file holds groups of scenes that show the same picture, confirmed on contact sheets.
+  In each genre preset the two best members of a group stay (interest, then the genre's fit, then the name), the
+  others are only in Allround; the selection is then made again without them, so the fill to 400 scenes may take
+  another. Nothing is deleted. The generator prints every scene it leaves out and why.
+- *A pair never loses a member*, so only groups of three or more matter. The 11 groups at `DUP_CUT` hold two triples,
+  and neither has three members in one genre: on the calibrated threshold alone nothing would change. The net was
+  therefore widened for this step to complete linkage at 0.55 (the widest "same" pair of the calibration): 32 groups
+  of three or more, 14 of them with three members in some genre. Each was looked at, with this test: every member
+  shows the same picture in at least two of the three frames, and none shows a structure of its own (lines, seams,
+  folds, contours, a blur) in two or more frames; a walking lab (LAB_LIB, BandLab here) never counts -- its three
+  frames are three moments of hundreds of looks.
+  - *Confirmed, with an effect:* ChainKaleidoTunnel, ChainTunnelHex, ChainTunnelKaleido -- three chain tunnels with
+    kaleidoscopic walls, the same tunnel in A and B (ChainKaleidoTunnel shows its star in B and C). The only group of
+    this round whose sameness is its own geometry rather than a shared photo.
+  - *Confirmed, without an effect* (not three members in any genre): ChannelPlateTectonics, SelfLensingPhoto,
+    SolitonGasCollisions (DamasceneFoldedSteel left out, folds of its own); the two triples of the threshold; nine
+    pairs, kept in the file as verdicts (13 groups, 31 scenes in all).
+  - *Not confirmed:* BlackHole / ParticleGalaxy / PlanetRings and CosmicBoidsVortex / RadiolarianSilicaLattice /
+    WhiteHoleFountain (particle disks and swirls on black -- related, but different objects); RotatingSnakesPhoto /
+    TextureGlassCubeSwarm / ThresholdSeesawSpin; ConvectionRollsDye (cells) with two streaked photos; FishSchoolFlowField
+    / FlareGhostTrain / PhaseConjugateEchoReturn (flow lines, radial streaks, rings of their own in B and C);
+    HarmonographExposure (blurred throughout); HoarfrostFeatherGarden / OgeeTrellisSway / WoodblockBokashi (a trellis);
+    DispersiveWaveTrain, RunLengthStreaks, SeptarianVeinNetwork beside FocusBreathingPull / MajolicaGlazePools (wave
+    fronts, streaks, a vein network); PhotoGeodesicFronts beside two pairs on the same orange photo (contours; the pairs
+    differ by a sunburst); ImageQuiltingSeamDrift (seams); MonetLilyPond.
+- *Result:*
+
+  | genre preset | entries before | after | distinct scenes before | after | change |
+  |---|---|---|---|---|---|
+  | Ambient | 847 | 847 | 822 | 822 | -- |
+  | Downtempo | 456 | 456 | 456 | 456 | -- |
+  | SpaceAmbient | 461 | 461 | 401 | 401 | ChainTunnelKaleido out, ExposureLab in (the fill to 400) |
+  | Cinematic | 446 | 446 | 402 | 402 | -- |
+  | Club | 694 | 693 | 689 | 688 | ChainTunnelKaleido out |
+  | Electronic | 575 | 575 | 570 | 570 | -- |
+  | Psytrance | 646 | 645 | 646 | 645 | ChainTunnelKaleido out |
+  | Psychedelic | 1006 | 1005 | 1005 | 1004 | ChainTunnelKaleido out |
+  | Noir | 519 | 519 | 454 | 454 | -- |
+  | Allround | 2690 | 2690 | 2475 | 2475 | -- |
+
+  No genre below 99.8 % of its size (the plan's floor: 85 %). The solo times of the other entries move by one second
+  at most where a scene left (each preset's mean solo time is normalised to 55 s; 21 to 326 entries per preset).
+- *Checks:* `PresetEditor --roundtrip` of all 12 preset files ok, `PresetEditor --validate` ok ("all 11 file(s)
+  complete vs. Komplett.xml"), `Tools/check_schedule.py --quick` 20 plans without violations.
+- *Not verified:* the scenes in motion -- three stills cannot show what a scene does over time, and the confirmed
+  groups are mostly scenes that leave the photo alone; B1 (musical reaction) is the measure for that. Scenes that
+  look alike but drew different photos for the catalogue are not found (see B3). No app render of the changed
+  presets: apart from the one entry each, they are unchanged.
+
+### B6, D3, H2 -- rating from the phone, the system's language, stereo for headsets
+
+Three packages of the plan of 20.11. (docs/PLAN_2026-11-20.md: B6, D3, H2), worked on a branch of their own. This
+file holds their notes until they are folded into docs/engine-internals.md.
+
+#### B6. A rating walk on the web remote
+
+- *What was there.* The favourite, the skip and the ban all act on whatever happens to be on screen; the settings file
+  of 10.11. held 307 taste weights, all skips from a test bench, no favourite and no ban (66). The catalogue page can
+  mark scenes, but from stills. Nobody judges 2,475 scenes in passing.
+- *What changed.* The remote has a **Rate** tab. "Start" makes the running preset walk its scenes that have no
+  verdict yet: each holds for the seconds set on the page (3..60, default 12), the walk cuts with a 0.8-s cross-fade
+  (always `Crossfade.frag`: a shatter would be judged along with the scene), and the music does not cut in between
+  (sections, drops, harmonic jumps, the phrase wait and the fade floors are off, as on the review bench). Three big
+  buttons: **Like** (what `f` does: taste x1.25, the lab's classes x1.1, the roll into `liked_rolls.tsv`; no song cue
+  -- a walk is no moment of a song), **Next** (seen, no opinion: no taste change -- the skip's 0.8 is not applied,
+  a rating walk is not a show to escape from) and **Never again** (the ban, with its rule that enough scenes must be
+  left). Every verdict is also written as one: `[rated] Preset/File.frag = like|next|never`, at once (`sync`), which
+  is what keeps the scene out of the next walk. A counter ("312 of 823 rated"), the scene's name, the seconds left
+  and a bar; **Undo** takes the last verdict back with its favourite or its ban and brings the scene back.
+- *What a scene is.* The unit is the shader file, because the taste and the ban are keyed by it: the models of one 3D
+  family share a shader and get one verdict (Noir: 519 entries, 458 files; 426 in the worktree, which has no models).
+  The order is random; a scene left without a verdict when its time is up stays unrated and comes round again only
+  after every other open one was shown (a pass), so walking away from the phone does not mark anything.
+- *Where it lives.* `SceneScheduler::setRateWalk()` is review mode with the viewer's span and the caller's order: one
+  `bench` flag replaces `m_reviewMode` at every place in `tick()` that gates musical cuts, floors and the no-repeat memory (the
+  walk leaves that memory alone, like a review). The next scene comes from `RenderPipeline::rateNextPick()` at the end
+  of every fade; the pipeline keeps the verdicts (`M_Rated`), the state and the undo. The auto-preset by mood holds
+  while a walk runs (it would switch the preset away mid-walk), a switch of the preset by hand ends the walk, and a
+  pin or a freeze is lifted at the start.
+- *Which scene a verdict is for.* The page sends the file it shows with the verdict. The scene being judged is the one
+  coming in during a fade, and the one the walk cut to itself from the moment it asked for it (else the first poll
+  after "Start" showed the scene from before the walk -- found by the test, below). A second tap before the cut is
+  refused (it would judge the scene after it); a verdict for the scene the walk left by itself less than four seconds
+  ago still lands on that one, without moving on.
+- *Apply.* `Tools/apply_taste.py` reads `[rated]` too: "never" is a ban in that genre (also when the app refused the
+  ban), "like" holds at +1 or above where the learnt weight faded or was skipped back, "next" changes nothing.
+- *Measured* (`Tools/rate_walk_test.py`, over `/api` only, on an empty settings copy, Noir, 4 s per scene): 20 verdicts
+  on 20 different scenes (4 like, 12 next, 4 never), counter 0 -> 20 of 426, a
+  second tap refused, a scene left alone moved on after its 4 s and stayed unrated, undo restored the count and the
+  scene; the copy holds 20 `[rated]` entries, the four likes at `[taste]` 1.25, the four nevers in `[banned]`, and
+  `apply_taste.py` reads "rating walk: 20 verdicts"; the same on a copy of the user's settings file (`--from`; the
+  file itself unchanged, SHA-1 before and after). Phone width (built-in browser, 375 x 812): no horizontal scroll
+  (scroll width 375), the three buttons 351 x 65..69 px, the whole tab including "Stop" on one screen below the preview.
+- *Seen on the way, not changed:* the app crashed once in `glTexSubImage2D` 20 s after the music-video picture in
+  picture started (minidump in the worktree's `Release/`; the call stack runs from `paintGL` into the driver).
+  `VideoPiP.cpp` takes frames in a `videoFrameChanged` lambda without a context object; if the backend emits it from
+  its decoder thread, `g.latest` is replaced while the GL thread uploads it. Not caused by the walk (the crash came
+  with no verdict pending); left for its own look. Tests now run with `videoEnabled=false`. -- *Confirmed and fixed
+  the same night:* docs/engine-internals.md, (67) "Video frames cross threads"; `Tools/pip_soak_test.py` holds it.
+
+#### D3. The language follows the system until it is chosen
+
+- *What was there.* Without a `language` key the program, the Setup tool and the export tool spoke German (the
+  default of `Strings` and `SetupWindow.cpp:243`, `ExportWindow.cpp:285`), while the releases address everyone in
+  English since v1.19.1.
+- *What changed.* `Strings::fromSetting()`: a value in the file wins; without one, `Strings::systemLanguage()`
+  decides -- German when the user's first UI language (`QLocale::system().uiLanguages()`, on Windows the display
+  language; the locale's name if the list is empty) is German (`de`, `de-DE`, `de_AT`, `de-CH` ...), English for
+  everything else. The display language rather than the number format, because the text is what the user reads. The
+  answer is never written: the program remembers it as the session's start value, so the exit (which writes only
+  what the session changed) leaves the file without the key, and the Setup tool writes `language` on "Save" only when
+  the file had one or the choice differs from the system's. The remote page is built from the same table per request,
+  so it follows. `KALEIDO_LOCALE=en_US` (or `de_DE`) stands in for the system in tests.
+- *Measured.* Self test (`Kaleidoscope.exe -q`): five checks (German names, other names including `dsb-DE`, the file
+  without the key follows the locale, a value wins, the start value is not written back), 132 of 132. The program on
+  an empty settings copy: the remote page in English with `KALEIDO_LOCALE=en_US` ("Rate", "Start rating"), in German
+  with `de_DE` ("Bewerten", "Bewerten starten"); after a clean end (`KALEIDO_MAX_RUNTIME_SECS`) the copy has no
+  `language` key. The Setup tool (`--script-shot`, new: saves the window as it first appears and quits) shows
+  "Language: English" / "Sprache: Deutsch" under the two locales. The on-screen menu was not opened (no key presses in
+  tests); it reads the same table.
+
+#### H2. Stereo for headsets: full side-by-side and top-bottom, in the export too
+
+- *What was there (measured first).* Live, the half formats were right: a solo 3D scene rendered once per eye
+  (measured in the window, `Tools/stereo_disparity.py --live`: the three cards of `Engine/StereoProbe3D` at 8, 24 and
+  60 units at -4.51, 0.00 and +1.32 % of the eye's width, right minus left, predicted -4.50, 0, +1.35).  **The video
+  export wrote no stereo at all:** `GLwidget::beginExport()` set the stereo mode to 0 ("packing would halve the
+  picture"), so `-e ... -3 sbs` and `-3 tb` gave a plain 960 x 540 picture.  **A fade between a 3D and a 2D scene
+  dropped the real depth in one frame:** the packed state only covered a solo 3D scene and 3D<->3D fades, so the
+  first frame of a 3D -> 2D fade rendered the 3D scene mono and gave it the depth of its brightness -- the near card
+  went from -4.58 % (in front of the screen) to +0.42 % (behind it), and back the other way at the end of a 2D -> 3D
+  fade.
+- *What changed.*
+  - Two more modes, 4 full side-by-side and 5 full top-bottom (`-3 fsbs` / `ftb`, `z`, the menu, the Setup tool, the
+    remote): each eye gets the frame's whole size and the picture is twice as wide or high.  The pipeline renders
+    the frame at ONE eye's size (`RenderPipeline::frameSize()`: half the display's width or height; a switch at run
+    time resizes it at the start of the next frame), so a 2D scene renders as before and the present pass shows it
+    in both halves; `Present.frag` takes the frame's proportions from `frameRes` (one eye) instead of the display.
+    A solo 3D scene renders its two eyes into a target twice the frame's size (`m_stereoTarget`, each eye a whole
+    frame -- its projection then has the eye's own aspect), which goes straight to the present pass; the combine
+    and the trails were a passthrough for a packed frame anyway (the trails start over after it, `m_trailRestart`).
+  - The export keeps a stereo mode given with `-3` (the ini's stays a live setting); `-g` is one eye's size in the
+    full formats (`VideoExport::frameWidth()/frameHeight()` double it for the encoder and its probe), and the default
+    file name carries the layout: `_SBS`, `_TB`, `_SBSF`, `_TBF`.  Looked up: DeoVR reads SBS / LR / 3DH and TB / 3DV
+    / OverUnder anywhere in the name, case-insensitive (deovr.com/doc, section 10); HereSphere reads `_sbs` as
+    side-by-side and `_SBSF` / `_LRF` as full side-by-side (its developer, itch.io).  Neither documents a tag for full
+    top-bottom; `_TBF` follows the pattern.  A name given with `-d` is kept.
+  - A fade between a 3D and a 2D scene is packed now, in every packed format: the 3D side renders per eye, the 2D
+    side mono, and `Engine/StereoMix.frag` gives the mono side its two eyes with the depth the present pass would give
+    it (its bloom does not exist at that point: a bright pass over a 3 x 3 blur stands in).  The rig of the 2D side
+    still moves it.
+- *Measured* (`Tools/stereo_disparity.py`: the export at 960 x 540 per frame/eye, silence, `KALEIDO_SCENE_SWEEP=4`;
+  per eye = the image's offset from the middle of the two, in % of the eye's width):
+
+  | Format | Video | Near card (8) | Zero plane (24) | Far card (60) | Grey disc (2D) |
+  |---|---|---|---|---|---|
+  | predicted | | -4.50 | 0.00 | +1.35 | +0.40 |
+  | sbs | 960 x 540 | -4.58 | 0.00 | +1.25 | +0.41 |
+  | tb | 960 x 540 | -4.37 | 0.00 | +1.46 | +0.41 |
+  | fsbs | 1920 x 540 | -4.37 | 0.00 | +1.46 | +0.41 |
+  | ftb | 960 x 1080 | -4.39 | 0.00 | +1.46 | +0.40 |
+  | mono | 960 x 540 | 0.00 | 0.00 | 0.00 | 0.00 |
+
+  Sign per eye: the near card's image lies 2.2..2.3 % right of the middle in the left eye and as far left in the
+  right one (crossed: in front of the screen), the far card's 0.6..0.7 % the other way (behind it).  The deviations
+  are one pixel of the 480- or 960-pixel eye.  The 2D grey disc is too dark for the bloom, so its depth is the radial
+  term alone and the prediction exact; the white disc lies in front of it (+0.08..+0.15 %) -- but still behind the
+  screen: with the zero plane at a depth of 0.45, a 2D picture lies behind the screen except where its bloom is
+  bright.  Live in a 2880 x 1620 window: sbs and tb as above; fsbs (eyes 1440 x 1620, 8:9) -11.25 / -2.29 / +0.49
+  (predicted -11.26 / -2.25 / +0.45), ftb (eyes 2880 x 810, 32:9) -1.11 / +1.11 / +1.81 (-1.13 / +1.12 / +1.80) --
+  the zero plane moves with the eye's aspect (it lies where projM[0][0] / z = 0.045: 24 units at 16:9, 48 at 8:9,
+  6 at 32:9), which is the convention every 3D scene was written for; a full format on a 16:9 window has such eyes,
+  a 32:9 or doubled virtual screen has 16:9 ones.  Switching 1 -> 4 -> 5 -> 2 -> 4 -> 0 at run time over `/api`
+  measured the same.
+- *The fade, after:* the near card holds -4.58 % (sbs) and -4.37..-4.58 % (fsbs) through the fade until it is gone;
+  the white disc comes in at +0.03..+0.08 % and settles at +0.11..+0.14 % once the 2D scene stands alone (the
+  bloom stand-in; a step of at most 0.06 % of the eye's width, against the 5 % jump before).
+- *Half formats unchanged:* frozen frames (`KALEIDO_FREEZE_SHOT`, the displayed picture with its packing) of
+  StereoProbe3D, StereoProbe2D, PhotoCarousel (3D) and BreathingFractal (2D) in modes 0..3, from a build of
+  3b047c36 and from this one (`Tools/stereo_ab.py`): mean and largest difference 0 in all 16.  What does change in
+  the half formats is the 2D <-> 3D fade above, on purpose.
+- *Encoder limits* (the export's own NVENC settings, 1-s clips, RTX 5090): 2 x 1920 x 1080 -- H.265 level 5.0
+  (automatic), H.264 5.1, AV1 5.1; 2 x 2560 x 1440 (5120 x 1440) -- H.265 5.1, H.264 refuses (wider than 4096);
+  2 x 3840 x 2160 (7680 x 2160) -- H.265 6.1 at 60 fps, 6.0 at 30, AV1 6.1, no H.264.  The largest sensible size is
+  2 x 1440p: level 5.1 is the 4K60 class of decoder a headset has; 2 x 2160p needs an 8K (level 6) decoder.
+- *Self test:* four more checks (`-g` doubled in the full formats, the tags, the six modes and their wrap): 136 of 136.
+  `Tools/shadercheck.py --new`, `check_strings`, `check_build_lists`, `check_uniform_types`, Doxygen (0 warnings):
+  clean.
+- *Not verified:* the picture in a headset (the user's part), the players' reaction to the tags (not tried on a
+  device), a virtual-screen app's full-SBS mode.  `-3` in the export tool's window: not offered there (command line
+  only).
+
+### C1, C2 -- the transitions in the catalogue: from inside the fade, and as a strip
+
+- *Why.*  Every transition picture was a real-time recording of a forced fade between the two reference scenes, and
+  `Tools/pick_best_frame.py` kept the frame with the most contrast -- for about half of them that was one of the plain
+  scenes, not the fade (v1.16 noted it, nobody fixed it).
+- *How now* (`Tools/trans_frames.py`).  One video export per transition on the frame clock: TunnelPlain and
+  AuroraBorealisOverFjord, both solo for 4 s with a 10-s fade, the transition forced (`KALEIDO_TRANS_STYLE`), one fixed
+  photo, 40 s of silence (with a beat the scheduler clamps a fade to four beats).  The scheduler fades from the first
+  scene to the other and back, so one render gives both pictures: `_2D` the fade over TunnelPlain into the aurora,
+  `_3D` the other way.  `KALEIDO_FADE_LOG` now stamps each fade with the scheduler's clock
+  (`SceneScheduler::logClock()`), so the frames are taken at known points of the fade: the middle (progress 0.5),
+  unless that frame is less than a quarter of the way from either end -- then the frame of 0.3..0.7 farthest from
+  both -- and for the strip 0.1 / 0.3 / 0.5 / 0.7 / 0.9 of the 2D fade, five frames of 288 x 162 side by side in
+  `docs/Catalog/strip/<Name>.jpg`.  About 8 s per transition (the old way: two recordings of 16 s each); 210 in
+  30 minutes.  *A seed does not fix the order:* which reference scene comes first depends on the transition's own
+  rolls, so the scene each fade went into is read from the log instead.
+- *Result.*  420 pictures, none less than a quarter of the way from an end; 5 late transitions (CurtainRaiseTwoPart,
+  EmbroideryStitchFill, FeltPressFibreMerge, HighlightBloomReveal, LiquidCrystalDefectDomain, their 3D fade) taken at
+  0.7.  210 strips, 9.5 MB together; the catalogue page loads a strip only when its entry is opened.  On a contact
+  sheet of 30 random pictures 28 show both scenes or the transition's own in-between state (a grey bridge, a white
+  flash, streaks, a wormhole); Luminance and WaterRipple show mostly one scene at 0.5 -- their strips show the course.
+
+### D1, G1, G2 -- the CI's net, a fold, the jump test under Mesa
+
+- *D1, the CI checks what only the reference machine checked.*  New steps in the Windows job: the app's self test
+  (`Kaleidoscope.exe -q`), the analyzer against its truth and baseline (`analyzer_regress.py --allow-missing`:
+  `broadband120.wav` is not in the repository, so the CI checks the chord and structure tracks only; `--update` refuses
+  that flag), the scene plan (`check_schedule.py --quick`, which reads QTDIR now), UI strings, mood tags, camera shake,
+  shader docs and the source layout (clang-format from the Visual Studio LLVM toolset; its version is printed).
+  Two traps on the way: the runner's Python has no numpy, and `jurplel/install-qt-action` puts its own Python first on
+  PATH -- a `pip install numpy` before "Install Qt" installed into a Python the later steps no longer ran (found by the
+  Linux worktree's runs).  The step sits after "Install Qt" now.  The proof that a new step gates: a temporary branch
+  with an analyzer baseline the analyzer cannot meet (`chord_changes_seen` 99) turned red at exactly that step.  (A
+  mislabelled English text, the first try, already broke the *build*: the Kaleidoscope project runs check_strings.py
+  as a build step -- the strings were gated all along.)
+- *G2, the jump test under Mesa gates.*  In the last green runs all 210 transitions passed under llvmpipe, as on the
+  reference machine, and cfxcheck had 0 failures of 4; both steps run whenever Mesa could be installed and gate now
+  (they were continue-on-error).
+- *G1, HyperbolicKaleidoscope's fold.*  `a = abs(mod(a, sector) - sector/2)` maps the wedge [0, sector/2] onto itself
+  turned around (the trap of 22.10.), so a point and its image in the edge circle folded to different places: 95-100 %
+  of 20,000 random pairs for six {p,q} (`Tools/hyperfold_check.py`).  Now `sector/2 - abs(...)`: 0 %.  The seam keeps
+  measuring the mirror through the edge midpoints, as before.
+
+### C3 -- the 23 transitions above the calm genres' limits
+
+187 of 210 pass the soft limits (core80 >= 0.45, flash <= 30, flicker <= 1.25, step <= 0.10).  The other 23, by what
+they are tagged and where they run:
+
+- *Hard on purpose* (aggressive, bright, wipe or blocky; only in the driving genres): CausticLiquidWarp (flash 44),
+  HyperspaceStreak (flicker 1.34), LichtenbergLightningWipe (flash 30), KaleidoscopicPolytope (flash 72),
+  AbrikosovVortexLatticeSweep (flicker 1.27), SolitonWaveCollision (flash 61), BloomWhiteFloodHandoff (flash 75 -- a
+  white flood by design), SuperfluidHe4Fountain (flash 35), ChromatographySeparation (flash 32), MagnonRippleBeams
+  (core 0.38), HexShutterTurn, TileFlipWaveRipple (core 0.35), CurtainRaiseTwoPart (core 0.40), Tesseract4DRotation
+  (flicker 1.49), NewtonRingsInterference (flash 36), GyroidMembraneMelt (flash 31).
+- *Worth a look:* two tagged calm sit just over a limit -- PenroseMorph (flicker 1.30) and PosterBandRelease (core
+  0.35); four tagged dark flash and run in Noir -- WormholeSpaceFold (53), QuantumWaveCollapse (43), PoincareSpin (38,
+  flicker 2.12), ReactionDiffusionTuring (31); DewettingFilmRupture (dark, core 0.38).  A `trVeil()`-like ceiling on
+  the flash would suit the dark ones.  Nothing changed here (the plan's C3 is a report).
+
+### D2, D4 -- Linux in the CI, and an AppImage
+
+Packages D2 and D4 of docs/PLAN_2026-11-20.md. The README said "builds from source on Linux"; the last build had been
+under WSL in mid-October (Ubuntu 22.04, Qt 6.2.4, 121 checks), and nothing had checked it since. Now the CI builds
+it on every run, on two Ubuntu releases with two Qt versions, packs an AppImage and starts that AppImage in a fresh
+container without Qt. Nobody has run it on a Linux machine with a graphics card and a sound server yet: the README
+says so.
+
+#### What the CI does now (.github/workflows/ci.yml, beside the unchanged Windows job)
+
+- **`linux`** -- Ubuntu 24.04, Qt 6.4.2 from the distribution, the packages the README names. `cmake` build,
+  the self test `Kaleidoscope -q` under Xvfb, then a video export of a generated five-second WAV (`-e`, 640 x 360,
+  30 fps, preset Club, `KALEIDO_SEED=1`) under Xvfb with Mesa's llvmpipe, then every shader of Komplett compiled
+  once through Ubuntu's own Mesa 25.2 (`KALEIDO_COMPILE_ALL`), then two preset switches over the web remote
+  (Club -> Cinematic -> Noir) and a regular end. Gates: the build, `N passed, 0 failed`, exit codes 0, "Presets: N
+  files read" with N > 0, an mp4 of 4.5..5.6 s by ffprobe, "COMPILEALL done" within 10 minutes (else the shader in
+  progress is named), the program alive after each switch. A Linux build break makes the workflow red -- seen on
+  the first run, which stopped at `uniform.h` (below).
+- **`appimage`** -- Ubuntu 22.04 (the oldest runner GitHub still maintains: its glibc 2.35 is the floor the package
+  needs), Qt 6.2.4 from the distribution, `bash Tools/appimage/build_appimage.sh`, the AppImage as the artifact
+  `Kaleidoscope-AppImage` (14 days).
+- **`appimage-run`** -- a fresh `ubuntu:24.04` container with what a desktop has (an X server, Mesa, fontconfig,
+  harfbuzz, libOpenGL) and no Qt (the step fails if any libQt5/6 is installed). The AppImage runs with
+  `--appimage-extract-and-run` (no FUSE in containers): `-q`, then the five-second export, started from a third folder
+  with relative paths (`-e ../in/smoke.wav -d out/smoke.mp4 -l`) and a test photo in
+  `~/.local/share/KaleidoscopeVisualizer/Images`. Gates: exit codes, the mp4's length, nothing new beside the
+  AppImage, and four log lines: the program folder it moved into, the settings file in `~/.config`, the presets read,
+  and the photo source in `~/.local/share` ("preset default", i.e. the preset's `..\Images` mapped).
+
+#### What was found
+
+- *The first build on a case-sensitive file system* stopped at `Source/Uniform.cpp`: `#include "uniform.h"` for
+  `Uniform.h`. The WSL builds ran on a Windows drive, which does not care. One include; a scan of all includes,
+  all preset paths and all string paths in Source/ found no second case mismatch.
+- *Qt 6.2.4 (Ubuntu 22.04) and 6.4.2 (24.04) build the current sources* without a version guard more than those of
+  October. GCC's only warnings are two unchecked `fread` results in AudioAnalyzer.cpp.
+- *What CMake builds:* the visualizer, nothing else. The Setup tool, the Preset editor and the export tool are
+  vcxproj only. The export tool only drives `Kaleidoscope -e`, which exists on Linux; the Setup tool's settings are
+  ini keys. The README says this now instead of implying the tools.
+- *The program found nothing when started from elsewhere.* Every asset path is relative to the working folder
+  (`../Engine`, `../Presets`), which on Windows the shortcuts and bin\ provide. An AppImage is started from wherever
+  the user is.
+- *Everything it writes went into its own folder*: the settings file and liked_rolls.tsv (`..\`), the log (`-l`),
+  `recordings\`, scene-cost.json and the diagnostics files (working folder), the web remote's thumbnails
+  (`..\ThumbCache`), the lyrics and artist cache (`..\cache`), Marked.xml (into `Presets\`), the screenshot and replay
+  fallbacks. In a mounted AppImage all of that fails (read-only); with `--appimage-extract-and-run` it lands in a
+  temporary copy that is deleted at the exit. The photos and models a preset names (`..\Images`, `..\Models\x.glb`)
+  cannot be put into the image at all.
+
+#### What changed
+
+- **`SettingsFile::userFolders()`** (Source/SettingsFile.h): true in an AppImage -- the runtime's APPDIR holds this
+  executable (`/proc/self/exe`), so a program started from inside another AppImage does not count -- or when the
+  root folder cannot be written to; **always false on Windows**. Then:
+
+  | | normally (Windows, a writable build) | userFolders() |
+  |---|---|---|
+  | settings, liked_rolls.tsv | `..\kaleidoscope_settings.ini` | `~/.config/KaleidoscopeVisualizer/` |
+  | log (`-l`), scene-cost.json | working folder | `~/.local/state/KaleidoscopeVisualizer/` |
+  | thumbnails, lyrics/artist cache | `..\ThumbCache`, `..\cache` | `~/.cache/KaleidoscopeVisualizer/` |
+  | recordings | `recordings\` (working folder) | `~/Videos/Kaleidoscope/recordings` |
+  | screenshot/replay fallback (no Pictures/Videos) | working folder | `~/.local/share/KaleidoscopeVisualizer/` |
+  | Marked.xml | `Presets\` | `~/.local/share/KaleidoscopeVisualizer/Presets` (read as presets too) |
+  | the presets' `..\Images`, `..\Models` | the program's folders | `~/.local/share/KaleidoscopeVisualizer/Images`, `Models` |
+
+  The XDG variables move them (a relative value is ignored, as the specification says). `writablePath(p, kind)`
+  returns `p` with the host's separators -- the same string as before on Windows -- or the same name below the
+  user's folder of that kind; `userContent(p)` maps only `..\Images` and `..\Models`. `check_settings_path.py`
+  stays green: the literal is still only in SettingsFile.h.
+- **main.cpp `enterProgramFolder()`** (not on Windows): in an AppImage always, otherwise when `../Engine` is not found
+  from the working folder but from the executable's, the executable's folder becomes the working folder. The path
+  options (`-e -d -w -x -f -k -v`) are taken relative to where the user started (`argPath()`); on Windows that
+  function returns the argument unchanged. The log names both folders ("Program folder: ... (started in ...)").
+- **Sound:** the capture still records `@DEFAULT_MONITOR@` (what the default output plays; PipeWire's pulse server
+  answers to the name too). `PULSE_SOURCE` now picks another source -- libpulse applies it when the stream names
+  no device, so with it set none is named. Moving the stream in pavucontrol works without it, for the session.
+- **TwentyFourCellBreathing.frag**: the F4 fold's loop bound is no longer a compile-time constant; see the freeze
+  under Numbers.
+- **The photo loader stops cooperatively on Linux** (`endImageLoader()` in RenderPipeline.cpp): see Numbers.
+- **Tools/appimage/build_appimage.sh** + `kaleidoscope.desktop`: cmake build, AppDir with the executable in usr/bin
+  and Engine, Scene2D, Scene3D, FX, Transitions, Presets (tracked files only) and standard.vert in usr/ -- the
+  layout the program expects -- then linuxdeploy `1-alpha-20251107-1` with linuxdeploy-plugin-qt `1-alpha-20250213-1`
+  (pinned, downloaded into the work folder), extract-and-run (no FUSE needed to build).
+
+#### Numbers
+
+- *The AppImage:* 39.7 MB (zstd squashfs), 146 MB unpacked, 103 ELF files; built in 2 min on the runner
+  (`appimage` job about 2.5 min with the packages). From the system it takes, besides glibc and libstdc++, what
+  linuxdeploy leaves to every desktop: libGL/libGLX/libEGL/libOpenGL, libX11/libxcb, fontconfig, freetype,
+  harfbuzz, zlib. In the bare container two were missing at first (libOpenGL.so.0 for 22 files, libharfbuzz.so.0
+  for 15); with `libopengl0` and `libharfbuzz0b` -- both on every desktop with Qt programs -- `ldd` finds all.
+  libpulse(-simple) 15.99 and GStreamer's core libraries come along.
+- *The self test* `-q`: 127 of 127 on Ubuntu 24.04 (Qt 6.4.2, build tree) and from the AppImage (Qt 6.2.4) in the
+  container; 136 of 136 after merging phos-cues' new checks. As root in the container it was 126 of 127: "a settings file that cannot be written is noticed"
+  cannot fail for root, who writes to a read-only file anyway -- the test runs as a normal user now
+  (Tools/appimage/test_appimage.sh refuses root).
+- *The export* under Xvfb with llvmpipe (LLVM 20.1.2, Mesa 25.2.8, OpenGL 4.3 core): 150 frames of 640 x 360 in
+  12.8..13.3 s, 18.3..18.9 ms of engine time per frame, the mp4 5.000 s long; the same in the build tree and from
+  the AppImage. All twelve presets read in 0.42 s ("Presets: 12 files read"), with the test photo found in
+  `~/.local/share/KaleidoscopeVisualizer/Images` ("Nr of images: 1").
+- *Written by the AppImage run:* the log in `~/.local/state`, Qt's and Mesa's own shader caches in `~/.cache`
+  (5 and 659 files) -- nothing beside the AppImage, nothing in the extracted copy that outlives the run.
+- *The first export ended with exit code 134* ("QThread: Destroyed while thread is still running") after its video
+  was complete: RenderPipeline deleted the photo loader right after `terminate()`. On Windows `terminate()` has
+  ended the thread when it returns; on Linux it is a `pthread_cancel`, and the thread ends at its next cancellation
+  point -- a sleep, or a `read()` inside a JPEG decoder, leaving behind whatever that held. First fixed with a
+  `wait()` after it; now `endImageLoader()`: Windows as always (`terminate()`, then a `wait()` that returns at once),
+  Linux asks (`requestInterruption()`, which `ImageLoader::run()` checks between photos and between candidates) and
+  waits, 50 ms at most when idle. On Linux the same race decided every switch of
+  preset (`RenderPipeline::stop()` from GLwidget::timerEvent) and every end through the destructors (an export, a
+  batch render, closing the window; Esc/q leave by `exit()`), and the deleting thread wins it nearly always. The runs
+  the October WSL entries name were `-q` and `--schedule`, neither of which starts the loader. The `linux` job now
+  also switches the preset twice over the web remote (`/api/config` with the `X-Kaleido: 1` header) and ends by
+  `KALEIDO_MAX_RUNTIME_SECS`. That step was not run against the unrepaired loader; the export's exit code 134 was
+  the failure seen.
+- *A freeze inside Mesa: TwentyFourCellBreathing.* One CI run of the switch step never ended. A temporary workflow
+  repeated it (export first, then ten runs per machine, the hung program's threads shown by gdb): the main thread sat
+  in a deep self-recursion inside libgallium at the first frames after a switch to Allround, Ambient or Noir, most
+  often entered from `shaderPrebuildStart()` (the background compile of the next scenes). Per machine 0 to 10 of 10
+  runs (31 of 50 in one round; Club -> Cinematic -> Noir 39 of 40). Mesa's debug symbols for that build
+  (25.2.8-0ubuntu0.24.04.5) are on neither Ubuntu's debuginfod nor ddebs, so the frames stayed unnamed.
+  - *Wrong first conclusion, taken back:* with `KALEIDO_NO_PARALLEL_COMPILE=1` none of 30 runs froze, and the
+    background compile was switched off for every Mesa driver. The next round froze without it too, in
+    `setShaders()` from `EffectShader::initUniforms()`: the background compile only met the culprit sooner. Reverted.
+  - *The culprit:* every shader of Komplett compiled once (`KALEIDO_COMPILE_ALL`, one machine each): 1285 went
+    through, then `Scene2D/TwentyFourCellBreathing.frag` was still compiling after 45 minutes, on both machines. With
+    it left out the rest -- 2425 scenes, 30 combines, 210 transitions -- compiled in 17.5 s (7 ms each), none over
+    10 s. That shader alone: not compiled after 300 s as it is, nor with its 90-step march loop made non-unrollable;
+    compiled in 9 s (program start included) with the 6-step F4 fold loop made non-unrollable (`i < 6 + int( min(
+    audioLevel, 0.0 ) )`). The fold sits in `map24()`, which is inlined eight times (the march, the start test, six
+    for the normal); unrolled in each, the shader outgrows what this Mesa's optimiser finishes. The Windows job's
+    Mesa (26.2) and NVIDIA compile the original. The scene is in Allround, Ambient, Noir and Komplett: on Ubuntu 24.04
+    each of them froze for good whenever the scene was prepared -- with radeonsi or iris too, if the unrolling is in
+    Mesa's shared NIR code, which is likely but not shown.
+  - *The gate:* the `linux` job compiles all of Komplett under Ubuntu's Mesa and names the shader that does not
+    finish in ten minutes; the switch step goes Club -> Cinematic -> Noir (Noir holds the scene). With the fix, in
+    the CI run of 20.11.2026 03:35 UTC: compile-all done in 29 s (2426 scenes, 30 combines, 210 transitions; 25.0 s
+    compiling, 9 ms each), both switches alive, exit code 0.
+- *Times on the runners:* `linux` 3.2 min (packages about 35 s, build 37..43 s, self test 9..24 s, export 17..20 s,
+  compile-all 29 s, switches 51 s), `appimage` 2.2 min (the AppImage itself 81 s), `appimage-run` 1.0 min; the three run beside the Windows job (about
+  12 min), so the workflow takes no longer than before. llvmpipe renders the 1920 x 1080 window at render scale 0.25 with 4..9 fps.
+- *apt on the 24.04 runner:* the runner's mirror list (us-east-2.ec2.archive.ubuntu.com first) delivered 34 packages
+  in 6.5 minutes, three runs in a row, where the first run had needed 29 s; putting other mirrors in front of the
+  list changed nothing (apt kept the EC2 one). The container jobs on the same runner image, which use
+  archive.ubuntu.com, installed in seconds. The `linux` job names that archive in its sources now and skips the
+  man-db index rebuild.
+
+#### What it does not cover, and what was left out
+
+- *Real hardware.* Everything ran on llvmpipe under Xvfb: no GPU driver, no Wayland, no sound server. Whether the
+  capture hears PipeWire, whether the NVIDIA/AMD drivers compile all 3,200 shaders as Mesa does, how fast it is,
+  whether radeonsi or iris on Ubuntu 24.04 froze on TwentyFourCellBreathing as llvmpipe did -- open until someone
+  runs it.
+- *The mesh scenes* (geom="mesh", 264 of Komplett) were not part of the compile-all: without the model pack they are
+  left out when the preset is read.
+- *FUSE mounting.* The container has no FUSE, so the test uses `--appimage-extract-and-run`; the normal start
+  mounts the image read-only, which userFolders() covers by the same rule (APPDIR).
+- *Wayland.* The Qt plugin deploys the xcb platform only; on a Wayland desktop Qt falls back to XWayland.
+- *Video input (`-v`).* Qt 6.2's multimedia is built on GStreamer; the AppImage carries GStreamer's core libraries
+  but none of its plugins, so it depends on the system's. Not tested.
+- *ShaderForge* (the program-binary cache) stays Windows-only (it keys on LOCALAPPDATA); on Linux the drivers keep
+  their own caches under `~/.cache`. Not ported: no measurement says it is needed there.
+- *A newer Qt in the AppImage* (aqt's 6.8 binaries) was not tried: the distribution's Qt on the oldest runner is the
+  combination linuxdeploy-plugin-qt is made for, and it builds the sources.
+- *Release:* the AppImage is a CI artifact. It becomes a release package with v1.20.0, with the user's OK.
+
+### E1 -- the catalogue page grows up (20.11.2026)
+
+`docs/Catalog/index.html`, data from `Tools/make_catalog.py`; still static, no dependency, works from the disk.
+
+- *Header.* "Download for Windows": the installer and the portable ZIP at the fixed addresses
+  `releases/latest/download/KaleidoscopeVisualizer-Setup.exe` / `-portable.zip` (always the newest release, no page
+  edit per release), and "GitHub". The demo video gets a slot: `DEMO_VIDEO_URL` at the top of the script; the link
+  shows only when it is set. On phones the header no longer sticks: with six rows it covered 590 of 812 pixels.
+- *Links to an entry.* `#Name` opens its detail view. Opening from the grid pushes one history entry, paging inside
+  the view replaces it, so the back button closes the view wherever one paged to; closing by hand goes back too, and a
+  view opened by a link drops the `#Name` instead. A name a scene and a transition share (only VoronoiShatter) is the
+  scene's; the transition is `#VoronoiShatter:T`, and every entry also answers to `#Name:<kind>` and to its name in
+  any case. An unknown or malformed hash opens nothing (the lookup is a prototype-free map; nothing of the hash
+  reaches the page).
+- *Paging.* Left/right arrow keys (not with Alt: that is the browser's back) and Previous/Next buttons walk the current
+  filtered and sorted list, with "12 / 340" beside them. An entry outside the selection (opened by a link or from
+  "similar scenes") pages to the ones next to where it would stand in that order. "Random scene" (from the header:
+  "Random transition" when the kind filter says so) picks from the selection, "Random" in the view as well. Hearts and
+  crosses are in the view too, so one can page and mark.
+- *Optional data -- the page works with and without it; `make_catalog.py` writes a key only where there is a value:*
+  `s` up to eight similar scenes from `Tools/scene_neighbours.tsv` (header `name cluster dup_group neighbours
+  distances`, `neighbours` a comma list, nearest first; names not in the catalogue are dropped), shown as thumbnails
+  (the card's picture) that open the entry; `x` the column `react` of `Tools/scene_reactivity.tsv` (header `name
+  react_struct react_sync react`, a percentile rank 0..1, rounded to two decimals), shown as "reacts to music: strong /
+  medium / subtle" (>= 0.66 / >= 0.33 / below) with a filter row "Reacts" that appears only with the data; `p` when
+  `docs/Catalog/strip/<Name>.jpg` exists for a transition, shown in the view (loaded only there; a strip that is
+  listed but missing hides itself). Pages publishes `docs/Catalog` as a whole, so the strips go live with it.
+- *Regenerating only the data:* `python Tools/make_catalog.py --data-only` writes catalog-data.js and touches neither a
+  picture nor Katalog.md/.html (`--data-out`, `--neighbours`, `--reactivity` for tests). Without the three inputs the
+  file is byte for byte what it was. With neighbours for 2228 scenes it grew from 1.51 to 1.94 MB (gzip 464 -> 536 KB).
+- *Accessibility:* the filter chips are buttons with `aria-pressed` (they were spans: no keyboard), card names are
+  links to `#Name` (a middle click opens the entry in a new tab), a visible focus ring everywhere, the view is labelled
+  by its title and takes the focus itself rather than on "Previous".
+- *Checked* in the built-in browser and headless Edge at 1280 and 520 pixels and the phone preset (375): no
+  horizontal scroll, every referenced picture exists (7903, plus the strips and the neighbours' names), the hash cases
+  above, back/forward/close in every order, paging order = grid order under filter and sort, random within the
+  filter. Filtering or sorting the 2715 entries takes about 10 ms, opening the view 34 ms, a page step 3 ms.
+- *A trap on the way:* in a hidden browser pane Chromium fires a dialog's `close` event only with the next frame, i.e.
+  never; the history clean-up ran there and the address kept its `#Name`. It runs directly from the buttons, on
+  `cancel` (Escape) and on `close` now, once, whichever comes first.
+
+### F1 -- memory over hours: what a scene once had, it kept
+
+- *The tool* (`Tools/soak.py`).  The app live in real time (not an export): the review track looped through `-w`,
+  the scene sweep (`KALEIDO_SCENE_SWEEP`) a new scene every 6 s, `KALEIDO_GL_DEBUG` counting GL errors, a private
+  settings copy, below normal priority, the window never taking the focus.  Every ten seconds: private memory,
+  working set, the process's dedicated GPU memory (the Windows counter "GPU Process Memory(pid_*)\Dedicated Usage"),
+  scene changes, GL errors; at the end the growth per hour of a straight line from minute 10 on, against the plan's
+  acceptance (under 20 MB an hour, GPU memory bounded, no GL error, at least 600 changes).  `--entries N` builds a
+  hidden preset of the first N entries repeated (a cache levels off after the first round, a leak goes on growing);
+  `--shuffle SEED` one of all entries in a shuffled order.  The sweep follows the catalogue, and in Allround entries
+  43 to about 500 are 3D: an hour in catalogue order is an hour of 3D scenes, which no show is.
+- *First measurement* (Allround in catalogue order, 62 min, 599 changes, 0 GL errors): private memory 1.56 ->
+  7.58 GB, GPU memory 0.77 -> 4.04 GB, still +1.48 GB and +1.41 GB an hour from minute 10.  With `--entries 25`
+  (32 min, 322 changes): flat, -1.3 MB an hour, GPU 762 MB throughout.  So it grew with every scene not seen
+  before.  On a card with 8 GB a day of Allround would not fit.
+- *What a scene kept.*
+  - *Its program, and the warm-up compiled the whole preset.*  `RenderPipeline::beginFrame()` compiled every plain
+    2D scene ahead of time and kept it; the loop that collected finished background builds also called
+    `shaderPrebuildStart()` for every scene it passed, so it started builds for all 2,471 at once.
+  - *The background builds were never let go.*  The program cache counts holders (`s_progRefs`); a blocking build is
+    stored with one reference, the caller's.  A background build (`collectPrebuild()`, and the compile worker's
+    results in `shaderVariantTake()`) was stored the same way -- one reference nobody held -- and whoever took it
+    added its own.  Released, it went back to 1, never to 0: every program the warm-up had built and every variant a
+    walking lab had ever asked for stayed in the driver.  A first budget for the 2D programs therefore changed
+    nothing (the hour after: 7.04 GB private and 4.11 GB GPU at the end, the same height): the evicted scenes
+    released their programs, and the cache kept them.
+  - *A 3D scene's geometry.*  Built when the scene is compiled -- the warm-up compiles all 3D scenes at the start --
+    and kept for good: a points cloud 1.9 MB, a field of cubes 5.6 MB, an indirect scene's generator output 19.2 MB
+    plus its state; the driver commits it at the scene's first draw.  Only the meshes had a budget (16).  A run with
+    the two fixes above, in catalogue order, still went 3.95 -> 5.90 GB private and 1.33 -> 2.84 GB GPU in ten
+    minutes of stations and ships; stopped there.
+- *The fix* (three commits).
+  - `progStore()` takes the references it hands out: 1 for a blocking build, 0 for a background build that only
+    waits in the cache; the last release deletes the program.  `shaderCacheDrop()` (the hot reload) deletes a
+    waiting build nobody has taken.  The count is exact now, so a double release would delete a program in use --
+    the soak's GL error count is the guard (0).
+  - A working set of 2D programs (`trimProgramResidency()`, 160, `KALEIDO_PROGRAM_BUDGET`): the scene on screen,
+    the one fading in and the most recently used or compiled ahead; the rest go back to their state before the first
+    use (`cleanShaderPrograms()`, the hot reload's path) and compile in the background again when they are due.  The
+    warm-up builds ahead only while there is room, going round the preset from where it stopped (`m_warmCursor`); an
+    eviction trims one below the budget, so after each change one more scene is built ahead and the set that is
+    ready for a cut (a drop takes only those) keeps changing.  The collect loop no longer starts builds; without the
+    driver's background compile (`shaderPrebuildAvailable()`, Mesa in the CI) the blocking path keeps the same limit.
+    Walking labs, 3D and other non-plain scenes are compiled ahead as before and never evicted.
+  - A working set of procedural 3D geometry beside the meshes' (`trimMeshResidency()`, 24, `KALEIDO_GEOM_BUDGET`):
+    `Scene3DShader::releaseGeometry()` frees the VBO, the VAO and an indirect scene's command and state buffers; the
+    programs stay (compiled at the start, shared, and a recompile would stall).  `draw()` builds the geometry again
+    the next time the scene is due -- CPU loops and an upload, a few ms; an indirect scene's generator state starts
+    from zero, as on its first appearance.  Checked by rendering two scenes of each procedural kind (16) with a
+    budget of 4, so that most of them were given back before their first draw: every one shows its structure beside
+    its catalogue picture.
+- *Measured after the fix* (Allround shuffled with seed 1, 62 min, 616 changes -- in the first 16 minutes 120 2D,
+  17 mesh and 22 procedural 3D scenes -- 0 GL errors): private 1.92 GB at the start, up to 4.10 GB at minute 19
+  while the mesh working set filled (almost every big step was a model: MeshRocketLaunch +555 MB private and
+  +342 MB GPU), then 3.30..4.10 GB to the end (3.54 GB); GPU 2.15..2.94 GB after the warm-up.  The line from
+  minute 10: -366 MB and -404 MB an hour, from minute 20 -464 and -405: no growth.  66 models were loaded in the
+  hour, each new one replacing one given back.  **F1 met.**  Self test 137 of 137.
+- *Not covered.*  A day-long run (one hour here).  How much of the old growth each of the three causes had: there
+  was no run with each fix alone.  The meshes are the bulk of what stays: 16 models at up to a few hundred MB each
+  (a model's vertex buffer and its material texture arrays); on a card with less memory `KALEIDO_MESH_BUDGET` is the
+  knob.
+
 ## 20.11.2026 (67, fix): video frames cross threads -- the PiP crash in glTexSubImage2D, and the beat tracker's stack
 
 The rating-walk test of B6 (docs/engine-internals-67-ui.md) saw the app die in `glTexSubImage2D` about 20 s after the
