@@ -7906,7 +7906,8 @@ annotated demos, and the beat phase never measured at all.
   port of the method of 10.11. matched the C++ in every demo (no demo with more than 1 % of its blocks off by
   0.5 BPM) and reproduced the table to the percent.  `--real` scores seven real tracks against `Tools/tempo_truth.tsv`
   (the values come from the analyser's medians and a whole-track autocorrelation where both agree; Ironic's 84 the
-  user gave from official sources -- at first it stood at 114, taken from a note; the other six are unconfirmed), `--calm` the confidence on nine calm tracks (three
+  user gave from official sources -- at first it stood at 114, taken from a note; the other six are unconfirmed),
+  `--calm` the confidence on nine calm tracks (three
   Noctuary renders, five additive-synth demos, the chord test track).
 - *A0, the move.*  The autocorrelation and the fusion with the kicks went into `Source/TempoTracker.{h,cpp}` unchanged:
   the feature files and traces of the 41 beat demos and the seven real tracks (82 files) were byte-identical before
@@ -7930,7 +7931,8 @@ annotated demos, and the beat phase never measured at all.
   Real tracks: Astrix 97 -> 98, Daft Punk 100, DMT 92, Kadafi 80 -> 93, Prodigy 97 -> 100, Thunderstruck 100.
   Ironic first read *worse* (28 -> 14 %) -- against a reference of 114 BPM taken from a note.  Every source reads
   171 or 86 there (the autocorrelation, the pulse trains, the kick intervals), and the official tempo is 84 (the
-  user, 20.11.): against 84 the old method is right 12 % of the time, the new one 85 %.  Calm material: the confidence exactly as before (the gate is the
+  user, 20.11.): against 84 the old method is right 12 % of the time, the new one 85 %.  Calm material: the
+  confidence exactly as before (the gate is the
   same).  Features run 4.6 s (4.8 before).  self test 127/127, check_schedule 20 plans without a violation.
 - *A3, the beat phase by beat tracking* (`TempoTracker::beatStep()`).  The phase restarted at every kick and ran at the
   tempo in between: a syncopated kick moved it off the beat, a break let it drift.  Now BTrack's cumulative score and
