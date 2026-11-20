@@ -72,6 +72,9 @@ says so.
 - **Sound:** the capture still records `@DEFAULT_MONITOR@` (what the default output plays; PipeWire's pulse server
   answers to the name too). `PULSE_SOURCE` now picks another source -- libpulse applies it when the stream names
   no device, so with it set none is named. Moving the stream in pavucontrol works without it, for the session.
+- **Background shader compile off with Mesa** (`parallelCompile()` in shader_setup.cpp, not on Windows): see the
+  freeze under Numbers.
+- **The photo loader stops cooperatively on Linux** (`endImageLoader()` in RenderPipeline.cpp): see Numbers.
 - **Tools/appimage/build_appimage.sh** + `kaleidoscope.desktop`: cmake build, AppDir with the executable in usr/bin
   and Engine, Scene2D, Scene3D, FX, Transitions, Presets (tracked files only) and standard.vert in usr/ -- the
   layout the program expects -- then linuxdeploy `1-alpha-20251107-1` with linuxdeploy-plugin-qt `1-alpha-20250213-1`
@@ -105,9 +108,21 @@ says so.
   preset (`RenderPipeline::stop()` from GLwidget::timerEvent) and every end through the destructors (an export, a
   batch render, closing the window; Esc/q leave by `exit()`), and the deleting thread wins it nearly always. The runs
   the October WSL entries name were `-q` and `--schedule`, neither of which starts the loader. The `linux` job now
-  also switches the preset twice over the web remote (Club -> Allround -> Ambient, `/api/config` with the
-  `X-Kaleido: 1` header) and ends by `KALEIDO_MAX_RUNTIME_SECS`: alive after both switches, exit code 0. That step
-  was not run against the unrepaired code; the export's exit code 134 was the failure seen.
+  also switches the preset twice over the web remote (`/api/config` with the `X-Kaleido: 1` header) and ends by
+  `KALEIDO_MAX_RUNTIME_SECS`. That step was not run against the unrepaired loader; the export's exit code 134 was
+  the failure seen.
+- *A freeze inside Mesa after a preset switch.* One CI run of that step never ended. A temporary workflow repeated it
+  (export first, then ten runs per machine, the hung program's threads shown by gdb): the main thread sat in a deep
+  self-recursion inside libgallium, entered from `shaderPrebuildStart()` -- the background compile through
+  GL_KHR_parallel_shader_compile -- at the first frames after the second switch, whatever scene came up. Per
+  machine 0 to 10 of 10 runs (31 of 50 in one round; Club -> Cinematic -> Noir 39 of 40); with
+  `KALEIDO_NO_PARALLEL_COMPILE=1` none of 30. Mesa's debug symbols for that build (25.2.8-0ubuntu0.24.04.5) are on
+  neither Ubuntu's debuginfod nor ddebs, so the Mesa function is not named. libgallium holds the GLSL front end and
+  every Gallium driver (radeonsi, iris as well), and only llvmpipe could be run here; so on Linux the background
+  compile is off for every Mesa driver (`SHADER: background compile off (Mesa; ...)`), `KALEIDO_PARALLEL_COMPILE=1`
+  turns it on again, NVIDIA's own driver keeps it, Windows is unchanged. The cost is a compile at first use of a
+  scene instead of beforehand. Whether radeonsi or iris freeze too is open; the switch step goes Club -> Cinematic ->
+  Noir, the combination that froze most reliably, so a regression shows.
 - *Times on the runners:* `linux` 3.1 min (packages 34 s, build 43 s, self test 24 s, export 20 s, switches 50 s),
   `appimage` 2.1 min (the AppImage itself 81 s), `appimage-run` 1.1 min; the three run beside the Windows job (about
   12 min), so the workflow takes no longer than before. llvmpipe renders the 1920 x 1080 window at render scale 0.25 with 4..9 fps.
@@ -120,8 +135,8 @@ says so.
 ### What it does not cover, and what was left out
 
 - *Real hardware.* Everything ran on llvmpipe under Xvfb: no GPU driver, no Wayland, no sound server. Whether the
-  capture hears PipeWire, whether the NVIDIA/AMD drivers compile all 3,200 shaders as Mesa does, how fast it is --
-  open until someone runs it.
+  capture hears PipeWire, whether the NVIDIA/AMD drivers compile all 3,200 shaders as Mesa does, how fast it is,
+  whether Mesa's GPU drivers need the background compile switched off as llvmpipe does -- open until someone runs it.
 - *FUSE mounting.* The container has no FUSE, so the test uses `--appimage-extract-and-run`; the normal start
   mounts the image read-only, which userFolders() covers by the same rule (APPDIR).
 - *Wayland.* The Qt plugin deploys the xcb platform only; on a Wayland desktop Qt falls back to XWayland.
