@@ -4,7 +4,7 @@
  *
  * Audio Reactivity (structure, not only light):
  *   sceneAdvance -> the cubes turn (the face borders wander round): the music carries the turn (integrated)
- *   audioKick    -> the face borders light up (light only)
+ *   audioKick    -> the top faces and the face borders light up (light only)
  *   audioSwell   -> the contrast between the three faces
  *
  * Knobs: sizeP (the size of the cubes), hueP.
@@ -27,7 +27,7 @@ void main()
     float fs = fract(mod(ang / 6.2831853 + 8.0, 1.0) * 3.0);
     vec3 c = imgLod((id * S) * 0.85 + 0.5, 1.2);
     float ct = 0.35 + 0.35 * clamp(audioSwell, 0.0, 1.0);
-    float tone = sec < 0.5 ? 1.05 : (sec < 1.5 ? 1.0 - ct * 0.55 : 1.0 - ct * 1.1);
+    float tone = sec < 0.5 ? 1.05 * (1.0 + 0.35 * clamp(audioKick, 0.0, 1.0)) : (sec < 1.5 ? 1.0 - ct * 0.55 : 1.0 - ct * 1.1);
     float hexd = max(abs(gv.x) * 0.8660254 + abs(gv.y) * 0.5, abs(gv.y));
     float edge = smoothstep(0.5, 0.44, hexd);
     float seam = smoothstep(0.0, 0.05, fs) * (1.0 - smoothstep(0.95, 1.0, fs));
