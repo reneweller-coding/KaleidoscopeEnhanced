@@ -7,7 +7,7 @@
  * from the photo, the drops lit by the photo behind them.
  *
  * Audio Reactivity (structure, not only light):
- *   audioAdvance     -> the sinking (integrated: faster music, faster fall)
+ *   sceneAdvance     -> the sinking: the music carries the fall (integrated; without music it creeps)
  *   audioHarmAdvance -> every chord change tilts the cell a little (the fall runs aslant)
  *   audioHat         -> the glitter glints (light)
  *
@@ -47,7 +47,7 @@ void main()
     float fh = famHue();
     float h = max(audioHarmAdvance, 0.0);
     float tilt = 0.25 * sin(0.7 * h) + 0.1 * sin(0.31 * h + 1.0);
-    float fall = 0.012 * sceneTime + 0.06 * audioAdvance;
+    float fall = 0.008 * sceneTime + 0.35 * sceneAdvance;
     float drops = 6.0 + 8.0 * clamp(dropP, 0.0, 1.0);
     float glit = 0.3 + 0.6 * clamp(glitterP, 0.0, 1.0);
     float n, e;

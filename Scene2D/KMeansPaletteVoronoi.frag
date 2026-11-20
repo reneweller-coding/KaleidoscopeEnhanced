@@ -11,7 +11,8 @@
  *  palette.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioAdvance -> the centres wander (integrated)
+ *    sceneAdvance -> the centres wander: the music carries them (integrated)
+ *    audioKick    -> the borders light up (light only)
  *    audioSwell   -> how much of the palette (against the photo) is shown
  *
  *  Knobs: sizeP (the radius of the orbits), hueP.
@@ -35,6 +36,7 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -499,7 +501,7 @@ void main()
 {
     vec2  p = screenP();
     float R = 0.35 + 0.35 * clamp( sizeP, 0.0, 1.0 );
-    float t = 0.03 * audioAdvance + 0.04 * sceneTime;
+    float t = 0.025 * sceneTime + 0.6 * sceneAdvance;
     float d1 = 1e3;
     float d2 = 1e3;
     vec2  best = vec2( 0.0 );
@@ -524,5 +526,5 @@ void main()
     float mixv = 0.35 + 0.35 * clamp( audioSwell, 0.0, 1.0 );
     vec3  col = mix( ph, pal * ( 0.8 + 0.4 * smoothstep( 0.0, 0.5, d1 ) ), mixv );
     float border = smoothstep( 0.0, 0.012, d2 - d1 );
-    finish( col * ( 0.3 + 0.7 * border ) * 1.15 );
+    finish( ( col * ( 0.3 + 0.7 * border ) + pal * ( 1.0 - border ) * 0.45 * clamp( audioKick, 0.0, 1.0 ) ) * 1.15 );
 }

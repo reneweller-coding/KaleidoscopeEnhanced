@@ -12,8 +12,9 @@
  *  where no orbit lands, the plain photo a little dimmed.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioAdvance    -> the zoom into the fractal (integrated, a raised cosine: no jump)
+ *    sceneAdvance    -> the zoom into the fractal: the music carries it (integrated, a raised cosine: no jump)
  *    audioSwell -> the parameter's distance from the parabolic value
+ *    audioHarmAdvance -> the parameter turns off the axis: a chord change twists the flowers (integrated)
  *    audioSwell      -> how deep the zoom goes and how brightly the trap reads
  *
  *  Knobs: depthP (the zoom's depth), iterP (the quality of the iteration), hueP.
@@ -41,7 +42,7 @@ uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every c
                                 ///< back).
 
 uniform float depthP; ///< Depth knob, 0..1.
-uniform float iterP;  ///< Iter knob: the quality of the iteration.
+uniform float iterP;  ///< Iter knob: the quality of the iteration, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
@@ -616,13 +617,13 @@ void main()
 {
     vec2  p = screenP();
     vec2  bg = p * 0.8 + 0.5;
-    float run = 0.012 * sceneTime + 0.025 * audioAdvance;
+    float run = 0.008 * sceneTime + 0.12 * sceneAdvance;
     float sw = clamp( audioSwell, 0.0, 1.0 );
     float depth = 0.6 * ( 0.5 + 1.5 * clamp( depthP, 0.0, 1.0 ) ) * ( 0.5 + 0.7 * sw );
     float zoom = fracZoom( run, depth );
     float h = audioHarmAdvance;
     float ph = 0.3 * sceneTime + 3.0 * audioPhase;
-    vec2  c = vec2( 0.004 + 0.012 * sw, 0.0 );
+    vec2  c = vec2( 0.004 + 0.012 * sw, 0.008 * sin( 0.8 * h ) );
     vec2  z = p * 3.0 * zoom;
     vec2  z0 = z;
     vec3  acc = vec3( 0.0 );

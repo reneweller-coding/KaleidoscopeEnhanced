@@ -14,7 +14,7 @@
  *
  *  Audio Reactivity (structure, not only light):
  *    audioSwell      -> the kick strength K (continuous): calm music grows islands, loud music drowns them
- *    audioPhase      -> the portrait slides along the angle (integrated)
+ *    audioPhase      -> the portrait slides along the angle: the music carries the slide (integrated)
  *    audioKick       -> the island rims flash (light)
  *
  *  Knobs: kickP (the base kick), itersP (orbit length: finer grain, sharper islands), cellsP (periods on screen),
@@ -507,7 +507,7 @@ void main()
     vec2  p = screenP();
     float cells = 1.0 + floor( clamp( cellsP, 0.0, 0.999 ) * 2.0 );
     vec2  q = ( p * cells + 0.5 ) * 6.2831853;
-    q.x += 0.05 * audioPhase + 0.02 * sceneTime;
+    q.x += 0.25 * audioPhase + 0.012 * sceneTime;
     float K = 1.1 + 1.6 * ( 0.3 + 0.7 * clamp( kickP, 0.0, 1.0 ) ) * ( 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) );
     int   n = 60 + int( 80.0 * clamp( itersP, 0.0, 1.0 ) );
     float th = q.x, pm = q.y;
