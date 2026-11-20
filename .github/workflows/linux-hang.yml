@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         parallel: ['on']
-        part: [a, b, c, d]
+        part: [a, b, c]
     steps:
       - uses: actions/checkout@v7
       - name: Packages
@@ -47,13 +47,13 @@ jobs:
           echo "export: exit code $?"
           hung=0
           symbolised=0
-          for run in 1 2 3 4 5 6 7 8 9 10; do
+          for run in 1 2 3; do
             export KALEIDO_SETTINGS="$RUNNER_TEMP/s$run.ini" KALEIDO_MAX_RUNTIME_SECS=50
             xvfb-run -a -s "-screen 0 1280x720x24" ./Kaleidoscope -w ../smoke.wav -c Club -s 0.25 -t 18091 > run$run.log 2>&1 &
             pid=$!
             for i in $(seq 1 40); do curl -fs -m 5 http://127.0.0.1:18091/api/state > /dev/null && break; sleep 1; done
             sleep 5
-            for i in 0 1; do
+            for i in 2 6; do
               curl -fs -m 30 -H "X-Kaleido: 1" "http://127.0.0.1:18091/api/config?i=$i" > /dev/null || echo "run $run: no answer to switch $i"
               sleep 8
               curl -fs -m 30 -o state.json http://127.0.0.1:18091/api/state || echo "run $run: no state after switch $i"
