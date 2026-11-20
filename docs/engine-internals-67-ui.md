@@ -26,7 +26,8 @@ file holds their notes until they are folded into docs/engine-internals.md.
   `bench` flag replaces `m_reviewMode` at every place in `tick()` that gates musical cuts, floors and the no-repeat memory (the
   walk leaves that memory alone, like a review). The next scene comes from `RenderPipeline::rateNextPick()` at the end
   of every fade; the pipeline keeps the verdicts (`M_Rated`), the state and the undo. The auto-preset by mood holds
-  while a walk runs (it would switch the preset away mid-walk); a pin or a freeze is lifted at the start.
+  while a walk runs (it would switch the preset away mid-walk), a switch of the preset by hand ends the walk, and a
+  pin or a freeze is lifted at the start.
 - *Which scene a verdict is for.* The page sends the file it shows with the verdict. The scene being judged is the one
   coming in during a fade, and the one the walk cut to itself from the moment it asked for it (else the first poll
   after "Start" showed the scene from before the walk -- found by the test, below). A second tap before the cut is
@@ -38,7 +39,8 @@ file holds their notes until they are folded into docs/engine-internals.md.
   on 20 different scenes (4 like, 12 next, 4 never), counter 0 -> 20 of 426, a
   second tap refused, a scene left alone moved on after its 4 s and stayed unrated, undo restored the count and the
   scene; the copy holds 20 `[rated]` entries, the four likes at `[taste]` 1.25, the four nevers in `[banned]`, and
-  `apply_taste.py` reads "rating walk: 20 verdicts". Phone width (built-in browser, 375 x 812): no horizontal scroll
+  `apply_taste.py` reads "rating walk: 20 verdicts"; the same on a copy of the user's settings file (`--from`; the
+  file itself unchanged, SHA-1 before and after). Phone width (built-in browser, 375 x 812): no horizontal scroll
   (scroll width 375), the three buttons 351 x 65..69 px, the whole tab including "Stop" on one screen below the preview.
 - *Seen on the way, not changed:* the app crashed once in `glTexSubImage2D` 20 s after the music-video picture in
   picture started (minidump in the worktree's `Release/`; the call stack runs from `paintGL` into the driver).
@@ -131,6 +133,9 @@ file holds their notes until they are folded into docs/engine-internals.md.
   (automatic), H.264 5.1, AV1 5.1; 2 x 2560 x 1440 (5120 x 1440) -- H.265 5.1, H.264 refuses (wider than 4096);
   2 x 3840 x 2160 (7680 x 2160) -- H.265 6.1 at 60 fps, 6.0 at 30, AV1 6.1, no H.264.  The largest sensible size is
   2 x 1440p: level 5.1 is the 4K60 class of decoder a headset has; 2 x 2160p needs an 8K (level 6) decoder.
+- *Self test:* four more checks (`-g` doubled in the full formats, the tags, the six modes and their wrap): 136 of 136.
+  `Tools/shadercheck.py --new`, `check_strings`, `check_build_lists`, `check_uniform_types`, Doxygen (0 warnings):
+  clean.
 - *Not verified:* the picture in a headset (the user's part), the players' reaction to the tags (not tried on a
   device), a virtual-screen app's full-SBS mode.  `-3` in the export tool's window: not offered there (command line
   only).

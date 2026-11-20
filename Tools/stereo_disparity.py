@@ -312,4 +312,10 @@ def live(a, work, failures):
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        code = main()
+    finally:
+        # The scratch preset goes again: the preset checks (mood tags, ...) read every file in Presets/.
+        if os.path.exists(PRESET):
+            os.remove(PRESET)
+    sys.exit(code)
