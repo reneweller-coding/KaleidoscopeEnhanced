@@ -398,22 +398,6 @@ static bool parallelCompile()
         (void)e;
         return false;
     }
-#ifndef _WIN32
-    // Not with Mesa, unless KALEIDO_PARALLEL_COMPILE asks for it (20.11.2026, docs/engine-internals-67-linux.md): under
-    // llvmpipe the main thread stayed in Mesa for good -- a deep recursion inside libgallium, entered from
-    // shaderPrebuildStart() -- after the second preset switch, in 0 to 10 of 10 runs depending on the CI machine (31 of
-    // 50 in one round); with the background compile off, in none of 30.  libgallium holds Mesa's GLSL front end and
-    // every Gallium driver, and only llvmpipe could be tried, so all Mesa drivers compile on use; NVIDIA's own driver
-    // keeps it.
-    {
-        const char *version = reinterpret_cast<const char *>( glGetString( GL_VERSION ) );
-        if ( version && strstr( version, "Mesa" ) && !getenv( "KALEIDO_PARALLEL_COMPILE" ) )
-        {
-            fprintf( stderr, "SHADER: background compile off (Mesa; KALEIDO_PARALLEL_COMPILE=1 turns it on)\n" );
-            return false;
-        }
-    }
-#endif
     GLint n = 0;
     glGetIntegerv( GL_NUM_EXTENSIONS, &n );
     bool has = false;

@@ -517,7 +517,9 @@ vec4 foldF4( vec4 z )
     const vec4 n0 = vec4( 0.0, 0.7071068, -0.7071068, 0.0 );
     const vec4 n1 = vec4( 0.0, 0.0, 0.7071068, -0.7071068 );
     const vec4 n3 = vec4( 0.5, -0.5, -0.5, -0.5 );
-    for ( int i = 0; i < 6; ++i )
+    // The bound is 6, but not a constant the compiler can unroll: Mesa 25.2 (Ubuntu 24.04) unrolled this loop inside
+    // each of the eight inlined map24() calls and never finished compiling the shader (45 min; 9 s with this bound).
+    for ( int i = 0; i < 6 + int( min( audioLevel, 0.0 ) ); ++i )
     {
         z -= 2.0 * min( dot( z, n0 ), 0.0 ) * n0;
         z -= 2.0 * min( dot( z, n1 ), 0.0 ) * n1;
