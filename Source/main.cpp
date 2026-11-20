@@ -169,7 +169,10 @@ static void enterProgramFolder()
     const QString exe = QFileInfo( QStringLiteral( "/proc/self/exe" ) ).canonicalFilePath();
     if ( exe.isEmpty() )
         return;
-    const QString bin = QFileInfo( exe ).absolutePath();
+    QString bin = QFileInfo( exe ).absolutePath();
+    // An AppImage whose entry point is a copy of the executable at its top: the files are still below usr/.
+    if ( SettingsFile::inAppImage() && !QDir( bin + "/../Engine" ).exists() )
+        bin = qEnvironmentVariable( "APPDIR" ) + "/usr/bin";
     if ( QDir( bin ).canonicalPath() == QDir::current().canonicalPath() )
         return;
     if ( ( !SettingsFile::inAppImage() && QDir( QStringLiteral( "../Engine" ) ).exists() )
