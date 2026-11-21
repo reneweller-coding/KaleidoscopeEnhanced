@@ -8,14 +8,19 @@ KALEIDO_FREEZE_TIME (the scene stands at one moment, silent audio),
 KALEIDO_FIXED_PHOTO and KALEIDO_SEED two runs are pixel-identical, so any
 difference is a bug in the generator or the runner.
 
-Run i pins stage A to class i, B to class i mod 23, C to i mod 18, D to i mod 20
-(the 2D lab's positions), so every class of every stage is shown at least once
-in 58 runs; the order, the time tilt and the look vary with i too.  Each run is
-a full-resolution screenshot of the app (web remote /api/screenshot), once with
+Run i pins every stage to position i modulo its number of classes (the 2D lab's
+positions, pickStage(knob, n) in the shader; the counts come from
+Tools/scenegen/chain_classes.py -- 72, 33, 26 and 28 on 21.11.2026), so every
+class of every stage is shown at least once in as many runs as stage A has
+classes; the order, the time tilt and the look vary with i too.  Each run is a
+full-resolution screenshot of the app (web remote /api/screenshot), once with
 the runner and once without, on a private copy of the settings (KALEIDO_SETTINGS).
+Until 21.11.2026 the counts were written in here (58, 23, 18, 20) and had fallen
+behind the labs: run i showed another position than it printed, and 14 classes of
+stage A were never shown.
 
-  python Tools/chain_regress.py                 # all 58 combinations (~1 h)
-  python Tools/chain_regress.py --every 6       # every 6th (~10 min)
+  python Tools/chain_regress.py                 # all combinations (72, ~80 min)
+  python Tools/chain_regress.py --every 6       # every 6th (12, ~14 min)
   python Tools/chain_regress.py --only 12 30    # these combinations
 Exit code: the number of combinations whose mean difference exceeds --tol.
 """
@@ -30,7 +35,9 @@ import chain_classes as cc                                    # noqa: E402
 from private_settings import PrivateSettings                  # noqa: E402
 PS = None  # the private settings of this run (main())
 
-N = {"chainAP": 58, "chainBP": 23, "chainCP": 18, "chainDP": 20}
+# The number of classes of each stage, as the shaders pick them (pickStage(knob, n), position 0 = none).
+N = {k: len(cc.CLASSES[k]) for k in ("chainAP", "chainBP", "chainCP", "chainDP")}
+COMBOS = max(N.values())   # every class of every stage once
 
 
 def preset(pins):
@@ -81,7 +88,7 @@ def shot(pins, out, runner, photo, wait):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--every", type=int, default=1, help="only every n-th combination")
-    ap.add_argument("--only", type=int, nargs="*", help="these combinations (0..57)")
+    ap.add_argument("--only", type=int, nargs="*", help="these combinations (0..%d)" % (COMBOS - 1))
     ap.add_argument("--tol", type=float, default=0.5, help="mean absolute difference (0..255) that counts as a failure")
     ap.add_argument("--photo", default=None, help="the fixed photo (default: the first in Images/)")
     ap.add_argument("--wait", type=float, default=22.0,
@@ -94,7 +101,7 @@ def main():
     photo = a.photo or sorted(os.listdir(os.path.join(ROOT, "Images")))[0]
     work = a.keep or os.path.join(os.environ.get("TEMP", "."), "chain_regress")
     os.makedirs(work, exist_ok=True)
-    combos = a.only if a.only else list(range(0, 58, a.every))
+    combos = a.only if a.only else list(range(0, COMBOS, a.every))
     global PS
     PS = PrivateSettings("regress")
     fails = 0
@@ -103,7 +110,8 @@ def main():
             pins = {k: "%.4f" % ((i % n + 0.5) / n) for k, n in N.items()}
             pins.update({"morphP": "0", "orderP": "%.4f" % ((i * 7 % 24 + 0.5) / 24), "tiltP": "%.2f" % (0.3 + 0.7 * (i % 3) / 2),
                          "styleP": "%.4f" % ((i % 5 + 0.5) / 5), "glowP": "0", "speedP": "0.5", "detailP": "0.6", "paletteP": "0.4"})
-            names = " | ".join(cc.CLASSES[k][i % n] or "none" for k, n in N.items())
+            # the class the shader picks from the pinned knob: pickStage(x, n) = min(floor(x * n), n - 1)
+            names = " | ".join(cc.CLASSES[k][min(int(float(pins[k]) * n), n - 1)] or "none" for k, n in N.items())
             ra, rb = os.path.join(work, "run_%02d.png" % i), os.path.join(work, "uber_%02d.png" % i)
             if not (shot(pins, ra, True, photo, a.wait) and shot(pins, rb, False, photo, a.wait + 2)):
                 print("%2d  NO SCREENSHOT  %s" % (i, names), flush=True)

@@ -9103,7 +9103,10 @@ without a conflict into the same 53 files (e188b8b1), the branch deleted.
   meets the edge circle).
 - Runner against uber shader for the four classes: `chain_regress.py --only 29 32 33 57`, all 0.00..0.02. Not 9, 15,
   28 and 56: the tool still counts 58 stage-A classes, the labs have 72, so combination i shows position
-  floor((i + 0.5) / 58 * 72) and its printed names are those of position i -- 14 positions are never shown (left for
-  a task of its own).
+  floor((i + 0.5) / 58 * 72) and its printed names are those of position i -- 14 positions were never shown.
+  Fixed the same night (the user's wish): `chain_regress.py` takes the counts from `chain_classes.py` (72, 33, 26, 28,
+  as the shaders' pickStage), runs as many combinations as stage A has classes, so every class of every stage is
+  shown once, and prints the class the shader picks from the pinned knob. `--every 6` is now 12 combinations
+  (0, 6, ..., 66; 13.4 min): 0 of 12 differ, combination 36 is the hyperbolic Droste.
 - shadercheck 3221 files, 0 errors; doc_shaders and cgvr_format unchanged. The catalogue's lab frames are random
   examples (no seed), so they were not rendered again.
