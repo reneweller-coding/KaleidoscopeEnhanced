@@ -9089,3 +9089,21 @@ first release with a Linux package: the AppImage of the CI run on the tagged com
   rewrote the text and touched no picture. `Katalog.pdf`: 1021 pages, 79 MB.
 - `Kaleidoscope-x86_64.AppImage` (39.8 MB): the artifact of CI run 44840078427 on ab5154f5, started in the bare
   Ubuntu 24.04 container by the same run. README and the catalogue page's download row name it now.
+
+**After the release (21.11.2026): the poincareFold fix of 22.10. reaches master.** The fix (4aa9097c, the wedge fold
+`a - abs(mod(an, 2a) - a)` instead of `abs(mod(an, 2a) - a)`, see G1 for the same trap in HyperbolicKaleidoscope) lay
+on the branch `claude/pensive-hertz-f567b0` and had never been merged; v1.20.0 still carries the old fold. Taken over
+without a conflict into the same 53 files (e188b8b1), the branch deleted.
+- numpy, the six {p,q} of the labs: a point and its image in the edge circle fold apart 95.3-99.7 % of the time before,
+  0.0 % now.
+- App, ChainLab2D with stage A alone (B, C, D none; frozen time, fixed photo, seed 7), before against after: the
+  Poincare tiling's rosettes whole instead of broken (mean difference 25.9 of 255), the half-plane a real tiling of
+  rosettes instead of dark noise (13.0), the band different (16.6), the Droste unchanged in that frame (0.0: the old
+  fold turned the wedge over in every one of the 14 passes, and an even number of turns cancels as long as no point
+  meets the edge circle).
+- Runner against uber shader for the four classes: `chain_regress.py --only 29 32 33 57`, all 0.00..0.02. Not 9, 15,
+  28 and 56: the tool still counts 58 stage-A classes, the labs have 72, so combination i shows position
+  floor((i + 0.5) / 58 * 72) and its printed names are those of position i -- 14 positions are never shown (left for
+  a task of its own).
+- shadercheck 3221 files, 0 errors; doc_shaders and cgvr_format unchanged. The catalogue's lab frames are random
+  examples (no seed), so they were not rendered again.
