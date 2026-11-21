@@ -66,7 +66,7 @@ vec2 poincareFold( vec2 z, float p, float q )
     for ( int i = 0; i < 14; ++i )
     {
         float an = atan( z.y, z.x );
-        an = abs( mod( an, 2.0 * a ) - a );
+        an = a - abs( mod( an, 2.0 * a ) - a );
         z = length( z ) * vec2( cos( an ), sin( an ) );
         vec2  d = z - cc;
         float dd = dot( d, d );
