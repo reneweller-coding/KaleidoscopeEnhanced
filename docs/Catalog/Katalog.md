@@ -23897,7 +23897,7 @@ Portal: the new scene opens along the OLD scene's real depth - near geometry pee
 
 ### PosterBandRelease
 
-`Transitions/PosterBandRelease.frag` · mood=calm,blocky · probability=0.06
+`Transitions/PosterBandRelease.frag` · mood=calm · probability=0.06
 
 TRANSITION POSTER BAND RELEASE: the old scene is cut into tone bands and the bands give way one after the other. The old picture is quantised by brightness into a handful of bands, and a band at a time hands its area to the new scene, from the darkest to the lightest or the other way round; the edges are soft. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the br…
 

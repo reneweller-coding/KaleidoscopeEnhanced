@@ -9077,3 +9077,15 @@ The detector had only ever been measured on the 43 demos of our own generators.
   on spectrogram patches (Ullrich, Schlüter & Grill 2014) or an offline teacher for the user's other 1,300 tracks
   (All-In-One, Kim & Nam 2023), and real tracks of the genres the presets are named for: the Harmonix overlap is pop,
   rock and dance.
+
+**Release v1.20.0 (21.11.2026, tag on ab5154f5).** What (67) and (68) changed, for the people who download -- and the
+first release with a Linux package: the AppImage of the CI run on the tagged commit.
+- `Tools/release_check.py --skip snapshots`: green in all steps on the first run, 23 min (chain 670 s, perf 388 s,
+  doxygen 177 s); self test 137, 20 scene plans, 210 transitions, 3,221 shaders.
+- `deploy.ps1 -Build`: 4.2 min (Inno Setup needed four retries for the antivirus lock), ZIP 43.7 MB, Setup 24.2 MB,
+  3,512 entries. Unpacked into a fresh folder, with an empty settings file: one export of 8 s with each of the twelve
+  presets, no FATAL, no shader error, nothing left in the package folder.
+- `Katalog.md` was one line behind (PosterBandRelease still `calm,blocky`); `make_catalog.py` without scan folders
+  rewrote the text and touched no picture. `Katalog.pdf`: 1021 pages, 79 MB.
+- `Kaleidoscope-x86_64.AppImage` (39.8 MB): the artifact of CI run 44840078427 on ab5154f5, started in the bare
+  Ubuntu 24.04 container by the same run. README and the catalogue page's download row name it now.
