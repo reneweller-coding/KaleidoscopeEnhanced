@@ -1276,6 +1276,7 @@ protected:
     float  m_featureDelaySet = 0.f;   ///< The feature delay last handed to the analyzer (draw()).
     float  m_calibPrevPhase = 0.f;    ///< The beat phase the ring showed last frame (a wrap is a beat).
     qint64 m_calibBeatMs = -100000;   ///< When the ring last closed (m_fpsTimer ms), for its flash.
+    bool   m_overlayShotDone = false; ///< KALEIDO_OVERLAY_SHOT was taken (draw()).
 
     int m_width;  ///< Physical (DPI-scaled) framebuffer width, set in resizeGL().
     int m_height; ///< Physical (DPI-scaled) framebuffer height, set in resizeGL().

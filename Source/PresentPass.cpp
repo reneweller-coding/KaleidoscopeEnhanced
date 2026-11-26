@@ -515,6 +515,8 @@ void PresentPass::run( const Inputs &in )
             const int w = m_guardDims[slot][0], h = m_guardDims[slot][1];
             if ( const float *p = static_cast<const float *>( glMapBuffer( GL_PIXEL_PACK_BUFFER, GL_READ_ONLY ) ) )
             {
+                // 0..1 whatever the targets hold (KALEIDO_HDR_BUFFERS: half floats above 1, NaN, inf): min() keeps a
+                // NaN, max( 0, NaN ) is 0 -- the guard sees the same picture with the switch on and off.
                 for ( int i = 0; i < w * h; ++i )
                     for ( int c = 0; c < 3; ++c )
                         m_guardRgb[3 * i + c] = std::max( 0.f, std::min( p[4 * i + c], 1.f ) );

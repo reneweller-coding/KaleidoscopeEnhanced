@@ -1757,11 +1757,18 @@ void guardChecks()
         auto         s = run( np, 20.1f, constant( black ), true, PictureGuard::PhotoE::NONE );
         check( s.size() == 1 && s[0].a == PictureGuard::ActionE::SCENE,
                "without photos to change (a live picture) the scene change comes at once" );
+        // A photo that began to fade in two seconds before the 20 s is waited for (here it ends a second later);
+        // one that has faded in for 8 s and changed nothing is not the cure: the scene change at once.
         PictureGuard busy;
-        auto         wait = run( busy, 30.f, constant( black ), true, PictureGuard::PhotoE::BUSY );
-        auto         then = run( busy, 0.2f, constant( black ) );
-        check( wait.empty() && then.size() == 1 && then[0].a == PictureGuard::ActionE::PHOTO,
-               "a photo already fading in is waited for; still black after it, the first stage comes" );
+        auto         a1 = run( busy, 18.f, constant( black ) );
+        auto         a2 = run( busy, 3.f, constant( black ), true, PictureGuard::PhotoE::BUSY );
+        auto         a3 = run( busy, 1.f, constant( black ) );
+        check( a1.empty() && a2.empty() && a3.size() == 1 && a3[0].a == PictureGuard::ActionE::PHOTO,
+               "a photo just beginning to fade in is waited for; still black after it, the first stage comes" );
+        PictureGuard slow;
+        auto         b = run( slow, 30.f, constant( black ), true, PictureGuard::PhotoE::BUSY );
+        check( b.size() == 1 && b[0].a == PictureGuard::ActionE::SCENE && std::fabs( b[0].at - 20.f ) < 0.15f,
+               "a photo fading in for 8 s without curing it is not the cause: at 20 s the scene change comes" );
         PictureGuard r;
         auto         again = run( r, 120.f, constant( black ) );
         check( again.size() >= 3 && again[2].a == PictureGuard::ActionE::SCENE && again[2].at - again[1].at > 44.f,

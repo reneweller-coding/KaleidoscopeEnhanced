@@ -25,7 +25,8 @@
  *  A condition must hold for Config::darkSecs or Config::frozenSecs of ARMED time (the caller decides what arms the
  *  guard: music playing, no fade, no blackout, no DJ stop, no freeze, no pin ...; while it is not armed the clocks
  *  pause).  Then the first stage asks for a new photo -- a dark photo is the common cause -- and the clocks start
- *  over (a photo already fading in is waited for instead); if the condition holds for Config::stage2Secs again,
+ *  over (a photo already fading in is waited for instead, Config::busySecs at most: a picture that stays dark or
+ *  still while a photo fades in does not depend on the photo); if the condition holds for Config::stage2Secs again,
  *  the second stage asks the scheduler for an early scene change.  A new scene starts everything over
  *  (sceneChanged()).
  *
@@ -71,6 +72,7 @@ public:
         float stage2Secs = 15.f;  ///< armed seconds dark or still after the photo before the second stage
         float retrySecs = 45.f;   ///< a scene change asked for and not come: asked again after this
         float recoverSecs = 30.f; ///< after the photo, this long fine: the photo was the cause, back to stage 0
+        float busySecs = 8.f;     ///< a photo fading in this long without curing it: the photo is not the cause
     };
 
     PictureGuard() = default;
@@ -92,7 +94,7 @@ public:
     {
         NONE = 0, ///< no photos to change (a live picture, a single photo): the scene change comes at once
         READY,    ///< the next photo is loaded and none is fading in
-        BUSY      ///< a photo is fading in or loading: the first stage waits for it
+        BUSY      ///< a photo is fading in or loading: the first stage waits for it (Config::busySecs at most)
     };
 
     /**  One sample of the picture.
@@ -145,6 +147,10 @@ public:
             m_still += dt;
         m_sinceAction += dt;
         m_good = ( !dark && m_still < 0.5f * m_cfg.frozenSecs ) ? m_good + dt : 0.f;
+        // A photo fading in while the picture stays dark, or still: its seconds in the current dark or still streak.
+        const float busy = photo == PhotoE::BUSY ? dt : 0.f;
+        m_busyDark = m_dark > 0.f ? m_busyDark + busy : 0.f;
+        m_busyStill = m_still > 0.f ? m_busyStill + busy : 0.f;
 
         const CauseE now = m_dark > 0.f && m_dark >= m_still ? CauseE::DARK
                            : m_still > 0.f                   ? CauseE::FROZEN
@@ -152,10 +158,20 @@ public:
         switch ( m_stage )
         {
             case 0:
-                // A photo already on its way may be the cure: the first stage waits for it (the clocks run on).
-                if ( ( m_dark >= m_cfg.darkSecs || m_still >= m_cfg.frozenSecs ) && photo != PhotoE::BUSY )
-                    return act( m_dark >= m_cfg.darkSecs ? CauseE::DARK : CauseE::FROZEN,
-                                photo == PhotoE::READY ? ActionE::PHOTO : ActionE::SCENE );
+                // A photo already on its way may be the cure: the first stage waits for it (the clocks run on) --
+                // unless it has been fading in for busySecs and the picture is still dark or still: then the photo
+                // is not the cause (a scene that shows the photo lightens and moves the moment one fades in), and
+                // the second stage comes at once.  The photos of a preset fade 20-80 s and stand 10-40 s: waiting
+                // for every fade to end made the first stage a minute late (the app test, 27.11.2026).
+                if ( m_dark >= m_cfg.darkSecs || m_still >= m_cfg.frozenSecs )
+                {
+                    const CauseE why = m_dark >= m_cfg.darkSecs ? CauseE::DARK : CauseE::FROZEN;
+                    if ( photo == PhotoE::READY )
+                        return act( why, ActionE::PHOTO );
+                    if ( photo == PhotoE::NONE
+                         || ( why == CauseE::DARK ? m_busyDark : m_busyStill ) >= m_cfg.busySecs )
+                        return act( why, ActionE::SCENE );
+                }
                 break;
             case 1:
                 if ( m_dark >= m_cfg.stage2Secs || m_still >= m_cfg.stage2Secs )
@@ -176,7 +192,7 @@ public:
     void sceneChanged()
     {
         m_stage = 0;
-        m_dark = m_still = m_sinceAction = m_good = 0.f;
+        m_dark = m_still = m_sinceAction = m_good = m_busyDark = m_busyStill = 0.f;
         m_anchor.clear();
         m_cause = CauseE::NONE;
     }
@@ -237,7 +253,7 @@ private:
     {
         m_cause = why;
         m_stage = a == ActionE::PHOTO ? 1 : 2;
-        m_dark = m_still = m_sinceAction = m_good = 0.f;
+        m_dark = m_still = m_sinceAction = m_good = m_busyDark = m_busyStill = 0.f;
         return a;
     }
 
@@ -249,6 +265,8 @@ private:
     float              m_still = 0.f;          ///< stillFor()
     float              m_sinceAction = 0.f;    ///< Armed seconds since the last action.
     float              m_good = 0.f;           ///< Armed seconds neither dark nor still, in a row.
+    float              m_busyDark = 0.f;       ///< Armed seconds of the dark streak with a photo fading in.
+    float              m_busyStill = 0.f;      ///< Armed seconds of the stillness with a photo fading in.
     float              m_mean = 0.f;           ///< mean()
     float              m_peak = 0.f;           ///< peak()
     float              m_step = 0.f;           ///< step()

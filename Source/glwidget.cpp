@@ -2206,6 +2206,19 @@ void GLwidget::draw()
         painter.end();
     }
 
+    // KALEIDO_OVERLAY_SHOT=<file>: the window as the viewer sees it, overlays included (the latency calibration ring,
+    // the menu), once, 12 s after the start -- a test run checks what only the QPainter draws (Z1, 26.11.2026).
+    static const QString OverlayShot = qEnvironmentVariable( "KALEIDO_OVERLAY_SHOT" );
+    if ( !OverlayShot.isEmpty() && !m_overlayShotDone && m_fpsTimer.elapsed() > 12000 && m_width > 1 && m_height > 1 )
+    {
+        m_overlayShotDone = true;
+        QImage img( m_width, m_height, QImage::Format_RGBA8888 );
+        glBindFramebuffer( GL_READ_FRAMEBUFFER, defaultFramebufferObject() );
+        glReadPixels( 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, img.bits() );
+        const bool ok = img.mirrored().convertToFormat( QImage::Format_RGB888 ).save( OverlayShot );
+        fprintf( stderr, "OVERLAY shot %s -> %s\n", ok ? "saved" : "NOT saved", qPrintable( OverlayShot ) );
+    }
+
     /*if (save_images)
     {
         QString efn = "G:/temp/file";

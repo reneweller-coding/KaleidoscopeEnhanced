@@ -77,11 +77,17 @@ def main():
     ap.add_argument("--watch", action="store_true", help="KALEIDO_GUARD=log: say what it would do, do nothing")
     ap.add_argument("--label", default="guard", help="who runs it (the lock's label)")
     ap.add_argument("--sheet", help="contact sheet JPG of all actions (thumbnails from the videos)")
+    ap.add_argument("--budget", type=float, default=0.0,
+                    help="minutes: start no new chunk after this much time (0 = no limit); run again to go on")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     tracks = [t for t in a.tracks.split(",") if t]
+    t0 = time.time()
     for preset in [p for p in a.presets.split(",") if p]:
         for wav in tracks:
+            if a.budget > 0 and time.time() - t0 > a.budget * 60.0:
+                print("budget of %.0f min used: the rest next time" % a.budget)
+                break
             chunk(a.out, preset, wav, a.size, a.fps, a.watch, a.label)
     if a.sheet:
         acts_all = []
