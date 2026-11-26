@@ -1881,7 +1881,9 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     {
         const float el = ( acc_st_lo[0] + acc_st_mid[0] + acc_st_hi[0] ) * inv;
         const float er = ( acc_st_lo[1] + acc_st_mid[1] + acc_st_hi[1] ) * inv;
-        const float k = 1.f - std::exp( -static_cast<float>( numFrames ) / static_cast<float>( std::max( sampleRate, 1 ) ) );
+        const float k = 1.f
+                        - std::exp( -static_cast<float>( numFrames )
+                                    / static_cast<float>( std::max( sampleRate, 1 ) ) );
         m_balNum += ( ( er - el ) - m_balNum ) * k;
         m_balDen += ( ( er + el ) - m_balDen ) * k;
         if ( m_balDen < 1e-20f ) // no denormals after a long silence

@@ -425,7 +425,7 @@ private:
     float m_lpStL[2] = {};      ///< L-channel LP filter states (~250 Hz, ~2500 Hz cutoffs).
     float m_lpStR[2] = {};      ///< R-channel LP filter states (~250 Hz, ~2500 Hz cutoffs).
     float m_sStBand[2][3] = {}; ///< Smoothed [L/R][low/mid/high] per-channel band energies.
-    float m_balNum = 0.f;       ///< Slow average of the channels' energy difference L - R (AudioFeatures::stereoBalance).
+    float m_balNum = 0.f;       ///< Slow average of the channels' energy difference R - L (stereoBalance).
     float m_balDen = 0.f;       ///< Slow average of their energy sum L + R (the balance's denominator).
 
     // ---- Track-change detection (sustained silence -> first onset) ----
