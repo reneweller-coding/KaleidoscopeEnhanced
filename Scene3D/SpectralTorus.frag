@@ -30,6 +30,94 @@ in vec3  vView; ///< View vector (from the vertex stage).
 in float vDefo; ///< Defo (from the vertex stage).
 in float vHue;  ///< Hue (from the vertex stage).
 
+// ---- photo environment light (Tools/scenegen/patch_env3d.py) ----
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+// The photo stands behind the viewer and lights the scene: the normal finds diffuse light in a very coarse mip, the
+// reflected ray a reflection in a mip chosen by roughness.  At envP = 0 none of it runs and the scene renders as
+// before.
+uniform float envP; ///< Photo environment light: 0 = off (the old look) .. 1 = full; rolled per activation.
+
+/**  Where a direction looks in the photo environment.
+ *
+ * @param d  The direction (any length): x screen right, y screen up; the sign of z does not matter. (in)
+ *
+ * @return
+ *   The coordinate in the photo.
+ *
+ * The photo stands behind the viewer, its centre straight back toward the eye, and the far half of the sphere of
+ * directions is the near half mirrored at the plane z = 0 -- so the map is continuous over the whole sphere (no seam,
+ * no pole) and folds only where a direction turns from toward the viewer to away from it.  Past the photo's edge the
+ * texture's mirrored repeat continues it.
+ **/
+vec2 envUV( vec3 d )
+{
+    return 0.5 + 0.6 * normalize( d ).xy;
+}
+
+/**  The photo as the environment sees it: tex0 and tex1 cross-faded with interpolation like img(), at a mip level,
+ * colour only (the alpha channel carries the photo's depth).
+ *
+ * @param uv   Coordinate in the photo. (in)
+ * @param lod  Mip level: 0 = full size, 7 = 8 x 8 texels of a 1024 photo. (in)
+ *
+ * @return
+ *   The photo's colour (RGB).
+ **/
+vec3 envPhoto( vec2 uv, float lod )
+{
+    return interpolation * textureLod( tex0, uv, lod ).rgb + ( 1.0 - interpolation ) * textureLod( tex1, uv, lod ).rgb;
+}
+
+/**  Diffuse light from the photo: its very coarse mip in the normal's direction stands in for the light gathered over
+ * the half sphere around the normal.
+ *
+ * @param n  The surface normal (frame as for envUV()). (in)
+ *
+ * @return
+ *   The diffuse light (RGB), 0..1.
+ **/
+vec3 envDiffuse( vec3 n )
+{
+    return envPhoto( envUV( n ), 7.0 );
+}
+
+/**  The photo reflected along a ray, in a mip chosen by the roughness and never finer than the pixel's footprint in
+ * the photo -- a small or strongly curved mirror does not shimmer.
+ *
+ * @param r      The reflected ray (frame as for envUV()). (in)
+ * @param rough  Roughness: 0 = mirror .. 1 = matt (the diffuse mip). (in)
+ *
+ * @return
+ *   The reflected light (RGB), 0..1.
+ *
+ * The footprint comes from screen-space derivatives: call it outside pixel-dependent branches.
+ **/
+vec3 envReflect( vec3 r, float rough )
+{
+    vec2  uv = envUV( r );
+    vec2  ts = vec2( textureSize( tex0, 0 ) );
+    vec2  dx = dFdx( uv ) * ts, dy = dFdy( uv ) * ts;
+    float px = 0.5 * log2( max( max( dot( dx, dx ), dot( dy, dy ) ), 1.0 ) );
+    return envPhoto( uv, max( px, 1.0 + 6.0 * clamp( rough, 0.0, 1.0 ) ) );
+}
+
+/**  How much light a surface reflects at this angle (Schlick's approximation of Fresnel's equations).
+ *
+ * @param n   The surface normal (unit length). (in)
+ * @param v   The direction toward the eye (unit length). (in)
+ * @param f0  The reflectance looking straight on. (in)
+ *
+ * @return
+ *   The reflectance, f0..1.
+ **/
+float envFresnel( vec3 n, vec3 v, float f0 )
+{
+    return f0 + ( 1.0 - f0 ) * pow( 1.0 - clamp( dot( n, v ), 0.0, 1.0 ), 5.0 );
+}
+// ---- end of the photo environment light ----
+
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
  * @param c  The colour. (in)
@@ -65,6 +153,13 @@ void main()
     col += vec3( 1.0, 0.95, 0.85 ) * spec * 0.7;
     col += hueRot( vec3( 0.20, 0.55, 0.95 ), vHue ) * rim * 0.55;
 
+    if ( envP > 0.0 )
+    {
+        // The photo as the room (patch_env3d.py): its diffuse light on the body metal and its mirror image,
+        // strongest at grazing angles; the antinode glow stays on top.
+        col += base * envDiffuse( N ) * ( 1.1 * envP );
+        col += envReflect( reflect( -V, N ), 0.22 ) * envFresnel( N, V, 0.35 ) * ( 0.9 * envP );
+    }
     vec3 outc = col * 1.8;
     outc /= 1.0 + 0.35 * max( outc.r, max( outc.g, outc.b ) );
     fragColor = vec4( outc, 1.0 );
