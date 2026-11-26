@@ -291,9 +291,10 @@ LAB_SET = ["AtlasLab", "BandLab", "DefectLab", "DiffractionLab", "EngravingLab",
 GENRES = ("Ambient", "Downtempo", "SpaceAmbient", "Cinematic", "Club", "Electronic", "Psytrance", "Psychedelic",
           "Noir", "Allround")
 # "Reads zero": no more than the engine's own answer.  The floor is ProfileStill's reading in the controls of the
-# same run (the photo as a scene: what exposure, hue drift and the house finish do with the voice); a voice reads
-# zero when its change stays under ZERO_K times that floor and its sync under the floor's sync + 0.10 (at least
-# ZERO_SYNC); the pan when |lr| stays under ZERO_LR.
+# same run (the photo as a scene: what exposure, hue drift and the house finish do with the voice).  A hit voice
+# (kick, snare, hat, bass) reads zero when its sync stays under ZERO_SYNC or its hit-locked change under ZERO_K times
+# the floor's (amp says nothing there: a scene that drifts reads high in every voice); the lead when amp and struct
+# stay under ZERO_K times the floor's; the pan when |lr| stays under ZERO_LR.
 ZERO_K, ZERO_SYNC, ZERO_LR = 2.0, 0.15, 0.10
 
 
@@ -469,7 +470,12 @@ def measure_voice_pair(F, V, onset, lr=False):
     ch = np.abs(np.diff(F, axis=0)).mean(axis=(1, 2)) - np.abs(np.diff(V, axis=0)).mean(axis=(1, 2))
     o = onset[1:len(ch) + 1] if onset is not None else None
     if o is not None and len(o) == len(ch):
-        r["sync"] = round(_corr_lag(_hp(ch), _hp(o)), 4)
+        hc = _hp(ch)
+        r["sync"] = round(_corr_lag(hc, _hp(o)), 4)
+        # the hit-locked part of the frame change, in % of full scale per frame: sync is a correlation and says
+        # nothing about size -- the photo alone (ProfileStill) follows the snare at 0.37, with a change too small to
+        # see; this is what the floor is measured in
+        r["hit"] = round(r["sync"] * float(hc.std()) * 100.0, 5)
         # the same against the hits moved by half a beat -- kept for reference only: the voices repeat on the 8th
         # grid, inside the lag search, so for most of them this is no null (the floor is ProfileStill's row)
         sh = int(round(0.5 * 60.0 / 128.0 * VFPS))
@@ -582,9 +588,16 @@ def run_voice_chunk(tag, label, entries, names, plain, cross, null=False):
         for name, i in sh.items():
             if i in gotf:
                 rows[name][kind]["thumb_full"] = os.path.basename(gotf[i])
-    for vid, _ in runs.values():
+    # the videos stay (KALEIDO_VOICES_KEEP=1, about 40 MB a run): a new measure can then be computed without rendering
+    keep = os.environ.get("KALEIDO_VOICES_KEEP") == "1"
+    for kind, (vid, _) in runs.items():
         if os.path.exists(vid):
-            os.remove(vid)
+            if keep:
+                vdir = os.path.join(wdir, "videos")
+                os.makedirs(vdir, exist_ok=True)
+                os.replace(vid, os.path.join(vdir, "%s_%s.mp4" % (label, kind)))
+            else:
+                os.remove(vid)
     io.open(jpath, "w", encoding="utf-8").write(json.dumps(rows, indent=0))
     print("%s/%s: %d scenes, %d variants, %.1f min" % (tag, label, len(rows), len(kinds), (time.time() - t0) / 60),
           flush=True)
@@ -723,11 +736,19 @@ def zero_voices(r, floor):
     for v in VOICES:
         x, f = r["no_" + v], floor["no_" + v]
         if v == "lead":
+            # the melody is a slow line, not hits: amp and struct -- which a scene that drifts away once the music
+            # differs (a lab's walk on sceneAdvance) reads high for every voice, so a drifting scene never reads
+            # zero here
             z = x["amp"] < ZERO_K * f["amp"] and x["struct"] < ZERO_K * f["struct"]
         else:
-            # sync against the floor's own sync: the engine answers some hits itself (the photo alone reads up to
-            # 0.37 on the snare); sync0 is no null here -- the voices repeat on the 8th grid, inside the lag search
-            z = x["amp"] < ZERO_K * f["amp"] and x.get("sync", 0) < max(ZERO_SYNC, f.get("sync", 0) + 0.10)
+            # the hits: sync alone, against the floor's own sync (the engine answers some hits itself, the photo
+            # alone reads 0.37 on the snare).  amp is no help here: in the labs every voice reads 7-11 % from the
+            # drift alone.  sync0 is no null either -- the voices repeat on the 8th grid, inside the lag search
+            if "hit" in x and "hit" in f:
+                # not locked to the hits, or locked but no larger than the engine's own answer
+                z = x["sync"] < ZERO_SYNC or x["hit"] < ZERO_K * f["hit"]
+            else:
+                z = x.get("sync", 0) < max(ZERO_SYNC, f.get("sync", 0) + 0.10)
         if z:
             out.append(v)
     if abs(r["pan_lead"].get("lr", 0)) < max(ZERO_LR, ZERO_K * abs(floor["pan_lead"].get("lr", 0))):
@@ -760,15 +781,16 @@ def voices_report(a):
                 keep.append(line)
     cols = ["run", "set", "name"]
     for v in VOICES:
-        cols += ["amp_" + v, "struct_" + v, "sync_" + v]
+        cols += ["amp_" + v, "struct_" + v, "sync_" + v, "hit_" + v]
     cols += ["amp_pan", "lr_pan", "lim_full", "lim_max_var", "zero_n", "zero"]
     with io.open(VOUT, "w", encoding="utf-8", newline="\n") as f:
         f.write("# Tools/reactivity.py --voices (plan 26.11.2026, I1): per voice of the screening music, the full run "
                 "against the run with that voice muted (pan: the lead hard left).  amp = mean |difference| in %% of "
                 "full scale, struct = after per-frame normalisation, sync = the change the voice adds against its own "
-                "hits (0..1), lr = left half brighter than right in %%, lim = limiter samples dimmed (of %d s), zero = "
-                "the voices read no more than ProfileStill's floor (amp x%.1f; sync floor + 0.10, at least %.2f; pan "
-                "|lr| < %.2f).\n" % (int(VHOLD), ZERO_K, ZERO_SYNC, ZERO_LR))
+                "hits (0..1), hit = the hit-locked part of the frame change in %% per frame, lr = left half brighter "
+                "than right in %%, lim = limiter samples dimmed (of %d s), zero = the voices read no more than "
+                "ProfileStill's floor (kick, snare, hat, bass: sync < %.2f or hit < %.1f x floor; lead: amp and struct "
+                "< %.1f x floor; pan: |lr| < %.2f).\n" % (int(VHOLD), ZERO_SYNC, ZERO_K, ZERO_K, ZERO_LR))
         f.write("\t".join(cols) + "\n")
         for line in keep:
             f.write(line)
@@ -778,7 +800,8 @@ def voices_report(a):
             vals = [a.tag, sets.get(n, "-"), n]
             for v in VOICES:
                 x = r["no_" + v]
-                vals += ["%.3f" % x["amp"], "%.3f" % x["struct"], "%.3f" % x.get("sync", 0)]
+                vals += ["%.3f" % x["amp"], "%.3f" % x["struct"], "%.3f" % x.get("sync", 0),
+                         "%.4f" % x["hit"] if "hit" in x else "-"]
             lim_var = max(r[k]["lim"][1] for k in VKINDS[1:])
             vals += ["%.3f" % r["pan_lead"]["amp"], "%+.3f" % r["pan_lead"].get("lr", 0),
                      "%d" % r.get("lim_full", [0, 0, 0])[1], "%d" % lim_var, "%d" % len(z), ",".join(z) or "-"]
