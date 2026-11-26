@@ -1462,8 +1462,9 @@ protected:
     struct AudioLocCache
     {
         GLuint progId = 0; /**< Program id the locations were resolved for; 0 = never resolved. */
-        GLint  L[96];      /**< Uniform location per AudioLocE enum value (index AL_*), -1 where the program lacks that
-                              uniform; only the first AL_COUNT entries are filled. */
+        GLint  L[128];     /**< Uniform location per AudioLocE enum value (index AL_*), -1 where the program lacks that
+                              uniform; only the first AL_COUNT entries are filled (EffectShader.cpp asserts it fits:
+                              at 96 the photo depth's uniforms of 26.11.2026 ran past the end). */
     };
     AudioLocCache m_audioLocs; ///< applyAudioFeatures()'s location cache; auto-refreshes when m_shProgId changes
                                ///< (recompile/hot reload).

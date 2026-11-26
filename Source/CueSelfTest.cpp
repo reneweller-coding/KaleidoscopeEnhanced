@@ -1476,7 +1476,11 @@ void depthChecks()
     ramp( 32, 16, true ).save( ddir + "/flatone.png" );
     {
         QFile f( ddir + "/photo_info.tsv" );
-        f.open( QIODevice::WriteOnly );
+        if ( !f.open( QIODevice::WriteOnly ) )
+        {
+            check( false, "the depth checks' photo_info.tsv can be written" );
+            return;
+        }
         f.write( "file\trelief\tslope\tflat\tfx\tfy\tthr\tconf\tmodel\n"
                  "withmap.png\t0.2\t0.3\t0\t0.25\t0.2\t0.6\t0.8\tdav2s\n"
                  "flatone.png\t0.01\t0.0\t1\t-\t-\t-\t-\tdav2s\n" );

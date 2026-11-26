@@ -883,6 +883,8 @@ const char *kAudioLocNames[AL_COUNT] = {
 
 void EffectShader::applyAudioFeatures( const AudioFeatures &features )
 {
+    // The location cache must hold every AL_ entry: at 96 slots the photo depth's uniforms (26.11.2026) overran it.
+    static_assert( AL_COUNT <= sizeof( AudioLocCache::L ) / sizeof( GLint ), "AudioLocCache::L is too small" );
     // The music's accumulators relative to this activation (see m_clockT0): exact, and small however long the show.
     if ( m_clockA0 < -1.0e299 )
     {
