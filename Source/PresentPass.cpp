@@ -494,6 +494,57 @@ void PresentPass::run( const Inputs &in )
         glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
     }
 
+    // The picture guard's tiny picture (setGuardWanted(), PictureGuard.h): the same way, from the mip whose long side
+    // is at most GuardSide texels (15 x 8 at 1080p) -- its own buffers and counter, so the OSC mean above stays as
+    // it was.  The level's size is asked of the texture (a state query, no sync), not assumed from the render size.
+    if ( m_wantGuard && ( ++m_guardFrame % 6 ) == 0 )
+    {
+        if ( !m_guardPbo[0] )
+        {
+            glGenBuffers( 2, m_guardPbo );
+            for ( GLuint pbo : m_guardPbo )
+            {
+                glBindBuffer( GL_PIXEL_PACK_BUFFER, pbo );
+                glBufferData( GL_PIXEL_PACK_BUFFER, GuardSide * GuardSide * 4 * sizeof( float ), nullptr,
+                              GL_STREAM_READ );
+            }
+        }
+        const int slot = ( m_guardFrame / 6 ) & 1;
+        glBindBuffer( GL_PIXEL_PACK_BUFFER, m_guardPbo[slot] );
+        if ( m_guardPending[slot] )
+        {
+            const int w = m_guardDims[slot][0], h = m_guardDims[slot][1];
+            if ( const float *p = static_cast<const float *>( glMapBuffer( GL_PIXEL_PACK_BUFFER, GL_READ_ONLY ) ) )
+            {
+                // 0..1 whatever the targets hold (KALEIDO_HDR_BUFFERS: half floats above 1, NaN, inf): min() keeps a
+                // NaN, max( 0, NaN ) is 0 -- the guard sees the same picture with the switch on and off.
+                for ( int i = 0; i < w * h; ++i )
+                    for ( int c = 0; c < 3; ++c )
+                        m_guardRgb[3 * i + c] = std::max( 0.f, std::min( p[4 * i + c], 1.f ) );
+                m_guardW = w;
+                m_guardH = h;
+                ++m_guardSeq;
+                glUnmapBuffer( GL_PIXEL_PACK_BUFFER );
+            }
+            m_guardPending[slot] = false;
+        }
+        GLint w0 = 0, h0 = 0;
+        glGetTexLevelParameteriv( GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &w0 );
+        glGetTexLevelParameteriv( GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &h0 );
+        int lvl = 0;
+        for ( int d = std::max( w0, h0 ); d > GuardSide; d >>= 1 )
+            ++lvl;
+        const int lw = std::max( 1, w0 >> lvl ), lh = std::max( 1, h0 >> lvl );
+        if ( w0 > 0 && h0 > 0 && lw <= GuardSide && lh <= GuardSide )
+        {
+            glGetTexImage( GL_TEXTURE_2D, lvl, GL_RGBA, GL_FLOAT, nullptr );
+            m_guardDims[slot][0] = lw;
+            m_guardDims[slot][1] = lh;
+            m_guardPending[slot] = true;
+        }
+        glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
+    }
+
     // The programs and the buffer they share (binding 3), made once: the photosensitivity limiter
     // (Engine/SafetyLimit.comp) and the percentile auto-exposure (Engine/CfxHistogram.comp).
     if ( !m_autoExpTried )

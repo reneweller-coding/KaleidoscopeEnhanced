@@ -456,6 +456,26 @@ public:
     {
         m_showFeatureOverlay = on;
     }
+    /**  Whether the latency calibration ring is shown (docs/PLAN_2026-11-26.md Z1; the remote, /api/toggle?k=calib).
+     *
+     * @return
+     *   True while it is shown.
+     **/
+    bool calibrationVisible() const { return m_showCalibration; }
+    /**  Shows or hides the latency calibration ring: a ring that closes on every beat the picture plays, and a dot
+     * that lights with every kick it detects -- set the latency until both land on the beat you hear.
+     *
+     * @param on  New state. (in)
+     **/
+    void setCalibrationVisible( bool on ) { m_showCalibration = on; }
+    /**  The loopback's own beat grid, without the feature delay: for the remote's tap-along, which measures how
+     * late the music reaches the ear.
+     *
+     * @param phase  Position in the beat, 0..1, of the newest analysed block. (out)
+     * @param bpm    The tempo; 0 while none is known. (out)
+     * @param conf   How steady the rhythm is, 0..1 (rhythmStrength). (out)
+     **/
+    void remoteBeat( float &phase, float &bpm, float &conf ) const;
     /** The web remote did something (not just its polling): a resting show wakes. */
     void remoteActivity() { wakeFromRest( "remote" ); }
     /** Persists the current look + state as the startup default (same as key 'k'). */
@@ -634,6 +654,14 @@ protected:
      * @param f        Current per-frame audio features to display. (in)
      **/
     void drawFeatureOverlay( QPainter *painter, const AudioFeatures &f );
+    /**  Draws the latency calibration ring (setCalibrationVisible()): its arc runs round once a beat on the beat phase
+     * the scenes get and closes on the beat, a short flash marks the close, and the dot in its middle lights with the
+     * kick the scenes get.  Painted over the picture like the other overlays, so it is in neither a recording nor
+     * the Spout output.
+     *
+     * @param painter  Active QPainter for this frame. (in)
+     **/
+    void drawCalibration( QPainter *painter );
     /**  Draws the keyboard-shortcut help box (key 'h').
      *
      * @param painter  Active QPainter for this frame. (in)
@@ -1243,6 +1271,12 @@ protected:
     MenuHit m_audioMenuHit;                ///< Row geometry from the last draw, for mouse hit-testing.
     bool    m_showShaderInfo = false;      ///< debug: active shader names ('v')
     OsdMenu m_osd;                         ///< Remote-control menu (OK / Menu key), see OsdMenu.h.
+
+    bool   m_showCalibration = false; ///< calibrationVisible()
+    float  m_featureDelaySet = 0.f;   ///< The feature delay last handed to the analyzer (draw()).
+    float  m_calibPrevPhase = 0.f;    ///< The beat phase the ring showed last frame (a wrap is a beat).
+    qint64 m_calibBeatMs = -100000;   ///< When the ring last closed (m_fpsTimer ms), for its flash.
+    bool   m_overlayShotDone = false; ///< KALEIDO_OVERLAY_SHOT was taken (draw()).
 
     int m_width;  ///< Physical (DPI-scaled) framebuffer width, set in resizeGL().
     int m_height; ///< Physical (DPI-scaled) framebuffer height, set in resizeGL().

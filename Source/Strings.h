@@ -435,6 +435,18 @@ enum StrIdE
     // Stereo for headsets: the full formats (20.11.2026).
     S_SETUP_STEREO_FSBS,
     S_SETUP_STEREO_FTB,
+    // The picture guard and the latency calibration (26.11.2026).
+    S_OSD_GUARD,
+    S_WR_GUARD,
+    S_WR_CALIB,
+    S_CALIB_LEAD_FMT,
+    S_CALIB_DELAY_FMT,
+    S_CALIB_HINT,
+    S_WR_TAPALONG,
+    S_WR_TAPALONG_HINT,
+    S_WR_TAPALONG_RESULT,
+    S_WR_TAPALONG_APPLY,
+    S_WR_TAPALONG_NOBEAT,
 
     S_COUNT
 };

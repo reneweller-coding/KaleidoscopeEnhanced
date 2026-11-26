@@ -25,6 +25,7 @@
 #include <atomic>
 #include <functional>
 #include <cstddef>
+#include <utility>
 #include <vector>
 
 /** The section categories `/phos/section` can name, in the generator's own order. */
@@ -131,8 +132,17 @@ public:
     /**  Takes one decoded message (main thread).
      *
      * @param c  The cue. (in)
+     *
+     * With a delay (setDelay()) the message waits that long before drain() hands it on; a beat still reaches the
+     * beat listener at once.
      **/
     void apply( const ScoreCue &c );
+    /**  The feature delay (FeatureDelay.h, the latency setting below zero): cues arrive with the audio's timing,
+     * before the ear hears it, and wait as long as the analysis does (main thread).
+     *
+     * @param secs  Seconds; 0 = take every cue at once, as always. (in)
+     **/
+    void setDelay( float secs );
     /**  Who hears every beat cue the moment it arrives (main thread): the analysis' external clock.
      *
      * @param f  Called with the arrival time (QElapsedTimer reference ms); empty to stop. (in)
@@ -167,6 +177,14 @@ public:
 
 private:
     ScoreCues() {}
+    /**  A message takes effect (apply(), or drain() once its delay is over).
+     *
+     * @param c  The cue. (in)
+     **/
+    void take( const ScoreCue &c );
+
+    float                                    m_delay = 0.f; ///< setDelay()
+    std::vector<std::pair<qint64, ScoreCue>> m_pending;     ///< cues held back by the delay, with their arrival (ms)
 
     float                         m_silence = 1.0e6f; ///< seconds since the last accepted datagram
     std::function<void( qint64 )> m_onBeat;           ///< setBeatListener()
@@ -240,6 +258,12 @@ public:
      **/
     void setClock( double seconds ) { m_clock.store( seconds, std::memory_order_relaxed ); }
 
+    /**  The feature delay (FeatureDelay.h): a cue goes in this much after the analysis reached its time.
+     *
+     * @param secs  Seconds; 0 = at its time, as always. (in)
+     **/
+    void setDelay( double secs ) { m_delay = secs > 0.0 ? secs : 0.0; }
+
     /**  Hands every cue up to the clock to ScoreCues (main thread).
      *
      * @return
@@ -265,6 +289,7 @@ private:
     std::vector<Timed>  m_cues;          ///< the file's cues, sorted by time (stable: file order within a time)
     size_t              m_next = 0;      ///< the first cue not yet handed over
     std::atomic<double> m_clock{ -1.0 }; ///< the WAV's position; below zero until it plays
+    double              m_delay = 0.0;   ///< setDelay()
 private:
     /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     ScoreCueFile( const ScoreCueFile & ) = delete;

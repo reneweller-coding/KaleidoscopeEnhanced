@@ -1174,8 +1174,11 @@ void Recorder::saveReplay()
         lf.close();
     }
 
-    bool have_audio = m_audio
-                      && m_audio->dumpReplayWav( dir + "/audio.wav", total + 0.5f );
+    // A feature delay (the latency below zero, FeatureDelay.h): the frames show the music that much later than the
+    // ring heard it, so the audio is taken from that much earlier.  0 without one, as before.
+    const float delay = m_audio ? m_audio->featureDelay() : 0.f;
+    bool        have_audio = m_audio
+                             && m_audio->dumpReplayWav( dir + "/audio.wav", total + 0.5f + delay );
 
     QStringList args;
     args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << ( dir + "/frames.txt" );
@@ -1183,8 +1186,8 @@ void Recorder::saveReplay()
     {
         // The audio ring holds MORE than the video: trim the start so that
         // both ends lie flush (ffmpeg -ss on the WAV input).
-        float wav_len = total + 0.5f;
-        args << "-ss" << QString::number( std::max( 0.f, wav_len - total ), 'f', 2 )
+        float wav_len = total + 0.5f + delay;
+        args << "-ss" << QString::number( std::max( 0.f, wav_len - total - delay ), 'f', 2 )
              << "-i" << ( dir + "/audio.wav" );
     }
     {
@@ -1326,19 +1329,28 @@ void Recorder::finishRecording()
 
     QStringList args;
     QString     bat_cmd;
+    // A feature delay (the latency below zero, FeatureDelay.h): the picture shows the music that much later than the
+    // WAV took it down, so the sound goes that much later into the video.  Nothing without one, as before.
+    QStringList   shift;
+    const float   delay = m_audio ? m_audio->featureDelay() : 0.f;
+    const QString shift_bat = delay > 0.f ? QString( "-itsoffset %1 " ).arg( delay, 0, 'f', 3 ) : QString();
+    if ( delay > 0.f )
+        shift << "-itsoffset" << QString::number( delay, 'f', 3 );
 
     if ( !m_pipeFallback && !m_videoPath.isEmpty() )
     {
         // The picture is already encoded. All that is left is putting it in a
         // container next to the audio -- the video stream is COPIED, never
         // touched again, which is the whole point of the pipe.
-        args << "-y" << "-i" << m_videoPath
+        args << "-y" << "-i" << m_videoPath << shift
              << "-i" << ( m_recDir + "/audio.wav" )
              << "-c:v" << "copy" << "-c:a" << "aac"
              << "-shortest" << ( m_recDir + "/kaleidoscope.mp4" );
         bat_cmd = "@echo off\r\ncd /d \"%~dp0\"\r\n"
-                  "ffmpeg -y -i video.mp4 -i audio.wav -c:v copy -c:a aac "
-                  "-shortest kaleidoscope.mp4\r\npause\r\n";
+                  "ffmpeg -y -i video.mp4 "
+                  + shift_bat
+                  + "-i audio.wav -c:v copy -c:a aac "
+                    "-shortest kaleidoscope.mp4\r\npause\r\n";
     }
     else
     {
@@ -1356,16 +1368,16 @@ void Recorder::finishRecording()
         }
         const QSize       first = QImageReader( m_recDir + "/frame_000000.jpg" ).size();
         const QStringList codec = videoCodecArgs( first.width(), first.height(), recordFps() );
-        args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << list_path
+        args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << list_path << shift
              << "-i" << ( m_recDir + "/audio.wav" )
              << codec << "-c:a" << "aac"
              << "-shortest" << ( m_recDir + "/kaleidoscope.mp4" );
         // Mirror whatever the probe actually selected, so the manual fallback is
         // not silently slower than the automatic mux beside it.
         bat_cmd = QString( "@echo off\r\ncd /d \"%~dp0\"\r\n"
-                           "ffmpeg -y -f concat -safe 0 -i frames.txt -i audio.wav %1 "
+                           "ffmpeg -y -f concat -safe 0 -i frames.txt %2-i audio.wav %1 "
                            "-c:a aac -shortest kaleidoscope.mp4\r\npause\r\n" )
-                      .arg( codec.join( ' ' ) );
+                      .arg( codec.join( ' ' ), shift_bat );
     }
 
     QFile bf( m_recDir + "/make_video.bat" );

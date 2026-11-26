@@ -863,6 +863,7 @@ void SceneScheduler::tick( const Tick &t )
         m_pendingSectionNext = -1;
         m_pendingSectionNextId = -1;
         m_pendingSectionNextFx = -1;
+        m_guardEnd = false; // the picture guard holds too
     }
 
     // A chain lab walking with the music takes the music's cues itself: a new
@@ -909,7 +910,10 @@ void SceneScheduler::tick( const Tick &t )
         const bool calm_trigger = forced && !m_forceIsManual && m_sceneFadeMin > 0.f;
         const bool soft_trigger = forced && !m_forceIsManual && !calm_trigger && m_forceIsSoft;
         float      min_solo = m_forceIsManual ? 0.6f : ( m_sceneFadeMin > 0.f ? 20.f : 2.0f );
-        if ( ts > m_texFadeDur || ( forced && ts > min_solo ) )
+        // The picture guard (requestGuardChange()): the solo time ends now, after the 2 s every musical cut grants
+        // -- and by then the guard has watched the scene for half a minute.  Not on a bench.
+        const bool guard_end = m_guardEnd && !bench && ts > 2.f;
+        if ( ts > m_texFadeDur || ( forced && ts > min_solo ) || guard_end )
         {
             if ( !m_pendingEffectChange )
                 m_changeHold = 2.5f;
@@ -920,6 +924,9 @@ void SceneScheduler::tick( const Tick &t )
                               : calm_trigger                                   ? "music-calm"
                               : soft_trigger                                   ? "music-soft"
                                                                                : "music";
+            if ( guard_end && !forced && ts <= m_texFadeDur )
+                m_changeWhy = "guard";
+            m_guardEnd = false;
             m_forceEffectChange = false;
             m_forceIsManual = false;
             m_forceIsSoft = false;
@@ -960,6 +967,7 @@ void SceneScheduler::tick( const Tick &t )
                 m_pendingEffectForced = false;
                 m_pendingEffectSoft = false;
                 m_pendingEffectAge = 0.f;
+                m_guardEnd = false; // this fade answers the picture guard too, whoever started it
 
                 m_texState = 1;
                 m_changeOnPhrase = phrase_due;

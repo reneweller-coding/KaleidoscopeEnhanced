@@ -260,6 +260,12 @@ public:
         m_forceEffectChange = true;
         m_forceIsManual = false;
     }
+    /** The picture guard's second stage (PictureGuard.h): the scene ends early as if its solo time had run out --
+     * on the phrase where the grid is anchored, else on the downbeat -- and with the preset's own fade.  A walking
+     * lab ends too (its walk takes the music's cues, not this one); a pin, the review and the rating walk hold.
+     * Consumed by the next fade, whatever started it.
+     **/
+    void requestGuardChange() { m_guardEnd = true; }
     /**  A new song: the section memory starts empty, so no look of the last song is replayed in this one. */
     void newSong()
     {
@@ -669,6 +675,7 @@ private:
     bool  m_pendingFxChange = false;           ///< True while a combine change is due but waiting on beat quantisation.
     bool  m_pendingFxForced = false;           ///< True if the pending combine change was manual/forced.
     float m_pendingFxAge = 0.f;                ///< Seconds the pending combine change has been waiting.
+    bool  m_guardEnd = false; ///< requestGuardChange(): the picture guard ends the scene like its solo time would.
 
     // Trigger bookkeeping
     float m_noveltyCooldown = 0.f; ///< Seconds until another harmonic-novelty/section trigger is allowed to fire (rate

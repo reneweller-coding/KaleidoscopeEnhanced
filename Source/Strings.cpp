@@ -84,7 +84,7 @@ const char *kDE[S_COUNT] = {
     /* S_WR_REACTIVITY */ "Reactivity",
     /* S_WR_TRAILS */ "Trails",
     /* S_WR_MOOD */ "Mood",
-    /* S_WR_LATENCY */ "Latenz-Vorlauf (ms)",
+    /* S_WR_LATENCY */ "Latenz (ms): + Vorlauf, − Verzögerung",
     /* S_WR_LIGHTSHOW */ "Lightshow",
     /* S_WR_AUTOPRESET */ "Auto-Preset",
     /* S_WR_AUTOSCALE */ "Auto-Skalierung",
@@ -239,7 +239,7 @@ const char *kDE[S_COUNT] = {
     /* S_OSD_REACTIVITY */ "Reaktivität",
     /* S_OSD_TRAILS */ "Nachzieh-Spuren",
     /* S_OSD_MOOD */ "Stimmungsfarbe",
-    /* S_OSD_LATENCY */ "Latenz-Vorlauf",
+    /* S_OSD_LATENCY */ "Latenz (+ Vorlauf, − Verzögerung)",
     /* S_OSD_SOURCE */ "Audioquelle",
     /* S_OSD_TAP */ "Tap-Tempo (OK im Takt drücken)",
     /* S_OSD_STEREOMODE */ "Modus",
@@ -337,7 +337,7 @@ const char *kDE[S_COUNT] = {
     /* S_FB_KINETIC_FMT */ "Zeilen-Slam der Liedtexte: %1",
     /* S_FB_ARTIST_FMT */ "Künstlerbilder: %1",
     /* S_FB_LAMPS_FMT */ "Bühnenlampen: %1",
-    /* S_FB_LATENCY_FMT */ "Latenz-Vorlauf: %1 ms",
+    /* S_FB_LATENCY_FMT */ "Latenz: %1 ms",
     /* S_FB_SAVED_DEFAULTS */ "Look und Schalter als Standard gespeichert",
     /* S_FB_PIN_FMT */ "Szene festhalten: %1",
     /* S_FB_FAVORITE_FMT */ "Favorit: %1 (Geschmack ×%2), Song-Cue gemerkt",
@@ -402,6 +402,19 @@ const char *kDE[S_COUNT] = {
     /* S_FB_RATE_UNDO_FMT */ "Urteil zurückgenommen: %1",
     /* S_SETUP_STEREO_FSBS */ "Side-by-Side voll (Brille)",
     /* S_SETUP_STEREO_FTB */ "Top-Bottom voll (Brille)",
+    /* S_OSD_GUARD */ "Bildwächter (dunkel/erstarrt)",
+    /* S_WR_GUARD */ "Bildwächter",
+    /* S_WR_CALIB */ "Abgleich-Ring",
+    /* S_CALIB_LEAD_FMT */ "Latenz: %1 ms Vorlauf",
+    /* S_CALIB_DELAY_FMT */ "Latenz: %1 ms Verzögerung",
+    /* S_CALIB_HINT */
+    "Der Ring schließt sich auf jedem Schlag, der Punkt leuchtet mit der Kick. Den Latenz-Schieber der Fernbedienung verstellen, bis beides auf dem gehörten Schlag landet: Bild zu früh – weiter Richtung Minus.",
+    /* S_WR_TAPALONG */ "Mitklopfen",
+    /* S_WR_TAPALONG_HINT */
+    "Im Takt der gehörten Musik auf die Fläche tippen, mindestens 12 Schläge. Das ergibt einen Startwert; fein einstellen mit dem Abgleich-Ring.",
+    /* S_WR_TAPALONG_RESULT */ "Vorschlag: %1 ms (Streuung %2 ms, %3 Schläge)",
+    /* S_WR_TAPALONG_APPLY */ "Vorschlag übernehmen",
+    /* S_WR_TAPALONG_NOBEAT */ "Kein Takt erkannt – Musik mit klarem Schlag spielen.",
 };
 
 /** The English texts, in the same order as kDE. */
@@ -464,7 +477,7 @@ const char *kEN[S_COUNT] = {
     /* S_WR_REACTIVITY */ "Reactivity",
     /* S_WR_TRAILS */ "Trails",
     /* S_WR_MOOD */ "Mood",
-    /* S_WR_LATENCY */ "Latency Lead (ms)",
+    /* S_WR_LATENCY */ "Latency (ms): + lead, − delay",
     /* S_WR_LIGHTSHOW */ "Lightshow",
     /* S_WR_AUTOPRESET */ "Auto-Preset",
     /* S_WR_AUTOSCALE */ "Auto-Scale",
@@ -618,7 +631,7 @@ const char *kEN[S_COUNT] = {
     /* S_OSD_REACTIVITY */ "Reactivity",
     /* S_OSD_TRAILS */ "Trails",
     /* S_OSD_MOOD */ "Mood colour",
-    /* S_OSD_LATENCY */ "Latency lead",
+    /* S_OSD_LATENCY */ "Latency (+ lead, − delay)",
     /* S_OSD_SOURCE */ "Audio source",
     /* S_OSD_TAP */ "Tap tempo (press OK on the beat)",
     /* S_OSD_STEREOMODE */ "Mode",
@@ -716,7 +729,7 @@ const char *kEN[S_COUNT] = {
     /* S_FB_KINETIC_FMT */ "Lyrics line slam: %1",
     /* S_FB_ARTIST_FMT */ "Artist images: %1",
     /* S_FB_LAMPS_FMT */ "Stage lamps: %1",
-    /* S_FB_LATENCY_FMT */ "Latency lead: %1 ms",
+    /* S_FB_LATENCY_FMT */ "Latency: %1 ms",
     /* S_FB_SAVED_DEFAULTS */ "Look and switches saved as the default",
     /* S_FB_PIN_FMT */ "Hold the scene: %1",
     /* S_FB_FAVORITE_FMT */ "Favourite: %1 (taste ×%2), song cue remembered",
@@ -781,6 +794,19 @@ const char *kEN[S_COUNT] = {
     /* S_FB_RATE_UNDO_FMT */ "Verdict taken back: %1",
     /* S_SETUP_STEREO_FSBS */ "Side-by-side full (headset)",
     /* S_SETUP_STEREO_FTB */ "Top-bottom full (headset)",
+    /* S_OSD_GUARD */ "Picture guard (dark/frozen)",
+    /* S_WR_GUARD */ "Picture guard",
+    /* S_WR_CALIB */ "Calibration ring",
+    /* S_CALIB_LEAD_FMT */ "Latency: %1 ms lead",
+    /* S_CALIB_DELAY_FMT */ "Latency: %1 ms delay",
+    /* S_CALIB_HINT */
+    "The ring closes on every beat, the dot lights with the kick. Move the remote's latency slider until both land on the beat you hear: picture too early – further towards minus.",
+    /* S_WR_TAPALONG */ "Tap along",
+    /* S_WR_TAPALONG_HINT */
+    "Tap the pad in time with the music you hear, at least 12 beats. That gives a start value; fine-tune it with the calibration ring.",
+    /* S_WR_TAPALONG_RESULT */ "Suggestion: %1 ms (spread %2 ms, %3 beats)",
+    /* S_WR_TAPALONG_APPLY */ "Apply the suggestion",
+    /* S_WR_TAPALONG_NOBEAT */ "No beat found – play music with a clear beat.",
 };
 
 } // namespace

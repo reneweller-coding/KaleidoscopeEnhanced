@@ -39,6 +39,7 @@
 #include "AudioFeatures.h"
 #include "ComputeFX.h"
 #include "GpuSims.h"
+#include "PictureGuard.h"
 #include "PresentPass.h"
 #include "SceneScheduler.h"
 #include "CueReceiver.h"
@@ -195,6 +196,16 @@ public:
      *   Mean absolute change against the previously measured frame.
      **/
     float liveMotion() const { return m_present.liveMotion(); }
+    /**  What the latency calibration ring shows (GLwidget::drawCalibration()): the beat as the scenes get it.
+     *
+     * @param beatPhase  The conditioned beat phase of the last frame (audioBeatPhase: PLL, lead and delay). (out)
+     * @param kick       The conditioned kick envelope of the last frame (audioKick), 0..1. (out)
+     **/
+    void calibState( float &beatPhase, float &kick ) const
+    {
+        beatPhase = m_calibPhase;
+        kick = m_calibKick;
+    }
     /**  The show's state for the OSC output: scene, transition, blackout and the picture's mean colour.
      *
      * @param scene       The scene on screen (its file name without the extension). (out)
@@ -626,37 +637,51 @@ public:
     // beat.  This leads the DISPLAY phase (tempo pulse, beat/bar phase) by the
     // given seconds; detection envelopes can't be led, but the phase-driven
     // rhythm feel dominates.  Keys ; and ' adjust it in 10 ms steps.
-    /**  Adjusts the display-phase latency-compensation lead by @p d seconds (clamped to [0, 0.25]).
+    // Below zero (26.11.2026, docs/PLAN_2026-11-26.md Z1) it is a DELAY of every audio feature instead: Bluetooth
+    // headphones and televisions play the sound 50-250 ms after the loopback tap, and then the picture was early
+    // (FeatureDelay.h).  Same key, latencyLead; an older version reads a negative value as 0.
+    /** The most negative latency setting (a delay), seconds. */
+    static constexpr float LatencyMin = -0.5f;
+    /** The largest latency setting (a lead), seconds. */
+    static constexpr float LatencyMax = 0.25f;
+    /**  Adjusts the latency setting by @p d seconds (clamped to [LatencyMin, LatencyMax]).
      *
-     * @param d  Signed step in seconds added to the current lead. (in)
+     * @param d  Signed step in seconds added to the current setting. (in)
      *
      * @sideeffects
      *   Changes M_LatencyLead.
      **/
     static void adjustLatency( float d )
     {
-        M_LatencyLead = clampParam( M_LatencyLead + d, 0.f, 0.25f );
+        M_LatencyLead = clampParam( M_LatencyLead + d, LatencyMin, LatencyMax );
     }
-    /**  Sets the display-phase latency-compensation lead to @p v seconds (clamped to [0, 0.25]).
+    /**  Sets the latency: above zero the display-phase lead, below zero the delay of all audio features.
      *
-     * @param v  New lead in seconds. (in)
+     * @param v  Seconds, clamped to [LatencyMin, LatencyMax]. (in)
      *
      * @sideeffects
      *   Changes M_LatencyLead.
      **/
     static void setLatency( float v )
     {
-        M_LatencyLead = clampParam( v, 0.f, 0.25f );
+        M_LatencyLead = clampParam( v, LatencyMin, LatencyMax );
     }
-    /**  Returns the current display-phase latency-compensation lead, in seconds.
+    /**  Returns the current latency setting, in seconds: positive a lead of the beat phase, negative a delay.
      *
      * @return
-     *   The current display-phase latency-compensation lead, in seconds.
+     *   The setting, in seconds.
      **/
     static float latency()
     {
         return M_LatencyLead;
     }
+    /**  The delay of all audio features that the setting asks for -- never in a video export or a scene-plan run,
+     * which take their audio from a file on their own clock.
+     *
+     * @return
+     *   Seconds, 0 = none.
+     **/
+    static float featureDelay();
 
     // Stage "lamps" (corner spotlight cones + haze/mirror-ball/gobo light show).
     // Off by default; toggled with key 'l' and persisted.
@@ -701,6 +726,18 @@ public:
      * @param on  On or off. (in)
      **/
     static void setStrictLight( bool on ) { M_StrictLight = on; }
+    /**  Whether the picture guard is on (PictureGuard.h, ini pictureGuard): while music plays and the picture stays
+     * black or stands still, first a new photo, then an early scene change on the phrase.
+     *
+     * @return
+     *   True when it is on.
+     **/
+    static bool pictureGuard() { return M_PictureGuard; }
+    /**  Switches the picture guard (the menu, the remote).
+     *
+     * @param on  On or off. (in)
+     **/
+    static void setPictureGuard( bool on ) { M_PictureGuard = on; }
 
     // ---- Stereoscopic output (CLI -3 sbs|tb|ana|fsbs|ftb; key 'z' cycles, c/m depth) --
     // The mono frame is DEPTH-REPROJECTED in the present pass: a pseudo-depth
@@ -1793,6 +1830,28 @@ private:
      * @param timeSinceLastFrameSec  Scene time step. (in)
      **/
     void updateImageState( float timeSinceLastFrameSec );
+    /**  The picture guard's frame (PictureGuard.h): asks the present pass for its tiny picture, decides whether the
+     * guard may count now, feeds it each new sample and carries out what it asks for -- a photo cross-fade now, or
+     * an early scene change (SceneScheduler::requestGuardChange()).  After runPresentPass().
+     *
+     * @param audio     This frame's raw features. (in)
+     * @param audioFx   This frame's conditioned features. (in)
+     * @param dtWall    Wall-clock seconds of this frame (the frame step in an export). (in)
+     **/
+    void updateGuard( const AudioFeatures &audio, const AudioFeatures &audioFx, float dtWall );
+    /**  What the guard does in this run: 0 off, 1 on, 2 watching only (it logs what it would do).
+     *
+     * @return
+     *   The mode: KALEIDO_GUARD (0/off, 1/on, log) if set, else the setting -- and off in a scripted run.
+     **/
+    static int guardMode();
+    /**  Logs one of the guard's actions and counts it per scene and per photo in kaleidoscope_guard.tsv beside the
+     * settings file (never in the taste: M_Taste stays the user's).
+     *
+     * @param a     The action. (in)
+     * @param acts  Whether it is carried out (mode 1), not only watched. (in)
+     **/
+    void noteGuard( PictureGuard::ActionE a, bool acts );
     /**  Fills the scheduler tick and runs the scene half of it (the combine half, tickFx(), must stay after the
      * effect passes -- it needs m_trueStereoHold).
      *
@@ -2048,6 +2107,18 @@ private:
     int   m_condDropOffset = 0;  ///< m_condDrops minus the analyser's count, kept when the cues fall silent.
     float m_cuePulse = 0.f;      ///< The drop hit of a cue drop, decaying like the analyser's (about 1.5 s of tail).
     float m_simDropPulse = 0.f;  ///< simulatedDropPulse().
+
+    // The picture guard (PictureGuard.h, docs/PLAN_2026-11-26.md W1) and the latency calibration ring (Z1).
+    PictureGuard m_guard;            ///< Detection and stages for this pipeline (updateGuard()).
+    unsigned     m_guardSeq = 0;     ///< The present pass's guard sample last fed to m_guard.
+    float        m_guardDt = 0.f;    ///< Wall seconds since the last sample was fed.
+    float        m_guardSolo = 0.f;  ///< Wall seconds the scene on screen has stood alone (0 during a fade).
+    float        m_guardLogT = 0.f;  ///< KALEIDO_GUARD_LOG: seconds since the last sample line.
+    double       m_guardWall = 0.0;  ///< Wall seconds painted -- in an export the video's time -- for the log lines.
+    QString      m_photoActPath;     ///< The photo on screen (m_actTex), as far as known.
+    QString      m_photoNextPath;    ///< The photo uploaded into m_nextTex.
+    float        m_calibPhase = 0.f; ///< calibState(): the last conditioned beat phase.
+    float        m_calibKick = 0.f;  ///< calibState(): the last conditioned kick.
     // Audio-Konditionierung (Envelopes, Slews, integrierte Phasen, Beat-PLL,
     // virtuelle Kamera, Zeit-Regie): komplett in AudioConditioner gekapselt.
     AudioConditioner m_audioConditioner; ///< Turns each frame's raw AudioFeatures into the anti-flicker copy +
@@ -2063,7 +2134,8 @@ private:
     static float M_MoodStrength;     ///< global mood-grade strength (default 1.0).
     static float M_LightShow;        ///< 0 = corner lamps/light-show off (default), 1 = on.
     static bool  M_StrictLight;      ///< Strict light protection (ini lightProtectionStrict).
-    static float M_LatencyLead;      ///< display-phase lead in seconds (default 0.05).
+    static bool  M_PictureGuard;     ///< The picture guard (ini pictureGuard; pictureGuard()).
+    static float M_LatencyLead;      ///< latency in seconds (default 0.05): > 0 phase lead, < 0 delay of all features.
     static bool  M_Blackout; ///< VJ blackout target (smoothed per instance) — actual fade is smoothed in PresentPass.
     static bool  M_RestDim;          ///< The rest mode's blackout target (setRestDim()).
     static float M_Dim;              ///< The sleep timer's dimming, 1 = full (setDim()).
