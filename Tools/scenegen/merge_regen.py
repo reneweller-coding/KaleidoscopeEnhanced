@@ -3,6 +3,8 @@
 
     python Tools/scenegen/merge_regen.py Name [Name ...]          # write Scene2D|FX/<Name>.frag
     python Tools/scenegen/merge_regen.py --check Name [Name ...]  # only say what would change
+    python Tools/scenegen/merge_regen.py --base REF Name ...      # the frag of REF's source is the base (default HEAD:
+                                                                  # after the source change was committed, its parent)
 
 A full gen.py rebuild of an older scene pulls in everything the shared libraries gained since it was last built (the
 2D chain scenes of 30.09. get some 1,070 lines of round-7 chain classes they never call) -- a larger shader to compile
@@ -38,10 +40,10 @@ def built(name, sp=None):
     return path, gen._cgvr.layout_and_names(text, path)
 
 
-def head_source(name, tmp):
-    """The committed source of <name> into tmp/src; False if it has none at HEAD."""
+def head_source(name, tmp, ref="HEAD"):
+    """The source of <name> at ref (a git revision) into tmp/src; False if it has none there."""
     rel = "Tools/scenegen/src/%s.glsl" % name
-    p = subprocess.run(["git", "show", "HEAD:" + rel], cwd=ROOT, capture_output=True)
+    p = subprocess.run(["git", "show", ref + ":" + rel], cwd=ROOT, capture_output=True)
     if p.returncode != 0:
         return False
     os.makedirs(os.path.join(tmp, "src"), exist_ok=True)
@@ -52,6 +54,11 @@ def head_source(name, tmp):
 def main():
     args = sys.argv[1:]
     check = "--check" in args
+    ref = "HEAD"
+    if "--base" in args:
+        i = args.index("--base")
+        ref = args[i + 1]
+        del args[i:i + 2]
     names = [a for a in args if not a.startswith("--")]
     tmp = tempfile.mkdtemp(prefix="merge_regen_")
     bad = 0
@@ -59,7 +66,7 @@ def main():
         for n in names:
             path, new = built(n)
             cur = io.open(path, encoding="utf-8").read() if os.path.exists(path) else None
-            if not head_source(n, tmp) or cur is None:
+            if not head_source(n, tmp, ref) or cur is None:
                 what, out = "new (plain build)", new
             else:
                 _, base = built(n, tmp)
