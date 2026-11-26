@@ -351,6 +351,22 @@ public:
     void run( const Inputs &in );
 
 private:
+    /**  The light block's measuring hook (KALEIDO_LIGHT_STATS, Tools/light_stats.py): how much of the frame the
+     * present pass takes sits at the upper limit, how much lies above it, and how much glow that light gives.
+     *
+     * @param in     This frame's inputs: the source texture and its size. (in)
+     * @param scale  The factor that decodes the source: 1 for a plain run, 4 for the measurement copies of
+     *               Tools/light_stats.py, whose scenes write a quarter of their light without the final clamp. (in)
+     *
+     * Reads the source back (a sync: for measuring runs only) and prints one line per frame to stderr, `[light]
+     * f=<frame> n=<pixels>` and the shares of the pixels whose brightest channel reaches 0.995 (clip), 1.05 (over),
+     * 2 (over2), whose luma reaches 1.05 (lover), whose darkest channel reaches 0.995 (white); the mean luma above 1
+     * (exc); the bloom's bright pass as it is (b8: the colour clamped to 1, as an 8-bit target holds it) and as it
+     * would be with the light kept (bh); the mean luma of the clamped colour; the 99.9th percentile (p999) and the
+     * maximum of the brightest channel.
+     **/
+    void logLightStats( const Inputs &in, float scale );
+
     /**  (Re)allocate the mipmapped final-frame texture at the given size.
      *
      * @param w            Texture width. (in)
