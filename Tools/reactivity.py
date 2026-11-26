@@ -20,6 +20,15 @@ quiet halves of an 8-s cycle) and once over silence of the same length.  Whateve
     python Tools/reactivity.py --scenes A,B,C      # these only
     python Tools/reactivity.py --report            # write Tools/scene_reactivity.tsv from what was measured
 
+Per voice (plan 26.11.2026, I1; see the comment above VOICES): the screening music with one voice muted or panned,
+against the full mix -- what each voice does in the picture.
+
+    python Tools/reactivity.py --voices --set controls --tag base      # null pair, the engine's floor, known answers
+    python Tools/reactivity.py --voices --set labs --tag base          # the labs; --set top60: the most shown scenes
+    python Tools/reactivity.py --voices --set labs --tag roles --expr voiceP=1   # the same with the voices' roles
+    python Tools/reactivity.py --voices --set top60 --chunk 1          # one chunk only (one lock hold)
+    python Tools/reactivity.py --voices --report --tag base            # Tools/scene_voices.tsv + contact sheets
+
 Controls: no scene of the catalogue is free of audio (every scene reacts, by the house rules), so the "still" side
 is made: the photo itself (Engine/ProfileStill.frag as a scene) and null pairs -- reactive scenes rendered silence
 against silence, which must read zero.  Work files land in .screen/reactivity (gitignored): per chunk a json and,
@@ -283,7 +292,8 @@ GENRES = ("Ambient", "Downtempo", "SpaceAmbient", "Cinematic", "Club", "Electron
           "Noir", "Allround")
 # "Reads zero": no more than the engine's own answer.  The floor is ProfileStill's reading in the controls of the
 # same run (the photo as a scene: what exposure, hue drift and the house finish do with the voice); a voice reads
-# zero when its change stays under ZERO_K times that floor and its sync under ZERO_SYNC.
+# zero when its change stays under ZERO_K times that floor and its sync under the floor's sync + 0.10 (at least
+# ZERO_SYNC); the pan when |lr| stays under ZERO_LR.
 ZERO_K, ZERO_SYNC, ZERO_LR = 2.0, 0.15, 0.10
 
 
@@ -417,7 +427,7 @@ def limiter_counts(log_path):
                 out.append(cur)
             last = (t0, n)
             continue
-        if cur is not None and line.startswith("EXPO "):
+        if cur is not None and line.startswith("EXPO ") and " scale=" in line:
             kv = dict(x.split("=", 1) for x in line.split()[1:] if "=" in x)
             cur[0] += 1
             cur[1] += float(kv.get("scale", 1)) < 0.995
@@ -460,7 +470,8 @@ def measure_voice_pair(F, V, onset, lr=False):
     o = onset[1:len(ch) + 1] if onset is not None else None
     if o is not None and len(o) == len(ch):
         r["sync"] = round(_corr_lag(_hp(ch), _hp(o)), 4)
-        # the same against the hits moved by half a beat: what a scene that does not answer them reads by chance
+        # the same against the hits moved by half a beat -- kept for reference only: the voices repeat on the 8th
+        # grid, inside the lag search, so for most of them this is no null (the floor is ProfileStill's row)
         sh = int(round(0.5 * 60.0 / 128.0 * VFPS))
         r["sync0"] = round(_corr_lag(_hp(ch), _hp(np.roll(o, sh))), 4)
     if lr:
@@ -714,7 +725,9 @@ def zero_voices(r, floor):
         if v == "lead":
             z = x["amp"] < ZERO_K * f["amp"] and x["struct"] < ZERO_K * f["struct"]
         else:
-            z = x["amp"] < ZERO_K * f["amp"] and x.get("sync", 0) < max(ZERO_SYNC, x.get("sync0", 0) + 0.05)
+            # sync against the floor's own sync: the engine answers some hits itself (the photo alone reads up to
+            # 0.37 on the snare); sync0 is no null here -- the voices repeat on the 8th grid, inside the lag search
+            z = x["amp"] < ZERO_K * f["amp"] and x.get("sync", 0) < max(ZERO_SYNC, f.get("sync", 0) + 0.10)
         if z:
             out.append(v)
     if abs(r["pan_lead"].get("lr", 0)) < max(ZERO_LR, ZERO_K * abs(floor["pan_lead"].get("lr", 0))):
@@ -754,8 +767,8 @@ def voices_report(a):
                 "against the run with that voice muted (pan: the lead hard left).  amp = mean |difference| in %% of "
                 "full scale, struct = after per-frame normalisation, sync = the change the voice adds against its own "
                 "hits (0..1), lr = left half brighter than right in %%, lim = limiter samples dimmed (of %d s), zero = "
-                "the voices read no more than ProfileStill's floor (x%.1f; sync < %.2f).\n" % (int(VHOLD), ZERO_K,
-                                                                                              ZERO_SYNC))
+                "the voices read no more than ProfileStill's floor (amp x%.1f; sync floor + 0.10, at least %.2f; pan "
+                "|lr| < %.2f).\n" % (int(VHOLD), ZERO_K, ZERO_SYNC, ZERO_LR))
         f.write("\t".join(cols) + "\n")
         for line in keep:
             f.write(line)
@@ -794,8 +807,7 @@ def voice_sheet(path, tag, table, names, kind, title):
     for i, n in enumerate(names):
         y = 28 + i * (th + 4)
         r = table[n][kind]
-        txt = "%s\namp %.2f  struct %.3f\nsync %.2f (chance %.2f)" % (n, r["amp"], r["struct"], r.get("sync", 0),
-                                                                    r.get("sync0", 0))
+        txt = "%s\namp %.2f  struct %.3f\nsync %.2f" % (n, r["amp"], r["struct"], r.get("sync", 0))
         if "lr" in r:
             txt += "\nlr %+.2f" % r["lr"]
         dr.text((8, y + 8), txt, fill=(230, 230, 230))
