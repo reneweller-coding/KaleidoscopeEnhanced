@@ -388,6 +388,7 @@ private:
     GLint m_presentChaseUni = -1;       ///< Uniform location: chase-light phase ("audioChase").
     GLint m_presentLampsUni = -1;       ///< Uniform location: lightshow intensity ("lightShow").
     GLint m_presentStrictUni = -1;      ///< Uniform location: strict light protection ("strictLight").
+    GLint m_presentOldHueUni = -1;      ///< Uniform location: the pre-26.11.2026 RGB hue drift ("oldHue").
     GLint m_presentSwellUni = -1;       ///< Uniform location: audio swell ("audioSwell").
     GLint m_presentBarPhaseUni = -1;    ///< Uniform location: bar phase ("audioBarPhase").
     GLint m_presentBloomTexUni = -1;    ///< Uniform location: bloom texture ("bloomTex").

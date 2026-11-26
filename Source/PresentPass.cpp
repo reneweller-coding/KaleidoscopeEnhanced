@@ -122,6 +122,7 @@ void PresentPass::setup( int renderW, int renderH,
         m_presentChaseUni = glGetUniformLocation( m_presentProgId, "audioChase" );
         m_presentLampsUni = glGetUniformLocation( m_presentProgId, "lightShow" );
         m_presentStrictUni = glGetUniformLocation( m_presentProgId, "strictLight" );
+        m_presentOldHueUni = glGetUniformLocation( m_presentProgId, "oldHue" );
         m_presentSwellUni = glGetUniformLocation( m_presentProgId, "audioSwell" );
         m_presentBarPhaseUni = glGetUniformLocation( m_presentProgId, "audioBarPhase" );
         m_presentBloomTexUni = glGetUniformLocation( m_presentProgId, "bloomTex" );
@@ -1015,5 +1016,9 @@ void PresentPass::run( const Inputs &in )
         glUniform1f( m_presentLampsUni, in.lightShow );
     if ( m_presentStrictUni >= 0 )
         glUniform1f( m_presentStrictUni, in.strictLight ? 1.f : 0.f );
+    // KALEIDO_OLD_HUE=1: the harmony drift rotates RGB about the grey axis as before 26.11.2026 (comparisons only).
+    static const bool old_hue = std::getenv( "KALEIDO_OLD_HUE" ) && std::atoi( std::getenv( "KALEIDO_OLD_HUE" ) ) == 1;
+    if ( m_presentOldHueUni >= 0 )
+        glUniform1f( m_presentOldHueUni, old_hue ? 1.f : 0.f );
     drawFullscreen();
 }

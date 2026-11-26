@@ -118,6 +118,8 @@ uniform float     paletteAmt;    ///< 0 = neutral (no cover, or a colourless one
 uniform sampler2D sceneDepth;    ///< unit 6: depth of the ACTIVE scene (2.5D parallax)
 uniform float     depthPar;      ///< parallax strength (the scene's slewed 3D-ness)
 uniform vec2      nearFar2;      ///< clip planes for the linearisation
+uniform float     oldHue;        ///< 1 = the harmony drift rotates RGB about the grey axis as before 26.11.2026
+                                 ///< (KALEIDO_OLD_HUE=1, for comparisons); 0 = OKLab at constant lightness
 
 /**  Pseudo-random number 0..1 from a 2D point.
  *
@@ -145,6 +147,108 @@ vec3 hueRotate( vec3 c, float turns )
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
+}
+
+/**  sRGB transfer function, encoded -> linear light (negative input is treated as 0).
+ *
+ * @param c  The sRGB-encoded colour. (in)
+ *
+ * @return
+ *   The linear colour.
+ **/
+vec3 srgbToLinear( vec3 c )
+{
+    c = max( c, 0.0 );
+    return mix( c / 12.92, pow( ( c + 0.055 ) / 1.055, vec3( 2.4 ) ), vec3( greaterThan( c, vec3( 0.04045 ) ) ) );
+}
+
+/**  sRGB transfer function, linear light -> encoded (negative input is treated as 0).
+ *
+ * @param c  The linear colour. (in)
+ *
+ * @return
+ *   The sRGB-encoded colour.
+ **/
+vec3 linearToSrgb( vec3 c )
+{
+    c = max( c, 0.0 );
+    return mix( c * 12.92, 1.055 * pow( c, vec3( 1.0 / 2.4 ) ) - 0.055, vec3( greaterThan( c, vec3( 0.0031308 ) ) ) );
+}
+
+/**  Linear sRGB -> OKLab (Ottosson 2020): L lightness 0..1, a green-red, b blue-yellow.
+ *
+ * @param c  The linear colour, >= 0. (in)
+ *
+ * @return
+ *   The colour as (L, a, b).
+ **/
+vec3 linearToOklab( vec3 c )
+{
+    vec3 lms = c
+               * mat3( 0.4122214708, 0.5363325363, 0.0514459929, 0.2119034982, 0.6806995451, 0.1073969566, 0.0883024619,
+                       0.2817188376, 0.6299787005 );
+    lms = pow( max( lms, 0.0 ), vec3( 1.0 / 3.0 ) );
+    return lms
+           * mat3( 0.2104542553, 0.7936177850, -0.0040720468, 1.9779984951, -2.4285922050, 0.4505937099, 0.0259040371,
+                   0.7827717662, -0.8086757660 );
+}
+
+/**  OKLab -> linear sRGB (Ottosson 2020); may leave [0, 1] for colours outside the sRGB gamut.
+ *
+ * @param lab  The colour as (L, a, b). (in)
+ *
+ * @return
+ *   The linear colour.
+ **/
+vec3 oklabToLinear( vec3 lab )
+{
+    vec3 lms = lab
+               * mat3( 1.0, 0.3963377774, 0.2158037573, 1.0, -0.1055613458, -0.0638541728, 1.0, -0.0894841775,
+                       -1.2914855480 );
+    lms = lms * lms * lms;
+    return lms
+           * mat3( 4.0767416621, -3.3077115913, 0.2309699292, -1.2684380046, 2.6097574011, -0.3413193965, -0.0041960863,
+                   -0.7034186147, 1.7076147010 );
+}
+
+/**  Hue rotation at constant perceived lightness: the a/b plane of OKLab turns, L stays.  Where the turned colour
+ * leaves the gamut (below 0, or above the brighter of 1 and the colour's own brightest channel), its chroma is
+ * pulled back -- six bisection steps -- instead of clipping a channel, which would shift hue and lightness.  The
+ * RGB rotation about the grey axis (hueRotate) keeps R+G+B, not the lightness: turning yellow there gives a far
+ * darker blue -- on 50 catalogue frames 8 % mean lightness change over the offsets (17 % at half a turn) against
+ * 0.07 % here (docs/engine-internals.md (69)).
+ *
+ * @param c      The sRGB-encoded colour. (in)
+ * @param turns  The turn (1 = a full circle). (in)
+ *
+ * @return
+ *   The colour, sRGB-encoded.
+ **/
+vec3 hueRotateOk( vec3 c, float turns )
+{
+    if ( abs( turns ) < 1e-6 )
+        return c;
+    vec3  lin = srgbToLinear( c );
+    vec3  lab = linearToOklab( lin );
+    float a = turns * 6.28318530718;
+    float cs = cos( a ), sn = sin( a );
+    vec2  ab = vec2( lab.y * cs - lab.z * sn, lab.y * sn + lab.z * cs );
+    float hi = max( 1.0, max( lin.r, max( lin.g, lin.b ) ) ) + 1e-4;
+    vec3  o = oklabToLinear( vec3( lab.x, ab ) );
+    if ( min( o.r, min( o.g, o.b ) ) < -1e-4 || max( o.r, max( o.g, o.b ) ) > hi )
+    {
+        float lo = 0.0, up = 1.0;
+        for ( int i = 0; i < 6; ++i )
+        {
+            float mid = 0.5 * ( lo + up );
+            vec3  t = oklabToLinear( vec3( lab.x, ab * mid ) );
+            bool  inside = min( t.r, min( t.g, t.b ) ) >= -1e-4 && max( t.r, max( t.g, t.b ) ) <= hi;
+            lo = inside ? mid : lo;
+            up = inside ? up : mid;
+        }
+        o = oklabToLinear( vec3( lab.x, ab * lo ) );
+    }
+    return linearToSrgb( o );
 }
 
 /**  2D rotation matrix.
@@ -445,8 +549,10 @@ void main()
     // pass owns hard brightness dynamics; this is a slow mood tint, not a flash.
     c *= 1.0 + ( audioValence - 0.5 ) * 0.16;
 
-    // Harmony → hue shift (the song's key/chords tint the whole palette).
-    c = hueRotate( c, audioChromaHue * 0.18 );
+    // Harmony → hue shift (the song's key/chords tint the whole palette), at constant perceived lightness since
+    // 26.11.2026 (hueRotateOk); oldHue brings back the RGB rotation for comparisons.  The stage lamps below keep
+    // hueRotate: they are light sources, their colours were tuned with it.
+    c = ( oldHue > 0.5 ) ? hueRotate( c, audioChromaHue * 0.18 ) : hueRotateOk( c, audioChromaHue * 0.18 );
 
     // Saturation from arousal (centred so 0.5 ≈ neutral): energetic music
     // saturates, still music mutes. The original 0.45..1.55 range halved the
