@@ -55,7 +55,39 @@ pixel-pack buffers, mapped 12 frames later) for the OSC output only (`/color/mea
 - *Resetting the clocks on every natural photo change*: a broken scene would never have been caught while the
   slideshow kept changing photos every 15 s.
 
-*The thresholds* -- MEASUREMENT PENDING
+*The thresholds, from the catalogue.*
+
+- *The screening* (`.screen/metrics.json` of 23.10., 2,475 scenes, 1-3 seeds each, the screening groove, 160 x 90
+  after the exposure): the frame means' minimum per window is below 0.012 in 0.5 % of the windows and below 0.016 in
+  1 %; the darkest scenes by design are BlackHole, OrbitalShells, VectorscopeBloom, PlanetRings, TronCycles (their
+  brightest frame 0.022-0.037), the stillest FusorStarMode, MeshSeismograph, OrbitalShells, AccretionDiskToroidVortex
+  (32 x 18 blocks moving 0.0009-0.0016 in 0.2 s).  Those are the control scenes: the 20 darkest and the 20 stillest.
+- *What the guard itself reads of them* (`Tools/screen.py --scenes ... --hold 45` with `KALEIDO_GUARD=log
+  KALEIDO_GUARD_LOG=1`, 45 s each, 2 min of lock per 20 scenes; `Tools/guard_report.py`): the darkest mean of all 40,
+  OrbitalShells, is 0.0154 -- 3.4 times `darkMean` (0.0045); every one of them has a texel at 0.23 or more at some
+  point (`darkPeak` 0.03); the longest stillness of the 20 stillest is 2.0 s (CompassNeedleField), a tenth of
+  `frozenSecs`.  **0 actions in 40 control scenes.**  (The screening groove switches loud and quiet every 4 s, and its
+  quiet half reads as a DJ stop: the guard was armed 45 % of the time there, 92 % on real music.)
+- `darkMean` 0.0045 is about 1/255 after the exposure's largest gain (1.8) -- a picture that is black to the eye --
+  and `stillStep` 3/255 lets the 8-bit mips' rounding and a scene's grain pass.  20 s is longer than any breakdown's
+  dark moment the 2-h run met (none got past 0 s dark) and than any stillness of a scene that moves (7.6 s).
+
+*The long run* (`Tools/guard_run.py`, the guard acting, `KALEIDO_GUARD=1`): the seven real tracks of
+`.screen/music`, `structure128.wav` and the screening groove, once with Allround and once with Club -- 2 h of music,
+as video exports at 1280 x 720, 15 fps: 11.2 min of lock (about 20 times real time; the labs walk with the music
+there, so 85 scenes in all, 62 % of the time in the four labs).  **0 actions.**  Nearest misses: MandelbrotDeepZoom
+stood still for 16.0 s -- and its frame was flat, mean = peak = 0.6235 in every texel: the zoom inside the set, one
+colour, nothing to see; at 20 s the guard would have been right to act.  The next longest stillness was 7.6 s
+(LightPillarsCity), the longest dark streak 0 s.  [Calm presets: see below.]
+
+*The app test* (two test shaders, black and frozen, in a hidden preset `Presets/ZZGuardTest.xml` -- gitignored, the
+shaders in `.screen/guardtest`; the screening groove, 910 s): 35 actions; each test scene was ended 26-28 s after it
+came (3 s settling, 20 s, then the downbeat or the phrase), with a photo first when one was ready and the scene change
+at once when a photo had been fading in for 8 s.  Sheet: `sheets/guard/guard_apptest_black_frozen_910s.jpg`.
+
+*Tried and dropped after the first app test:* the first stage waited for every photo fade to end -- the frozen test
+scene got its photo after 81 s, not after 20.  A photo fading in for 8 s without curing the picture is now taken as
+proof that the photo is not the cause.
 
 ### Z1 -- the picture and the sound you hear
 
@@ -108,4 +140,33 @@ back.
   sound passed the tap), so the value is a start, not the answer: the suggestion = 0.05 s (the default lead, which
   fits speakers on a cable) minus the measured lag, applied only when the user presses "Apply".
 
-*Checks* -- PENDING
+*Checks.*
+
+- `Kaleidoscope.exe -q`: 167 passed, 0 failed.  New: the ring alone (a delay of 0.30 s set before the music hands out
+  block k-30 at block k, exactly, and silence before; a change of the delay never runs a counter backwards, and after
+  the slew it is the new delay exactly -- block 654 at block 699 for 0.45 s; switched off it lets go, switched on
+  again mid-show it slews in without a silent snapshot; 1-ms blocks still reach 0.5 s back); the analyzer end to end
+  (a 128-BPM kick track through two analyzers, one with 0.30 s: 1170 of 1170 blocks are those of 30 blocks before --
+  levels, counters, beat phase, tempo, the 32 bands and the waveform compared exactly -- 25 beats); the setting (-0.2
+  s is a delay of 0.2, +0.05 none, -0.9 held at -0.5; never in an export or the scene plan); the cues (80 ms of delay:
+  the drop lands 80 ms after it arrived, a beat reaches the external clock at once; a cue file shifts by its delay).
+  And the guard: a black and a frozen scene (photo at 20.0 s, scene at 35.0 s), a slow drift and a dark scene by
+  design that never trigger, the pauses, a new scene, a photo that cures it, a live picture, a photo fading in, the
+  retry after 45 s, and the scheduler's side: `requestGuardChange()` at 10 s fades at 16.0 s, 2.0 s before the 8-bar
+  boundary, and a pin holds it.
+- *At zero, byte for byte:* `PresetEditor --features` on chords.wav (5.7 MB), structure128.wav (4.3 MB) and
+  broadband120.wav (0.9 MB) -- this build against the main checkout's editor, built before this work: identical, every byte (the editor's
+  analysis has no delay; `Tools/analyzer_regress.py` reads these files).
+- `Tools/check_schedule.py`: 20 plans, 0 violations (the scene plan never sets the guard's change).
+- Snapshots (`scene_snapshots.py`, 12 entries): identical to `2026-11-26-base` -- once rendered with the user's
+  settings file; without it (a worktree has none, the base was rendered with the main checkout's) 6 of 12 differed
+  by 2.4-5.6, the settings, not the code: two renders of this build without it are identical too.
+- `temporal_budget.py` 0 errors, `shake_scan.py` 0 new, `cgvr_format.py --check` 3,512 same, `check_strings.py`,
+  `check_build_lists.py` (the .pro lists the two new headers), `check_enum_tables.py`, `doc_shaders.py --check` 0.
+- *Not verified:* the calibration ring and the tap-along on a real phone and real headphones (the user's); the
+  delay against a real Bluetooth device; the Linux build (CI); the setting's MIDI knob is unchanged (0..0.25, the lead
+  only).
+
+*Not delayed, on purpose:* the media session's title and its lyrics and song cues (they follow the player's
+position, not the loopback; a few hundred ms there do not read as a sync error), the OSC output follows the picture
+(delayed) -- a lighting desk in the same room as the headphones' wearer sees what the picture shows.
