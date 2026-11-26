@@ -1,0 +1,24 @@
+# The M1 check sheet (plan of 26.11.2026): the 20 test photos of Tools/depth_test_photos.txt and these 20, whose
+# subject sits away from the centre (picked by eye from the families with objects -- lumps, cream, shards, sheets,
+# spirals, piles; the photo pack holds few photos with one clear subject).  Also usable for M2's "20 photos with an
+# off-centre subject".  One name per line, '#' starts a comment.
+lehmwurf-purpur-lk.jpg                 # a lump left below the centre
+lehmwurf-purpur-lk3.jpg                # a lump on the edge of a white patch, upper right
+lehmwurf-seladon-lk3.jpg               # stones along the diagonal
+lehmwurf-fruehling-zinnober.jpg        # three ring-shaped lumps, right of the centre
+milchwirbel-fuchsia-lk.jpg             # a cream blob at the top
+milchwirbel-scharlach.jpg              # white cream at the right
+milchwirbel-farn-gelbgruen.jpg         # a cream spiral right of the centre
+glasschmelze-schwefel-scharlach-2.jpg  # a gold glass layer, upper left
+blattgold-indigo-lk.jpg                # a black sheet, upper right
+frostblume-amethyst-violett.jpg        # the front frond, at the bottom
+gelatinebruch-graphit-oliv.jpg         # a green shard, upper right
+gelatinebruch-purpur-laub-2.jpg        # a dark shard, right
+zunderschicht-altrosa.jpg              # a scale plate, left
+basaltbruch-magenta-limette.jpg        # the lime cube, lower right
+metallspaene-rot-lk3.jpg               # a coil of shavings right of the centre
+oelemulsion-petrol-tuerkis.jpg         # a glass drop, upper right of the centre
+honigfluss-zinnober-2-lk.jpg           # a honey spiral, right
+honigfluss-indigo.jpg                  # a spiral, right
+glasscherben-purpur-laub-2.jpg         # a large shard, lower middle
+pigmenthaufen-azur-schwefel.jpg        # the yellow pile, right

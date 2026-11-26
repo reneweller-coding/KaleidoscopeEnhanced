@@ -13,7 +13,8 @@ Output, per photo of --images (the long side of the map is 512, the photo's aspe
 Columns: relief = spread of the depth once the large-scale tilt or bowl of the picture is removed, relative to the
 distance (relief_measures(); 0 = a surface without relief, flat photos read below 0.1, photos with things in them
 0.3 and more); slope = share of the area with a real gradient (edges of things, slopes; a tilt alone does not
-count); flat = 1 when relief < FLAT_RELIEF (patterns, textures, sky -- the app then gives the photo no depth);
+count); flat = 1 when relief is low, or lowish without slope, and no clear subject (FLAT_*; patterns, textures,
+sky -- the app then gives the photo no depth); mask = how well `map >= thr` reproduces the subject region (0..1);
 fx, fy = subject centre in image coordinates (x right, y DOWN, 0..1); thr = map value 0..1 that separates the
 subject from the background (subject is map >= thr); conf = 0..1, how clearly that subject stands out (subject();
 the app falls back to the picture centre when it is low; 0 for flat photos).  "-" where not measured.
@@ -45,7 +46,7 @@ import os
 import sys
 import time
 
-COLUMNS = ["file", "relief", "slope", "flat", "fx", "fy", "thr", "conf", "model"]
+COLUMNS = ["file", "relief", "slope", "flat", "fx", "fy", "thr", "conf", "model", "mask"]
 EXTS = (".jpg", ".jpeg", ".png")
 MAP_SIDE = 512                     # the long side of a map
 
@@ -60,7 +61,10 @@ MODELS = {
 # ---- relief and the flat rule (calibrated on sheets, see docs/engine-internals-69-maps.md) ------------------------
 MEASURE_SIDE = 128                 # the measures run on the map shrunk to this long side
 SLOPE_RANGE = 1.0                  # a "real" gradient: the map's whole range within one image width (after detrend)
-FLAT_RELIEF = 0.15                 # flat when relief < this
+FLAT_RELIEF = 0.10                 # flat when relief < this,
+FLAT_RELIEF_SOFT = 0.25            # ... or when relief < this and
+FLAT_SLOPE = 0.15                  # ... slope < this (a receding surface without things on it)
+SUBJECT_RESCUE = 0.5               # ... unless the subject measure finds a clear subject (judge())
 
 np = None                          # numpy, imported in main() (so that --help runs anywhere)
 
@@ -227,7 +231,8 @@ def relief_measures(n, disp=None):
     the model thinks it recedes; on the 20 test photos the flat ones read 0.01..0.09, the ones with relief 0.32..3.7.
     slope: share of the area where the smoothed, detrended map changes by more than SLOPE_RANGE map ranges per image
     width (edges of things and real slopes; a tilt alone does not count).
-    flat: relief < FLAT_RELIEF.
+    flat: relief < FLAT_RELIEF, or relief < FLAT_RELIEF_SOFT and slope < FLAT_SLOPE (calibrated on sheets of the
+    whole folder, docs/engine-internals-69-maps.md; judge() rescues flat photos with a clear subject).
     """
     from scipy import ndimage
     m = shrink(n, MEASURE_SIDE)
@@ -241,7 +246,7 @@ def relief_measures(n, disp=None):
         q5, q95 = np.percentile(detrend(d), [5.0, 95.0])
         med = float(np.median(d))
         relief = float(np.clip((q95 - q5) / med, 0.0, 9.99)) if med > 1e-9 else 0.0
-        flat = 1 if relief < FLAT_RELIEF else 0
+        flat = 1 if relief < FLAT_RELIEF or (relief < FLAT_RELIEF_SOFT and slope < FLAT_SLOPE) else 0
     return relief, slope, flat
 
 
@@ -262,14 +267,17 @@ def otsu(values, bins=128):
     return float(edges[k + 1]), (float(sb[k]) / var if var > 1e-12 else 0.0)
 
 
-def background_plane(m, iters=4, keep=60.0):
-    """The plane the far part of the map lies on: a least-squares plane, refitted on the pixels at or below the
-    `keep` percentile of the residual (robust against the subject that rises above it)."""
+def background_plane(m, iters=4, keep=60.0, quad=None):
+    """The surface the far part of the map lies on: a least-squares plane (or quadratic surface, SUBJECT_BG),
+    refitted on the pixels at or below the `keep` percentile of the residual (robust against the subject that
+    rises above it)."""
+    quad = SUBJECT_BG == "quad" if quad is None else quad
     h, w = m.shape
     yy, xx = np.mgrid[0:h, 0:w]
     x = ((xx + 0.5) / w - 0.5).ravel()
     y = ((yy + 0.5) / h - 0.5).ravel()
-    q = np.stack([np.ones_like(x), x, y], 1)
+    terms = [np.ones_like(x), x, y] + ([x * x, y * y, x * y] if quad else [])
+    q = np.stack(terms, 1)
     v = m.ravel().astype(np.float64)
     sel = np.ones(v.shape, bool)
     for _ in range(iters):
@@ -289,10 +297,12 @@ def morph(mask, op, it=1):
     return big[p:-p, p:-p]
 
 
-SUBJECT_FACTORS = ("edge", "area", "dom", "border", "fill", "iou", "relief")
+SUBJECT_BG = "quad"                # the background the subject rises above: "plane" or "quad"
+SUBJECT_TOUCH = (0.10, 0.20)       # border factor: 1 up to 10 % of the region's outline on the frame, 0 from 30 %
+SUBJECT_FACTORS = ("edge", "area", "dom", "border", "fill")
 
 
-def subject(n, relief=None, debug=None):
+def subject(n, debug=None):
     """Subject centre and subject depth of one map (M1): the most prominent connected region that rises above the
     background plane.
 
@@ -306,9 +316,11 @@ def subject(n, relief=None, debug=None):
       dom    its share of all near volume (one subject, not one pebble of many)
       border how little of the picture's edge it covers (a foreground band at the bottom is no subject)
       fill   area / area with its holes filled (a mesh or a web is no subject)
-      iou    how well `map >= thr` reproduces the region (what the shader will see)
-      relief 0 for flat photos, rising to 1 at relief 0.30
-    Returns (fx, fy, thr, conf, mask); debug, a dict, receives the factors.
+    conf is about the CENTRE.  How well the plain threshold reproduces the region is a separate number, mask (the
+    intersection over union of `map >= thr` and the region, 0..1): on a photo that recedes, the near foreground
+    passes the threshold too, and a mask drawn from it would be wrong even when the centre is right.
+    Returns a dict fx, fy, thr, conf, mask, region (the region at MEASURE_SIDE, for sheets); debug, a dict,
+    receives the factors.
     """
     from scipy import ndimage
     m = ndimage.gaussian_filter(shrink(n, MEASURE_SIDE), 1.0, mode="reflect")
@@ -320,7 +332,7 @@ def subject(n, relief=None, debug=None):
     near = morph(morph(rn >= t, "open"), "close")
     lab, k = ndimage.label(near, structure=np.ones((3, 3), bool))
     if k == 0:
-        return 0.5, 0.5, 0.5, 0.0, np.zeros_like(near)
+        return {"fx": 0.5, "fy": 0.5, "thr": 0.5, "conf": 0.0, "mask": 0.0, "region": np.zeros_like(near)}
     height = np.clip(rn - t, 0.0, None) + 0.02
     mass = ndimage.sum(height, lab, index=np.arange(1, k + 1))
     best = int(np.argmax(mass)) + 1
@@ -342,10 +354,11 @@ def subject(n, relief=None, debug=None):
 
     area = float(mask.mean())
     dom = float(mass[best - 1]) / max(1e-6, float(mass.sum()))
-    band = np.zeros_like(mask)
-    band[:2, :] = band[-2:, :] = True
-    band[:, :2] = band[:, -2:] = True
-    touch = float((mask & band).sum()) / float(band.sum())
+    frame = np.zeros_like(mask)
+    frame[0, :] = frame[-1, :] = True
+    frame[:, 0] = frame[:, -1] = True
+    rim = mask & ~ndimage.binary_erosion(mask)          # the region's outline; at the frame the region ends too
+    touch = float((mask & frame).sum()) / max(1.0, float(rim.sum()))
     ring = ndimage.binary_dilation(mask, iterations=max(2, MEASURE_SIDE // 24)) & ~mask
     inside = float(np.median(rn[mask]))
     around = float(np.median(rn[ring])) if ring.any() else inside
@@ -356,25 +369,36 @@ def subject(n, relief=None, debug=None):
     f = {"edge": float(np.clip((edge - 0.1) / 0.3, 0.0, 1.0)),
          "area": float(np.clip((area - 0.01) / 0.03, 0.0, 1.0) * np.clip((0.65 - area) / 0.25, 0.0, 1.0)),
          "dom": float(np.clip((dom - 0.35) / 0.35, 0.0, 1.0)),
-         "border": float(np.clip(1.0 - (touch - 0.08) / 0.2, 0.0, 1.0)),
-         "fill": float(np.clip((fill - 0.6) / 0.25, 0.0, 1.0)),
-         "iou": float(np.clip((best_iou - 0.3) / 0.4, 0.0, 1.0)),
-         "relief": 1.0 if relief is None else float(np.clip((relief - FLAT_RELIEF) / 0.15, 0.0, 1.0))}
+         "border": float(np.clip(1.0 - (touch - SUBJECT_TOUCH[0]) / SUBJECT_TOUCH[1], 0.0, 1.0)),
+         "fill": float(np.clip((fill - 0.6) / 0.25, 0.0, 1.0))}
     conf = 1.0
     for v in f.values():
         conf *= v
     if debug is not None:
         debug.update(f)
-        debug.update(raw_edge=edge, raw_area=area, raw_dom=dom, raw_touch=touch, raw_fill=fill, raw_iou=best_iou)
-    return fx, fy, thr, float(np.clip(conf, 0.0, 1.0)), mask
+        debug.update(raw_edge=edge, raw_area=area, raw_dom=dom, raw_touch=touch, raw_fill=fill)
+    return {"fx": fx, "fy": fy, "thr": thr, "conf": float(np.clip(conf, 0.0, 1.0)), "mask": best_iou,
+            "region": mask}
+
+
+def judge(n, disp):
+    """relief, slope, flat and the subject of one map, with the flat rule's rescue: a photo whose relief reads flat
+    but which holds a clear subject (conf >= SUBJECT_RESCUE, e.g. one lump on a plain surface -- too small for the
+    5..95 % spread of relief) keeps its depth.  Flat photos get conf 0."""
+    relief, slope, flat = relief_measures(n, disp)
+    sub = subject(n)
+    if flat == 1 and sub["conf"] >= SUBJECT_RESCUE:
+        flat = 0
+    if flat == 1:
+        sub["conf"] = 0.0
+    return relief, slope, flat, sub
 
 
 def measure_row(name, n, disp, model):
-    relief, slope, flat = relief_measures(n, disp)
-    fx, fy, thr, conf, _ = subject(n, relief)
+    relief, slope, flat, sub = judge(n, disp)
     return {"file": name, "relief": fmt(relief) if relief is not None else "-", "slope": fmt(slope),
-            "flat": str(flat) if flat is not None else "-", "fx": fmt(fx), "fy": fmt(fy), "thr": fmt(thr),
-            "conf": fmt(conf), "model": model}
+            "flat": str(flat) if flat is not None else "-", "fx": fmt(sub["fx"]), "fy": fmt(sub["fy"]),
+            "thr": fmt(sub["thr"]), "conf": fmt(sub["conf"]), "model": model, "mask": fmt(sub["mask"])}
 
 
 # ---- the models (torch is imported here and nowhere else) --------------------------------------------------------
@@ -407,7 +431,7 @@ class Da3MonoLarge:
     is used for one image without camera poses, so both modules are replaced by empty stand-ins before the import.
     """
 
-    def __init__(self, device):
+    def __init__(self, device, sky=True):
         import types
         for name, attrs in (("depth_anything_3.utils.export", {"export": None}),
                             ("depth_anything_3.utils.pose_align", {"align_poses_umeyama": None})):
@@ -418,6 +442,12 @@ class Da3MonoLarge:
         os.environ.setdefault("DA3_LOG_LEVEL", "WARN")
         import torch
         from depth_anything_3.api import DepthAnything3
+        if not sky:
+            # The net sets what its sky head calls sky (p >= 0.3) to the 99th percentile of the other depths.  On
+            # dark backgrounds (a web on black) that cuts holes into the map; without it the depth head's own
+            # values stay.
+            from depth_anything_3.model.da3 import DepthAnything3Net
+            DepthAnything3Net._process_mono_sky_estimation = lambda self, output: output
         spec = MODELS["da3ml"]
         self.torch = torch
         self.model = DepthAnything3.from_pretrained(spec["repo"], revision=spec["rev"]).to(device=device).eval()
@@ -427,8 +457,10 @@ class Da3MonoLarge:
         return np.asarray(pred.depth[0], dtype=np.float32)
 
 
-def load_model(name, device):
-    return {"dav2s": Dav2Small, "da3ml": Da3MonoLarge}[name](device)
+def load_model(name, device, sky=True):
+    if name == "da3ml":
+        return Da3MonoLarge(device, sky)
+    return Dav2Small(device)
 
 
 # ---- compute -----------------------------------------------------------------------------------------------------
@@ -444,6 +476,7 @@ def compute(a):
     if a.raw:
         os.makedirs(a.raw, exist_ok=True)
     kind = MODELS[a.model]["kind"]
+    tag = a.model + ("-nosky" if a.model == "da3ml" and a.da3_sky == "off" else "")   # the model column
     names = photo_names(a.images, a.files, a.list, a.limit)
     rows = read_info(a.out)
     seen = {}
@@ -459,7 +492,7 @@ def compute(a):
             continue
         seen[st] = nm
         row = rows.get(nm)
-        if not a.force and fresh(map_path(a.out, nm), src) and row and row.get("model") == a.model:
+        if not a.force and fresh(map_path(a.out, nm), src) and row and row.get("model") == tag:
             continue
         if not a.force and fresh(map_path(a.out, nm), src) and (row is None or row.get("relief", "-") == "-"):
             remeasure.append(nm)                     # the map exists, its row not (an interrupted run)
@@ -470,7 +503,7 @@ def compute(a):
     for nm in remeasure:
         rp = raw_path(a.raw, nm)
         disp = disparity(np.load(rp).astype(np.float32), kind) if rp and os.path.isfile(rp) else None
-        rows[nm] = measure_row(nm, load_map(map_path(a.out, nm)), disp, a.model)
+        rows[nm] = measure_row(nm, load_map(map_path(a.out, nm)), disp, tag)
     if not todo:
         write_info(a.out, rows)
         return 0
@@ -485,7 +518,7 @@ def compute(a):
             print("less than 3 GB of GPU memory free -- not starting (another model or app holds it)")
             return 2
     t0 = time.time()
-    model = load_model(a.model, device)
+    model = load_model(a.model, device, sky=(a.da3_sky == "on"))
     t_load = time.time() - t0
     print("model loaded in %.1f s" % t_load, flush=True)
     times = []
@@ -515,7 +548,7 @@ def compute(a):
                 rp = raw_path(a.raw, nm)
                 np.save(rp + ".tmp.npy", raw.astype(np.float16))
                 os.replace(rp + ".tmp.npy", rp)
-            rows[nm] = measure_row(nm, n, disp, a.model)
+            rows[nm] = measure_row(nm, n, disp, tag)
             t4 = time.time()
             times.append((t2 - t1, t3 - t2, t4 - t3))
             if a.verbose or i < 3 or (i + 1) % 50 == 0:
@@ -532,7 +565,7 @@ def compute(a):
     if warm:
         r, m, w = (1000.0 * sum(t[j] for t in warm) / len(warm) for j in range(3))
         line = ("%s  %s  %d photos  load %.1f s  warm per photo: read %.0f ms, model %.0f ms, write+measure %.0f ms, "
-                "total %.0f ms  (%s)" % (time.strftime("%Y-%m-%d %H:%M"), a.model, len(times), t_load, r, m, w,
+                "total %.0f ms  (%s)" % (time.strftime("%Y-%m-%d %H:%M"), tag, len(times), t_load, r, m, w,
                                          r + m + w, device))
         print(line)
         with open(os.path.join(a.out, "runs.log"), "a", encoding="utf-8", newline="\n") as f:
@@ -550,7 +583,7 @@ def measure(a):
         if not os.path.isfile(mp):
             continue
         model = rows.get(nm, {}).get("model", "-")
-        kind = MODELS.get(model, {}).get("kind", "disparity")
+        kind = MODELS.get(model.split("-")[0], {}).get("kind", "disparity")
         rp = raw_path(a.raw, nm)
         disp = disparity(np.load(rp).astype(np.float32), kind) if rp and os.path.isfile(rp) else None
         if disp is None and nm in rows and rows[nm].get("relief", "-") != "-":
@@ -558,9 +591,12 @@ def measure(a):
             relief = float(rows[nm]["relief"])
             n = load_map(mp)
             _, slope, _ = relief_measures(n, None)
-            fx, fy, thr, conf, _ = subject(n, relief)
-            rows[nm].update(slope=fmt(slope), flat=str(1 if relief < FLAT_RELIEF else 0), fx=fmt(fx), fy=fmt(fy),
-                            thr=fmt(thr), conf=fmt(conf))
+            flat = 1 if relief < FLAT_RELIEF or (relief < FLAT_RELIEF_SOFT and slope < FLAT_SLOPE) else 0
+            sub = subject(n)
+            if flat == 1 and sub["conf"] >= SUBJECT_RESCUE:
+                flat = 0
+            rows[nm].update(slope=fmt(slope), flat=str(flat), fx=fmt(sub["fx"]), fy=fmt(sub["fy"]),
+                            thr=fmt(sub["thr"]), conf=fmt(sub["conf"] if flat == 0 else 0.0), mask=fmt(sub["mask"]))
         else:
             rows[nm] = measure_row(nm, load_map(mp), disp, model)
         done += 1
@@ -730,9 +766,10 @@ def sheet_subject(a):
                 continue
             n = load_map(mp)
             r = rows.get(nm, {})
-            relief = float(r["relief"]) if r.get("relief", "-") not in ("-", "") else None
             dbg = {}
-            fx, fy, thr, conf, mask = subject(n, relief, dbg)
+            sub = subject(n, dbg)
+            fx, fy, thr, mask = sub["fx"], sub["fy"], sub["thr"], sub["region"]
+            conf = sub["conf"] if r.get("flat", "0") != "1" else 0.0
             ph = load_photo(os.path.join(a.images, nm), T)
             arr = np.asarray(to_img(ph)).copy()
             # the plain-map mask the shader will see (thin cyan), the region (thick, coloured by conf)
@@ -751,8 +788,9 @@ def sheet_subject(a):
                 d2.line([(cx, cy - 16), (cx, cy + 16)], fill=cc, width=dd)
             sh.paste(img, (x0, y0))
             dr.text((x0 + 3, y0 + T + 2), nm[:44], fill=(230, 230, 230), font=small)
-            dr.text((x0 + 3, y0 + T + 17), "%s conf %.2f thr %.2f relief %s" % (
-                label, conf, thr, r.get("relief", "-")), fill=col, font=small)
+            dr.text((x0 + 3, y0 + T + 17), "%s conf %.2f mask %.2f thr %.2f relief %s%s" % (
+                label, conf, sub["mask"], thr, r.get("relief", "-"), " FLAT" if r.get("flat") == "1" else ""),
+                fill=col, font=small)
             dr.text((x0 + 3, y0 + T + 32), " ".join("%s%.1f" % (k[:3], dbg.get(k, 0)) for k in SUBJECT_FACTORS),
                     fill=(170, 170, 170), font=small)
         sh.save(os.path.join(a.sheets, "subject_%s%s_%02d.jpg" % (label, tag, s0 // per)), quality=88)
@@ -761,7 +799,11 @@ def sheet_subject(a):
 
 
 def sheet_flat(a):
-    """The photos the flat rule calls flat and the borderline ones (photo | map), sorted by relief."""
+    """The calibration sheets of the flat rule (photo | map, relief r and slope s under each):
+    flat_<maps>_top     the 30 flat photos with the highest relief (just below FLAT_RELIEF)
+    flat_<maps>_sample  30 flat photos at random (fixed seed)
+    flat_<maps>_border  the 30 photos with relief with the lowest relief (just above FLAT_RELIEF)"""
+    import random
     from PIL import Image, ImageDraw
     os.makedirs(a.sheets, exist_ok=True)
     rows = read_info(a.out)
@@ -775,23 +817,21 @@ def sheet_flat(a):
         items.append((float(r["relief"]), float(r["slope"]), int(r["flat"]), nm))
     items.sort()
     flat = [it for it in items if it[2] == 1]
-    border = [it for it in items if it[2] == 0][:max(20, len(flat) // 3)]
-    T, cols, per = 180, 5, 30
+    relief = [it for it in items if it[2] == 0]
+    sample = sorted(random.Random(26).sample(flat, min(30, len(flat))))
+    T, cols = 180, 5
     small = font(12)
-    for tag, group in (("flat", flat), ("borderline", border)):
-        for s0 in range(0, len(group), per):
-            chunk = group[s0:s0 + per]
-            nrow = (len(chunk) + cols - 1) // cols
-            sh = Image.new("RGB", (cols * 2 * T, nrow * (T + 16)), (24, 24, 24))
-            dr = ImageDraw.Draw(sh)
-            for i, (rel, slo, fl, nm) in enumerate(chunk):
-                x0, y0 = (i % cols) * 2 * T, (i // cols) * (T + 16)
-                sh.paste(to_img(load_photo(os.path.join(a.images, nm), T)).resize((T, T)), (x0, y0))
-                sh.paste(to_img(load_map(map_path(a.out, nm))).resize((T, T)), (x0 + T, y0))
-                dr.text((x0 + 2, y0 + T + 1), "%s r%.2f s%.2f" % (nm[:22], rel, slo), fill=(230, 230, 230),
-                        font=small)
-            sh.save(os.path.join(a.sheets, "flat_%s_%s_%02d.jpg" % (label, tag, s0 // per)), quality=86)
-    print("%s: %d flat, %d borderline shown, of %d measured" % (label, len(flat), len(border), len(items)))
+    for tag, chunk in (("top", flat[-30:]), ("sample", sample), ("border", relief[:30])):
+        nrow = (len(chunk) + cols - 1) // cols
+        sh = Image.new("RGB", (cols * 2 * T, nrow * (T + 16)), (24, 24, 24))
+        dr = ImageDraw.Draw(sh)
+        for i, (rel, slo, fl, nm) in enumerate(chunk):
+            x0, y0 = (i % cols) * 2 * T, (i // cols) * (T + 16)
+            sh.paste(to_img(load_photo(os.path.join(a.images, nm), T)).resize((T, T)), (x0, y0))
+            sh.paste(to_img(load_map(map_path(a.out, nm))).resize((T, T)), (x0 + T, y0))
+            dr.text((x0 + 2, y0 + T + 1), "%s r%.3f s%.2f" % (nm[:26], rel, slo), fill=(230, 230, 230), font=small)
+        sh.save(os.path.join(a.sheets, "flat_%s_%s.jpg" % (label, tag)), quality=86)
+    print("%s: %d flat, %d with relief, of %d measured" % (label, len(flat), len(relief), len(items)))
     return 0
 
 
@@ -810,6 +850,8 @@ def main():
     ap.add_argument("--device", choices=["cuda", "cpu"], help="default: cuda when available")
     ap.add_argument("--verbose", action="store_true", help="a line per photo")
     ap.add_argument("--pause", type=float, default=0.0, help="seconds of rest after each photo (GPU load)")
+    ap.add_argument("--da3-sky", choices=["on", "off"], default="on",
+                    help="da3ml: the authors' sky replacement (sky -> far); off keeps the depth head's values")
     ap.add_argument("--measure", action="store_true", help="recompute the measures from the maps, no model")
     ap.add_argument("--sheet", choices=["compare", "subject", "flat"], help="make contact sheets (JPG)")
     ap.add_argument("--maps", nargs="+", help="--sheet compare: the map folders to compare")
