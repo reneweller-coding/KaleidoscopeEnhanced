@@ -22,6 +22,9 @@
 #ifndef GL_STREAM_READ
 #define GL_STREAM_READ 0x88E1 ///< Usage hint for the mean-colour PBOs: written once by the GPU, read once by the CPU.
 #endif
+#ifndef GL_RGBA16F
+#define GL_RGBA16F 0x881A ///< Half-float RGBA internal format (the 16-bit intermediates), if the GL header lacks it.
+#endif
 
 // Gemeinsames Fullscreen-Dreieck (gl_VertexID-VAO), definiert in RenderPipeline.cpp.
 /**  Shared fullscreen-triangle VAO (gl_VertexID trick), defined in RenderPipeline.cpp.
@@ -95,6 +98,10 @@ void PresentPass::setup( int renderW, int renderH,
                          GLenum internalFmt, GLenum fmt, GLenum type )
 {
     updateFinalTexture( renderW, renderH, internalFmt, fmt, type );
+    // 16-bit intermediates (RenderPipeline::hdrBuffers()): Present.frag rolls the light above 1 off (hdrBuffers).
+    if ( !m_hdr && internalFmt == GL_RGBA16F )
+        fprintf( stderr, "Intermediate pictures: RGBA16F (KALEIDO_HDR_BUFFERS)\n" );
+    m_hdr = internalFmt == GL_RGBA16F;
 
     if ( m_fboFinal == 0 )
         glGenFramebuffers( 1, &m_fboFinal );
@@ -164,6 +171,7 @@ void PresentPass::setup( int renderW, int renderH,
         m_presentSceneDepthUni = glGetUniformLocation( m_presentProgId, "sceneDepth" );
         m_presentDepthParUni = glGetUniformLocation( m_presentProgId, "depthPar" );
         m_presentNearFar2Uni = glGetUniformLocation( m_presentProgId, "nearFar2" );
+        m_presentHdrUni = glGetUniformLocation( m_presentProgId, "hdrBuffers" );
     }
 
     m_safetyReady = fbo_ok && ( m_presentProgId != 0 ) && ( m_presentTexUni >= 0 );
@@ -605,7 +613,10 @@ void PresentPass::run( const Inputs &in )
             float lum[64];
             for ( int i = 0; i < npx; ++i )
             {
-                lum[i] = 0.299f * buf[i * 4 + 0] + 0.587f * buf[i * 4 + 1] + 0.114f * buf[i * 4 + 2];
+                // At most 1 per channel, as an 8-bit target holds it: with 16-bit intermediates the light above 1
+                // reaches the screen through the present pass's roll-off, not as more brightness (SafetyLimit.comp).
+                lum[i] = 0.299f * std::min( buf[i * 4 + 0], 1.f ) + 0.587f * std::min( buf[i * 4 + 1], 1.f )
+                         + 0.114f * std::min( buf[i * 4 + 2], 1.f );
                 mean += lum[i];
             }
             mean /= static_cast<float>( npx );
@@ -949,6 +960,10 @@ void PresentPass::run( const Inputs &in )
         if ( m_presentNearFar2Uni >= 0 )
             glUniform2f( m_presentNearFar2Uni, in.nearZ, in.farZ );
     }
+
+    // 16-bit intermediates: the shoulder after the exposure, the limiter after the shoulder (Present.frag).
+    if ( m_presentHdrUni >= 0 )
+        glUniform1f( m_presentHdrUni, m_hdr ? 1.f : 0.f );
 
     if ( m_presentResUni >= 0 )
         glUniform2f( m_presentResUni, static_cast<float>( in.displayW ), static_cast<float>( in.displayH ) );

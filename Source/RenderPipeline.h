@@ -856,6 +856,14 @@ public:
      *   The frozen scene time, or a negative value when unset.
      **/
     static float freezeTime();
+    /**  KALEIDO_HDR_BUFFERS=1: the intermediate pictures (the scene, FX and transition targets, the final frame, the
+     * trails, the bloom, the stereo targets, the MSAA colour -- everything that follows m_texInternalFormat) are
+     * RGBA16F instead of RGBA8, so light above 1 survives to the present pass (docs/engine-internals-69-light.md).
+     *
+     * @return
+     *   True if the switch is set; read once.
+     **/
+    static bool hdrBuffers();
     // Pin (key 'u'): keep the CURRENT effect/combine on screen — scheduled and
     // forced switches (section/drop/novelty) are suppressed until unpinned.
     /**  Toggles VJ pin (suppresses scheduled/forced effect and combine switches; key 'u').
@@ -1407,9 +1415,11 @@ private:
     unsigned int m_width;  ///< texture width — internal render width in pixels (= display width x M_RenderScale).
     unsigned int m_height; ///< texture height — internal render height in pixels (= display height x M_RenderScale).
 
-    GLenum m_texInternalFormat; ///< Internal GL format used for the effect/combine FBO textures (GL_RGBA8).
+    GLenum m_texInternalFormat; ///< Internal GL format used for the effect/combine FBO textures (GL_RGBA8;
+                                ///< GL_RGBA16F with hdrBuffers()).
     GLenum m_texFormat;         ///< GL pixel-transfer format matching m_texInternalFormat (GL_RGBA).
-    GLenum m_texType;           ///< GL pixel-transfer data type matching m_texInternalFormat (GL_UNSIGNED_BYTE).
+    GLenum m_texType;           ///< GL pixel-transfer data type matching m_texInternalFormat (GL_UNSIGNED_BYTE;
+                                ///< GL_FLOAT with hdrBuffers()).
     // Zero-initialised so create*/init* can safely REUSE existing ids instead of
     // generating fresh ones (leak-proof if a rebuild path is ever re-entered).
     GLuint m_fboEffectTexture1 = 0;      ///< FBO of the active texture-effect pass.

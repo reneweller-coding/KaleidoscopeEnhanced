@@ -529,6 +529,8 @@ private:
                                        ///< 6).
     GLint m_presentDepthParUni = -1;   ///< Uniform location: parallax strength ("depthPar").
     GLint m_presentNearFar2Uni = -1;   ///< Uniform location: near/far plane distances ("nearFar2").
+    GLint m_presentHdrUni = -1;        ///< Uniform location: 16-bit intermediates ("hdrBuffers").
+    bool  m_hdr = false;               ///< The intermediates are RGBA16F (setup()): the source may hold light above 1.
 
     // ---- Lyrics / artist image ----
     GLuint m_lyricsTex = 0;               ///< Uploaded lyrics overlay texture.
