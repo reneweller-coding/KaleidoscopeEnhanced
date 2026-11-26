@@ -42,6 +42,8 @@ TEMPLATE = """//@doc
  *   audioMode       -> the light: cool in minor, warm in major
  *   audioSwell      -> the fog glow, the colour saturation and the width of the flight tube (slow)
  *   audioPhase      -> the surface colours wander (integrated, jump-free)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: styleP (photo surface / glowing rims), speedP (flight speed), detailP (texture sharpness), paletteP (photo colours / a colour field
  * following the 2D chain), camP (the first gaze: ahead, ahead-right or -left, slanted down or up,
@@ -174,7 +176,7 @@ void main()
         vec3 sc = mix(surf + rimC * fres * (chainPhotoOnly ? 0.0 : 0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.12 * ao, smoothstep(0.5, 1.0, st));
         col = mix(fogC, sc, exp(-t * (0.09 + 0.04 * swell)));
     }}
-    finish(col);
+    finish(voiceRoles(col, p));
 }}
 """
 COLS = {'Chain3DSphereFoldLattice': ['uv = tWave(uv, 6.0, 0.05, gT * 0.5);', 'uv = tP4m(uv, 3.0);', 'uv = tSpiral(uv, vec2(0.5), 4.0, 1.0, gT * 0.3);'], 'Chain3DKifsTetra': ['uv = tSpiral(uv, vec2(0.5), 4.0, 1.0, gT * 0.3);', 'uv = mirrorUV(uv);', 'uv = tKaleido(uv, vec2(0.5), 6.0, gRot);'], 'Chain3DMandelbox': ['uv = tKaleido(uv, vec2(0.5), 6.0, gRot);', 'uv = mirrorUV(uv);', 'uv = tSpiral(uv, vec2(0.5), 3.0, 1.0, gT * 0.2);'], 'Chain3DOctaGyroid': ['uv = tMobius(uv, vec2(0.3, 0.5), vec2(0.7, 0.5), 0.35);', 'uv = mirrorUV(uv);', 'uv = tFold(uv, 0.4 + 0.3 * sin(gT * 0.1), 1.25, 3.0);'], 'Chain3DPolarTunnelBoxes': ['uv = tKaleido(uv, vec2(0.5), 8.0, gRot);', 'uv = mirrorUV(uv);', 'uv = tDroste(uv, vec2(0.5), 3.0, gT * 0.2);'], 'Chain3DTwistTorus': ['uv = tExp(uv, vec2(0.5), 4.0);', 'uv = mirrorUV(uv);', 'uv = tKaleido(uv, vec2(0.5), 6.0, gRot);'], 'Chain3DOctaKifs': ['uv = tWave(uv, 6.0, 0.05, gT * 0.5);', 'uv = tP4m(uv, 3.0);', 'uv = tSpiral(uv, vec2(0.5), 4.0, 1.0, gT * 0.3);']}

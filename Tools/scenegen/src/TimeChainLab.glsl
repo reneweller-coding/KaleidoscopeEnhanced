@@ -11,6 +11,8 @@
  *   audioPhase      -> the maps' clocks (integrated)
  *   audioSectionId/Age -> a new section re-rolls every stage (new maps)
  *
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  * Knobs: seedP (the walk's seed), delayP (the base delay), strengthP (the maps' base strength), hueP.
 //@params seedP delayP strengthP
 //@audio audioSwell
@@ -94,5 +96,5 @@ void main()
             ws += gLabW[i];
         }
     }
-    finish(max(col / max(ws, 1e-3), 0.0));
+    finish(voiceRoles(max(col / max(ws, 1e-3), 0.0), screenP()));
 }

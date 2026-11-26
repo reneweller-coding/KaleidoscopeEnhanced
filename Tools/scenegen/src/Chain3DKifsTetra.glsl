@@ -14,6 +14,8 @@
  *   audioMode       -> the light: cool in minor, warm in major
  *   audioSwell      -> the fog glow, the colour saturation and the width of the flight tube (slow)
  *   audioPhase      -> the surface colours wander (integrated, jump-free)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: styleP (photo surface / glowing rims), speedP (flight speed), detailP (texture sharpness), paletteP (photo colours / a colour field
  * following the 2D chain), camP (the first gaze: ahead, ahead-right or -left, slanted down or up,
@@ -153,5 +155,5 @@ void main()
         vec3 sc = mix(surf + rimC * fres * (chainPhotoOnly ? 0.0 : 0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.12 * ao, smoothstep(0.5, 1.0, st));
         col = mix(fogC, sc, exp(-t * (0.09 + 0.04 * swell)));
     }
-    finish(col);
+    finish(voiceRoles(col, p));
 }

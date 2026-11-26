@@ -17,6 +17,8 @@
  *   audioKick       -> the relief crests flare (light)
  *   audioMode       -> the light and the palette: cool in minor, warm in major
  *   audioSwell      -> the relief rises, the colours saturate (slow)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: chainAP / chainBP / chainCP / chainDP (the chain, rolled per start),
  * morphP (which stage, if any, morphs on with the music), depthP (relief
@@ -459,5 +461,5 @@ void main()
         vec3 sc = mix(surf + glow * (chainPhotoOnly ? 0.0 : 0.25 * (0.5 + kick)), glow + surf * 0.55, smoothstep(0.35, 0.65, st));
         col = mix(fogC, sc, exp(-t * (0.07 + 0.03 * swell)));
     }
-    finish(chainAfterglow(col));
+    finish(voiceRoles(chainAfterglow(col), screenP()));
 }

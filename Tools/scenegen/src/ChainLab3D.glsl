@@ -18,6 +18,8 @@
  *   audioKick       -> the rims flare (light)
  *   audioMode       -> the light and the palette: cool in minor, warm in major
  *   audioSwell      -> the fog glow, the colour saturation and the width of the flight tube (slow)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: spaceP / coreP / bodyP (the 3D chain, rolled per start), solidP (the colour
  * chain projected on three planes, or as a solid texture with the depth as its
@@ -821,5 +823,5 @@ void main()
         vec3 sc = mix(surf + rimC * fres * (chainPhotoOnly ? 0.0 : 0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.12 * ao, smoothstep(0.5, 1.0, st));
         col = mix(fogC, sc, exp(-t * (0.09 + 0.04 * swell)));
     }
-    finish(chainAfterglow(col));
+    finish(voiceRoles(chainAfterglow(col), screenP()));
 }

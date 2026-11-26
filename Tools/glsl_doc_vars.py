@@ -248,6 +248,7 @@ VAR_DOCS = {
     "audioStereo": "Stereo width of the music, 0..1.",
     "audioStereoL": "Energy of the left channel per band (low, mid, high), 0..1.",
     "audioStereoR": "Energy of the right channel per band (low, mid, high), 0..1.",
+    "audioStereoBal": "Where the weight of the sound sits: -1 left .. 0 centre (and mono) .. +1 right, a second-long average.",
     "audioSharpness": "Sharpness of the sound: 0 dull and dark .. 1 bright and harsh.",
     "audioMelody": "The melody: the dominant pitch every ~80 ms, a ring of 96 (~7.7 s); 0 = no clear pitch.",
     "audioMelodyHead": "Head of the audioMelody ring as a position 0..1 (the newest sample just behind it).",

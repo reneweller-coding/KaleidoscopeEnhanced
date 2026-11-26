@@ -13,6 +13,8 @@
  *   audioPhase      -> the flaws' wandering (integrated)
  *   audioHarmAdvance -> the pair of dislocations approaches or parts with each harmonic change (integrated)
  *   audioSectionId/Age -> a new section re-rolls every stage (a new lattice, a new flaw)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: seedP (the walk's seed), cellP (the lattice's size), flawP (how strong the flaws are), hueP.
 //@params seedP cellP flawP
@@ -128,5 +130,5 @@ void main()
             ws += gLabW[i];
         }
     }
-    finish(max(col / max(ws, 1e-3), 0.0));
+    finish(voiceRoles(max(col / max(ws, 1e-3), 0.0), screenP()));
 }

@@ -18,6 +18,8 @@
  *   audioKick       -> the rims flare (light)
  *   audioMode       -> the light and the palette: cool in minor, warm in major
  *   audioSwell      -> the fog glow and the colour saturation (slow)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: spaceP / coreP / bodyP (the 3D chain), layerP (1..8 planes), hyperP (the plane
  * at rest, the world's own time running: a cut through 4D),
@@ -914,5 +916,5 @@ void main()
             col += iso * isoL * isoM * fade * rimC * (0.9 + 0.8 * kick);
         }
     }
-    finish(chainAfterglow(col));
+    finish(voiceRoles(chainAfterglow(col), screenP()));
 }
