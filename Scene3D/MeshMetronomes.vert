@@ -46,6 +46,36 @@ out float vSwing;  ///< Swing (from the vertex stage).
 
 const float Ground = -14.0; ///< Height of the ground (world units).
 
+// ---- shadow map of the scene's lamp (Tools/scenegen/patch_shadow3d.py) ----
+uniform float shadowPass;                           ///< 1 during the shadow map's depth-only pass.
+const vec3    SmLamp = vec3( 0.3, 0.7, -0.55 );     ///< Toward the lamp main() shades with.
+const vec3    SmCentre = vec3( 0.0, Ground, 52.0 ); ///< Centre of the shadow box (world units).
+const float   SmBox = 45.0;                         ///< Half size of the shadow box (world units).
+
+/**  A point in the clip space of the lamp's shadow map: an orthographic view along the lamp onto the box around
+ * SmCentre.
+ *
+ * @param p  The point (world units). (in)
+ *
+ * @return
+ *   Its clip coordinates (w = 1).
+ *
+ * The construction of RenderPipeline::updateLightMatrixGeneric() -- eye 2 SmBox out along the lamp, looking at the
+ * box centre, near 0.1, far 4 SmBox -- but along the scene's own lamp, so the shadows fall where its light says.
+ **/
+vec4 smClip( vec3 p )
+{
+    vec3  l = normalize( SmLamp );
+    vec3  f = -l;
+    vec3  up = ( abs( f.y ) > 0.98 ) ? vec3( 1.0, 0.0, 0.0 ) : vec3( 0.0, 1.0, 0.0 );
+    vec3  s = normalize( cross( f, up ) );
+    vec3  u = cross( s, f );
+    vec3  q = p - SmCentre - l * ( 2.0 * SmBox );
+    float zn = 0.1, zf = 4.0 * SmBox;
+    return vec4( dot( q, s ) / SmBox, dot( q, u ) / SmBox, ( 2.0 * dot( q, f ) - zf - zn ) / ( zf - zn ), 1.0 );
+}
+// ---- end of the shadow map ----
+
 /**  Pseudo-random number 0..1 from a float.
  *
  * @param p  The input value. (in)
@@ -135,6 +165,12 @@ void main()
         vLocal = vec3( 0.0 );
     }
 
+    if ( shadowPass > 0.5 )
+    {
+        // The shadow map's depth pass (patch_shadow3d.py): the objects through the lamp's view, never the sky.
+        gl_Position = is_bg ? vec4( 0.0, 0.0, 2.0, 1.0 ) : smClip( world );
+        return;
+    }
     vec3 vp = world;
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );

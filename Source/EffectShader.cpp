@@ -4068,7 +4068,21 @@ bool EffectShader::usesShadow()
     if ( !m_glReady )
         return false;
     if ( m_usesShadow < 0 )
+    {
         m_usesShadow = ( m_shProgId != 0 && glGetUniformLocation( m_shProgId, "texShadow" ) >= 0 ) ? 1 : 0;
+        // A scene that has its shadow map as a variant (Tools/scenegen/patch_shadow3d.py) declares the knob
+        // shadowMapP: the depth pass runs only while the rolled knob is above 0.  At 0 -- also with no preset
+        // entry, the uniform's default -- the scene is drawn once, exactly as before.
+        if ( m_usesShadow == 1 && glGetUniformLocation( m_shProgId, "shadowMapP" ) >= 0 )
+            m_usesShadow = 2;
+    }
+    if ( m_usesShadow == 2 )
+    {
+        for ( const Uniform *u : m_uniforms )
+            if ( u->getName() == "shadowMapP" )
+                return u->snapshotValue() > 0.f;
+        return false;
+    }
     return m_usesShadow == 1;
 }
 

@@ -754,7 +754,8 @@ public:
      *
      * @return
      *   True if this effect's compiled fragment shader declares the "texShadow" sampler (shadow map). Cached after
-     *   first query.
+     *   first query. A program that also declares the knob "shadowMapP" (Tools/scenegen/patch_shadow3d.py) counts
+     *   only while that knob's rolled value is above 0.
      **/
     bool usesShadow();
 
@@ -1119,7 +1120,8 @@ protected:
     int m_usesSSM = -1;     ///< Cached usesSSM() result (-1 = not yet queried): the self-similarity matrix, `texSSM`.
     int m_usesSpectro = -1; ///< Cached usesSpectro() result (-1 = not yet queried): the scrolling spectrogram history,
                             ///< `texSpectro`.
-    int m_usesShadow = -1;  ///< Cached usesShadow() result (-1 = not yet queried): the shadow map, `texShadow`.
+    int m_usesShadow = -1;  ///< Cached usesShadow() result (-1 = not yet queried): the shadow map, `texShadow`; 2 =
+                            ///< behind the knob `shadowMapP`.
     int m_usesShadow2 = -1; ///< Cached usesShadow2() result (-1 = not yet queried): the second, independent shadow map,
                             ///< `texShadow2`.
     int m_usesOit = -1;  ///< Cached usesOit() result (-1 = not yet queried): order-independent transparency, `oitPass`.
