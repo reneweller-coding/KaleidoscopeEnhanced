@@ -1,0 +1,23 @@
+# The 20 test photos of the depth-model comparison (plan of 26.11.2026, T0); one name per line, '#' = comment.
+# The photo pack holds material close-ups only (no people, landscapes, buildings or night scenes), so the
+# categories of the plan are matched by the depth character of a picture.
+achat-amethyst-lk3.jpg                 # first of sorted(os.listdir(Images)): chain_regress's default; flat slab
+kristallhoehle-indigo-fuchsia-2.jpg    # the photo of the snapshot set 2026-11-10-all; crystal ring, dark
+gipsrose-farn-gelbgruen.jpg            # "portrait": one centred object (rosette)
+knospenschuppen-aqua-jade-3.jpg        # "portrait": a large bud filling the frame, shallow focus
+lehmwurf-fruehling-zinnober-2.jpg      # off-centre lumps on a surface
+erosion-amethyst-petrol.jpg            # "landscape": eroded terrain, oblique view
+kiesbett-schwefel-scharlach.jpg        # "landscape": pebble bed, receding
+tropfstein-scharlach-rot-2.jpg         # stalactites, strong relief
+kalksinter-koralle-veilchen.jpg        # "architecture": columns / pipes
+lichtleiter-schwefel-scharlach.jpg     # "architecture": rods in depth of field
+kalkputz-altrosa.jpg                   # "architecture": a plastered corner with light and shadow
+metallschaum-bronze-fruehling.jpg      # a mesh above a surface
+kondenswasser-altrosa-himbeere-2.jpg   # macro: droplets, shallow focus
+federflaum-bernstein-azur.jpg          # macro: feathers
+spinnwebe-aqua-2-lk.jpg                # "night": cobweb on black
+funkenflug-bronze-fruehling.jpg        # "night"-like: sparks over a cut surface
+terrazzo-amethyst-petrol.jpg           # pattern, flat
+suminagashi-altrosa-himbeere.jpg       # pattern, flat (marbled paper)
+polarlicht-aqua-lk3.jpg                # "sky": smooth abstract light
+knitterpapier-amethyst-petrol.jpg      # low relief: crumpled paper
