@@ -283,6 +283,11 @@ struct AudioFeatures
      *  @brief Left-channel mid band energy (AGC-normalised 0..1); the counterpart of stereoMidR. */
     /** @var AudioFeatures::stereoMidR
      *  @brief Right-channel mid band energy (AGC-normalised 0..1); the counterpart of stereoMidL. */
+    /** Where the weight of the sound sits: -1 all left .. 0 centre (and mono) .. +1 all right (uniform
+     * audioStereoBal).  The channels' energy difference over their sum, both averaged over about a second, so it
+     * leans slowly; the band levels above follow every hit.
+     **/
+    float stereoBalance = 0.f;
 
     /** Rate of change of the dominant pitch (melodic activity).
      *

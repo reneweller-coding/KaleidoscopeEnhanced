@@ -843,6 +843,8 @@ enum AudioLocE
     AL_TEXPHOTOB0,
     AL_TEXPHOTOB1,
     AL_PHOTOBMIX,
+    // Where the weight of the sound sits, -1 left .. +1 right, slow (AudioFeatures::stereoBalance; plan 26.11.2026).
+    AL_STEREOBAL,
     AL_COUNT
 };
 /** The audio uniforms' names, indexed by AudioLocE (the order must match). */
@@ -870,7 +872,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioPhrasePos", "audioPhraseLeft",
     "audioSectionId", "audioSectionPrev", "audioSectionAge", "audioSectionKnown", "audioSectionCount",
     "audioMelodyPhase", "audioHarmAdvance", "audioMelodyConf",
-    "texPhotoB0", "texPhotoB1", "photoBMix" };
+    "texPhotoB0", "texPhotoB1", "photoBMix",
+    "audioStereoBal" };
 }
 
 void EffectShader::applyAudioFeatures( const AudioFeatures &features )
@@ -1157,6 +1160,8 @@ void EffectShader::applyAudioFeatures( const AudioFeatures &features )
         m_advanceAtReset = f.audioAdvance;
     if ( locs[AL_MELODYPITCH] >= 0 )
         glUniform1f( locs[AL_MELODYPITCH], f.melodyPitch );
+    if ( locs[AL_STEREOBAL] >= 0 )
+        glUniform1f( locs[AL_STEREOBAL], f.stereoBalance );
     if ( locs[AL_PHRASEPOS] >= 0 )
         glUniform1f( locs[AL_PHRASEPOS], f.phrasePos );
     if ( locs[AL_PHRASELEFT] >= 0 )
