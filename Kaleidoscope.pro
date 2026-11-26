@@ -92,6 +92,7 @@ HEADERS += \
     Source/CueReceiver.h \
     Source/EffectShader.h \
     Source/ExprEval.h \
+    Source/FeatureDelay.h \
     Source/glcore.h \
     Source/glwidget.h \
     Source/GpuSims.h \
@@ -107,6 +108,7 @@ HEADERS += \
     Source/ScheduleSim.h \
     Source/OsdMenu.h \
     Source/Platform.h \
+    Source/PictureGuard.h \
     Source/PlatformQt.h \
     Source/PresentPass.h \
     Source/QMyWindow.h \

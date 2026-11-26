@@ -1440,6 +1440,384 @@ void runUpChecks()
         "to #" + std::to_string( built ) + " / #" + std::to_string( none ) );
 }
 
+/**  The feature delay (FeatureDelay.h, docs/PLAN_2026-11-26.md Z1): every feature arrives exactly the set time later,
+ * the counters never step back while the delay changes, and at zero nothing is different.
+ **/
+void delayChecks()
+{
+    printf( "\nthe feature delay (FeatureDelay.h: the latency below zero)\n" );
+    // The ring on its own: snapshots numbered by their block, 10 ms each, a delay of 0.30 s set before the first.
+    {
+        FeatureDelay d;
+        d.setTarget( 0.30f, true );
+        d.setSilenceFirst( true );
+        bool exact = true, silent = true;
+        for ( int k = 0; k < 200; ++k )
+        {
+            AudioFeatures f;
+            f.beatCount = k;
+            f.overallLevel = 0.001f * static_cast<float>( k );
+            d.push( f, 0.01 );
+            const AudioFeatures &o = d.delayed();
+            if ( k >= 30 )
+                exact = exact && o.beatCount == k - 30 && o.overallLevel == 0.001f * static_cast<float>( k - 30 );
+            else
+                silent = silent && o.beatCount == 0 && o.overallLevel == 0.f;
+        }
+        check( exact, "a delay of 0.30 s set before the music hands out block k-30 at block k, exactly" );
+        check( silent, "and before 0.30 s of music a silent snapshot -- nothing has reached the ear yet" );
+
+        // Changed during the show: it slews (0.5 s a second), the delayed counter never goes back, and it settles.
+        int  prev = -1, last = 0;
+        bool monotone = true;
+        d.setTarget( 0.10f );
+        for ( int k = 200; k < 400; ++k )
+        {
+            AudioFeatures f;
+            f.beatCount = k;
+            d.push( f, 0.01 );
+            monotone = monotone && d.delayed().beatCount >= prev;
+            prev = last = d.delayed().beatCount;
+        }
+        d.setTarget( 0.45f );
+        for ( int k = 400; k < 700; ++k )
+        {
+            AudioFeatures f;
+            f.beatCount = k;
+            d.push( f, 0.01 );
+            monotone = monotone && d.delayed().beatCount >= prev;
+            prev = last = d.delayed().beatCount;
+        }
+        check( monotone, "a change of the delay never runs the counters backwards (no beat, section or track out of "
+                         "nowhere)" );
+        check( last == 699 - 45, "and after the slew it is the new delay, exactly",
+               "block " + std::to_string( last ) + " at block 699" );
+        d.setTarget( 0.f );
+        for ( int k = 700; k < 900; ++k )
+        {
+            AudioFeatures f;
+            f.beatCount = k;
+            d.push( f, 0.01 );
+        }
+        check( !d.active(), "back at zero it lets go: the reader takes the newest snapshot again" );
+        d.setTarget( 0.2f ); // on again mid-show: it slews in from the newest snapshot, never a silent one
+        bool resumed = true;
+        prev = 899;
+        for ( int k = 900; k < 1000; ++k )
+        {
+            AudioFeatures f;
+            f.beatCount = k;
+            d.push( f, 0.01 );
+            resumed = resumed && d.delayed().beatCount >= prev;
+            prev = d.delayed().beatCount;
+        }
+        check( resumed && prev == 999 - 20, "switched on again during the show it slews in, no silence, no step back" );
+        FeatureDelay  off;
+        AudioFeatures f;
+        off.push( f, 0.01 );
+        check( !off.active(), "a delay never set stores nothing" );
+        // WASAPI's 1-ms packets: a slot per 2 ms, so the ring still covers the longest delay.
+        FeatureDelay tiny;
+        tiny.setTarget( 0.5f, true );
+        tiny.setSilenceFirst( true );
+        for ( int k = 0; k < 1500; ++k )
+        {
+            AudioFeatures g;
+            g.beatCount = k;
+            tiny.push( g, 0.001 );
+        }
+        check( std::abs( tiny.delayed().beatCount - ( 1499 - 500 ) ) <= 2,
+               "1-ms blocks: 0.5 s back is still in the ring (to the 2 ms a slot holds)",
+               std::to_string( tiny.delayed().beatCount ) );
+    }
+
+    // The analyzer end to end: the same kick track through two analyzers, one with 0.30 s of delay.  At 48 kHz a
+    // block is 480 frames, 10 ms: the delayed one hands out at block k what the other handed out at block k-30.
+    {
+        const int                rate = 48000;
+        const std::vector<float> pcm = kickPattern( rate, 128.0, { 0.0, 1.0, 2.0, 3.0 }, 12.0 );
+        AudioAnalyzer            plain, held;
+        held.setFeatureDelay( 0.30f );
+        std::vector<AudioFeatures> a, b;
+        for ( size_t at = 0; at + 480 <= pcm.size(); at += 480 )
+        {
+            plain.feedBlock( pcm.data() + at, 480, 1, rate );
+            held.feedBlock( pcm.data() + at, 480, 1, rate );
+            a.push_back( plain.getFeatures() );
+            b.push_back( held.getFeatures() );
+        }
+        int  same = 0, n = 0, beats = 0;
+        bool silent = true;
+        for ( size_t k = 0; k < b.size(); ++k )
+        {
+            if ( k < 30 )
+            {
+                silent = silent && b[k].beatCount == 0 && b[k].overallLevel == 0.f;
+                continue;
+            }
+            const AudioFeatures &x = a[k - 30], &y = b[k];
+            ++n;
+            same += x.beatCount == y.beatCount && x.onsetCount == y.onsetCount && x.overallLevel == y.overallLevel
+                            && x.bassLevel == y.bassLevel && x.beatPhase == y.beatPhase
+                            && x.estimatedBPM == y.estimatedBPM && x.onsetKick == y.onsetKick
+                            && x.dropCount == y.dropCount && x.sectionCount == y.sectionCount
+                            && std::memcmp( x.spectrum, y.spectrum, sizeof( x.spectrum ) ) == 0
+                            && std::memcmp( x.wave, y.wave, sizeof( x.wave ) ) == 0
+                        ? 1
+                        : 0;
+            beats = y.beatCount;
+        }
+        check( n > 1000 && same == n && beats > 10,
+               "a kick track through the analyzer with 0.30 s of delay: every block's features are those of 30 blocks "
+               "(0.300 s) before",
+               std::to_string( same ) + " of " + std::to_string( n ) + " blocks, " + std::to_string( beats )
+                   + " beats" );
+        check( silent, "and the first 0.30 s are silence" );
+        const AudioFeatures p = plain.getFeatures(), q = plain.liveFeatures();
+        check( p.beatCount == q.beatCount && p.overallLevel == q.overallLevel && p.beatPhase == q.beatPhase
+                   && std::memcmp( p.spectrum, q.spectrum, sizeof( p.spectrum ) ) == 0,
+               "without a delay getFeatures() is the newest snapshot, as before" );
+    }
+
+    // The setting: one number with a sign, the old key's range kept above zero.
+    {
+        const float lat = RenderPipeline::latency();
+        const bool  headless = EffectShader::M_Headless;
+        const float step = RenderPipeline::M_FrameStep;
+        EffectShader::M_Headless = false;
+        RenderPipeline::M_FrameStep = 0.f;
+        RenderPipeline::setLatency( -0.2f );
+        const float d1 = RenderPipeline::featureDelay();
+        RenderPipeline::setLatency( 0.05f );
+        const float d2 = RenderPipeline::featureDelay();
+        RenderPipeline::setLatency( -0.9f );
+        const float d3 = RenderPipeline::featureDelay();
+        RenderPipeline::M_FrameStep = 1.f / 60.f;
+        const float d4 = RenderPipeline::featureDelay();
+        RenderPipeline::M_FrameStep = 0.f;
+        EffectShader::M_Headless = true;
+        const float d5 = RenderPipeline::featureDelay();
+        EffectShader::M_Headless = headless;
+        RenderPipeline::M_FrameStep = step;
+        RenderPipeline::setLatency( lat );
+        check( d1 == 0.2f && d2 == 0.f && d3 == 0.5f,
+               "latency -0.2 s is a delay of 0.2 s, +0.05 s none (the lead as before), -0.9 s is held at -0.5 s" );
+        check( d4 == 0.f && d5 == 0.f, "a video export and the scene plan are never delayed (their audio is a file)" );
+    }
+
+    // Score cues wait as long as the analysis; a beat still reaches the external clock at once.
+    {
+        ScoreCues &cues = ScoreCues::instance();
+        cues.reset();
+        int beats = 0;
+        cues.setBeatListener( [&beats]( qint64 )
+        { ++beats; } );
+        cues.setDelay( 0.08f );
+        ScoreCue s;
+        decodes( dropMessage(), s );
+        cues.apply( s );
+        decodes( intMessage( "/phos/beat", 3 ), s );
+        cues.apply( s );
+        ScoreCues::Frame f = cues.drain( 0.016f );
+        const bool       early = !f.drop;
+        std::this_thread::sleep_for( std::chrono::milliseconds( 120 ) );
+        f = cues.drain( 0.016f );
+        check( early && f.drop && f.live, "with 80 ms of delay a cue drop lands 80 ms after it arrived, not at once" );
+        check( beats == 1,
+               "and a beat cue reaches the analysis' clock on arrival (the analysis is delayed as a whole)" );
+        cues.setBeatListener( nullptr );
+        cues.reset();
+
+        const QString path = QDir::temp().filePath( "kaleido_cuedelay.tsv" );
+        {
+            QFile cf( path );
+            if ( cf.open( QIODevice::WriteOnly | QIODevice::Truncate ) )
+                cf.write( "0.0\t/phos/bar\t0\n1.0\t/phos/drop\n" );
+        }
+        ScoreCueFile &file = ScoreCueFile::instance();
+        file.load( path );
+        file.setDelay( 0.5 );
+        file.setClock( 1.2 );
+        const int first = file.feed();
+        file.setClock( 1.6 );
+        const int second = file.feed();
+        file.setDelay( 0.0 );
+        file.reset();
+        ScoreCues::instance().reset();
+        QFile::remove( path );
+        check( first == 1 && second == 1, "a cue file with 0.5 s of delay: the drop at 1.0 s goes in at 1.5 s",
+               std::to_string( first ) + " then " + std::to_string( second ) );
+    }
+}
+
+/**  The picture guard (PictureGuard.h, docs/PLAN_2026-11-26.md W1): a black and a frozen scene with made-up samples,
+ * against the scenes that must never trigger it -- and the scheduler's early change on the phrase.
+ **/
+void guardChecks()
+{
+    printf( "\nthe picture guard (PictureGuard.h)\n" );
+    const int          n = 15 * 8; // the mip of a 1080p frame
+    std::vector<float> black( 3 * n, 0.f ), still( 3 * n ), dim( 3 * n, 0.004f ), lit( 3 * n );
+    for ( int i = 0; i < 3 * n; ++i )
+        still[i] = 0.3f + 0.4f * static_cast<float>( ( i * 37 ) % 11 ) / 11.f;
+    // BlackHole by design: a ring of a few lit texels on black (its frame means 0.016..0.023 after the exposure)
+    for ( int i = 50; i < 58; ++i )
+        dim[3 * i] = dim[3 * i + 1] = dim[3 * i + 2] = 0.06f;
+    const float dt = 0.1f; // a sample every 6th frame at 60 Hz
+    // Runs samples for the given seconds; returns the times of the actions and what they were.
+    struct Hit
+    {
+        float                 at;
+        PictureGuard::ActionE a;
+        PictureGuard::CauseE  why;
+    };
+    auto run = [&]( PictureGuard &g, float secs, const std::function<const float *( int )> &frame, bool armed = true,
+                    PictureGuard::PhotoE photo = PictureGuard::PhotoE::READY, float t0 = 0.f )
+    {
+        std::vector<Hit> hits;
+        const int        steps = static_cast<int>( secs / dt + 0.5f );
+        for ( int k = 0; k < steps; ++k )
+        {
+            const PictureGuard::ActionE a = g.sample( frame( k ), n, dt, armed, photo );
+            if ( a != PictureGuard::ActionE::NONE )
+                hits.push_back( { t0 + ( k + 1 ) * dt, a, g.cause() } );
+        }
+        return hits;
+    };
+    auto constant = []( const std::vector<float> &v )
+    { return [&v]( int )
+      { return v.data(); }; };
+    // A scene that moves slowly: every texel 0.002 brighter a sample, 0.02 a second (the anchor moves on after seven
+    // samples); the catalogue's stillest scenes change their 32 x 18 blocks by 0.001-0.002 in 0.2 s (.screen).
+    std::vector<float> moving = still;
+    auto               drift = [&moving]( int )
+    {
+        for ( float &v : moving )
+            v = std::fmod( v + 0.002f, 1.f );
+        return moving.data();
+    };
+    std::vector<float> dimMoving = dim;
+    auto               dimDrift = [&dimMoving]( int k )
+    {
+        const int i = 50 + ( k % 8 );
+        dimMoving[3 * i] = 0.05f + 0.01f * static_cast<float>( ( k / 8 ) % 3 );
+        return dimMoving.data();
+    };
+
+    {
+        PictureGuard g;
+        const auto   h = run( g, 60.f, constant( black ) );
+        std::string  at;
+        for ( const Hit &x : h )
+            at += std::to_string( x.at ).substr( 0, 5 ) + " s ";
+        check( h.size() >= 2 && h[0].a == PictureGuard::ActionE::PHOTO && h[0].why == PictureGuard::CauseE::DARK
+                   && std::fabs( h[0].at - 20.f ) < 0.15f && h[1].a == PictureGuard::ActionE::SCENE
+                   && std::fabs( h[1].at - 35.f ) < 0.25f,
+               "a black scene with music: a new photo after 20 s, a scene change 15 s later", at );
+    }
+    {
+        PictureGuard g;
+        const auto   h = run( g, 60.f, constant( still ) );
+        check( h.size() >= 2 && h[0].a == PictureGuard::ActionE::PHOTO && h[0].why == PictureGuard::CauseE::FROZEN
+                   && std::fabs( h[0].at - 20.f ) < 0.15f && h[1].a == PictureGuard::ActionE::SCENE,
+               "a frozen scene: the same two stages, for standing still",
+               h.empty() ? "nothing" : std::to_string( h[0].at ) );
+    }
+    {
+        PictureGuard g;
+        check( run( g, 180.f, drift ).empty(),
+               "a scene that only drifts slowly (0.02 a second) never counts as frozen" );
+        PictureGuard d;
+        check( run( d, 180.f, dimDrift ).empty(), "a dark scene by design (BlackHole: a lit ring on black) never "
+                                                  "counts as black" );
+    }
+    {
+        PictureGuard g;
+        const bool   quiet = run( g, 120.f, constant( black ), false ).empty();
+        check( quiet, "not armed (silence, blackout, a fade, a DJ stop, a freeze ...) nothing counts" );
+        PictureGuard p;
+        auto         a = run( p, 10.f, constant( black ) );
+        auto         b = run( p, 60.f, constant( black ), false );
+        auto         c = run( p, 10.2f, constant( black ) );
+        check( a.empty() && b.empty() && c.size() == 1 && c[0].a == PictureGuard::ActionE::PHOTO,
+               "a pause holds the clock: 10 s black, a minute paused, 10 s black again is the first stage" );
+        PictureGuard s;
+        auto         x = run( s, 15.f, constant( black ) );
+        s.sceneChanged();
+        auto y = run( s, 15.f, constant( black ) );
+        check( x.empty() && y.empty(), "a new scene starts the clock over" );
+    }
+    {
+        PictureGuard g;
+        auto         h = run( g, 20.1f, constant( black ) );
+        auto         fine = run( g, 40.f, drift );
+        check( h.size() == 1 && fine.empty() && g.stage() == 0,
+               "the photo was it: the scene stays, and after 30 s of a good picture the guard starts over" );
+        PictureGuard np;
+        auto         s = run( np, 20.1f, constant( black ), true, PictureGuard::PhotoE::NONE );
+        check( s.size() == 1 && s[0].a == PictureGuard::ActionE::SCENE,
+               "without photos to change (a live picture) the scene change comes at once" );
+        PictureGuard busy;
+        auto         wait = run( busy, 30.f, constant( black ), true, PictureGuard::PhotoE::BUSY );
+        auto         then = run( busy, 0.2f, constant( black ) );
+        check( wait.empty() && then.size() == 1 && then[0].a == PictureGuard::ActionE::PHOTO,
+               "a photo already fading in is waited for; still black after it, the first stage comes" );
+        PictureGuard r;
+        auto         again = run( r, 120.f, constant( black ) );
+        check( again.size() >= 3 && again[2].a == PictureGuard::ActionE::SCENE && again[2].at - again[1].at > 44.f,
+               "a scene change that does not come is asked for again, not every sample",
+               again.size() >= 3 ? std::to_string( again[2].at - again[1].at ) + " s later" : "no third" );
+    }
+
+    // The scheduler's side: requestGuardChange() ends the solo like the timer would -- with a phrase grid, so that its
+    // fade starts four beats before the 8-bar boundary; a pin holds it.
+    static std::vector<EffectShader *> tex, fx, trans;
+    if ( tex.empty() )
+    {
+        for ( int i = 0; i < 4; ++i )
+            tex.push_back( new EffectShader( 60, 61, 1, 2 ) ); // a minute's solo: no change by the timer here
+        fx.push_back( new EffectShader( 600, 601, 1, 2 ) );
+    }
+    auto change_at = [&]( bool pinned, double t0 )
+    {
+        SceneScheduler sched;
+        sched.attach( &tex, &fx, &trans );
+        EngineClock::setVirtualSeconds( t0 );
+        sched.reset();
+        const float dt60 = 1.f / 60.f;
+        int         prev = sched.texState();
+        for ( int f = 1; f < 60 * 50; ++f )
+        {
+            const float s = static_cast<float>( f ) * dt60;
+            EngineClock::setVirtualSeconds( t0 + s );
+            if ( f == 60 * 10 )
+                sched.requestGuardChange();
+            SceneScheduler::Tick t{};
+            t.dt = dt60;
+            t.gateSmooth = 1.f;
+            t.timingScale = 1.f;
+            t.musicPresence = 1.f;
+            t.rhythmStrength = 0.8f;
+            t.estimatedBPM = 0.5f;
+            t.pinned = pinned;
+            t.dropCount = s > 2.f ? 1 : 0; // the grid is anchored by a drop at 2 s
+            const float in = std::fmod( s + 14.f, 16.f );
+            t.phraseSecsLeft = 16.f - in;
+            t.downbeatTick = std::fmod( in, 2.f ) < dt60;
+            sched.tick( t );
+            if ( prev == 0 && sched.texState() == 1 && s > 6.f )
+                return std::make_pair( s, t.phraseSecsLeft );
+            prev = sched.texState();
+        }
+        return std::make_pair( -1.f, 0.f );
+    };
+    const auto on = change_at( false, 480000.0 ), held = change_at( true, 490000.0 );
+    check( on.first > 10.f && on.first < 27.f && on.second > 1.45f && on.second <= 2.05f,
+           "the guard's scene change comes early and on the phrase (four beats before the 8-bar boundary)",
+           std::to_string( on.first ) + " s, " + std::to_string( on.second ) + " s before the boundary" );
+    check( held.first < 0.f, "and a pin holds it" );
+}
+
 } // namespace
 
 int runCueSelfTest()
@@ -1769,6 +2147,8 @@ int runCueSelfTest()
     exportChecks();
     phraseChecks(); // after exportChecks(): it needs the virtual engine clock
     runUpChecks();
+    delayChecks();
+    guardChecks();
 
     printf( "\n%d passed, %d failed\n", g_passed, g_failed );
     return g_failed == 0 ? 0 : 1;

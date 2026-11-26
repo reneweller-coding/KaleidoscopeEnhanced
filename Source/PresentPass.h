@@ -96,6 +96,35 @@ public:
             rgb[i] = m_mean[i];
         return m_meanKnown;
     }
+    /**  Asks for (or stops) the picture guard's tiny picture (PictureGuard.h): the mip whose long side is at most
+     * GuardSide texels, read like the mean colour -- into one of two pixel-pack buffers every 6th frame, mapped 12
+     * frames later, so nothing waits.
+     *
+     * @param on  Whether it is wanted. (in)
+     **/
+    void setGuardWanted( bool on ) { m_wantGuard = on; }
+    /** The guard's sample: the longest side of the mip it reads, in texels. */
+    static const int GuardSide = 16;
+    /**  The guard's newest sample: the scene's picture before exposure, grade and blackout, 6..12 frames old.
+     *
+     * @param w  Its width in texels. (out)
+     * @param h  Its height. (out)
+     *
+     * @return
+     *   The texels, rgb interleaved, 0..1 (w * h of them); null before the first read.
+     **/
+    const float *guardSample( int &w, int &h ) const
+    {
+        w = m_guardW;
+        h = m_guardH;
+        return m_guardSeq ? m_guardRgb : nullptr;
+    }
+    /**  How many guard samples have come back so far: a new number is a new sample.
+     *
+     * @return
+     *   The count.
+     **/
+    unsigned guardSeq() const { return m_guardSeq; }
     /**  Mean absolute change against the previous measured frame.
      *
      * @return
@@ -433,6 +462,16 @@ private:
     GLuint m_autoExpProg = 0;             ///< CfxHistogram.comp compute program (0 if unavailable).
     GLuint m_limitProg = 0;               ///< SafetyLimit.comp compute program (0: the CPU readback path).
     bool   m_autoExpTried = false; ///< True once auto-exposure program creation has been attempted (tried only once).
+
+    bool     m_wantGuard = false;                        ///< setGuardWanted()
+    bool     m_guardPending[2] = {};                     ///< The guard's pixel-pack buffer holds a read not yet taken.
+    GLuint   m_guardPbo[2] = {}; ///< The guard's two pixel-pack buffers (RGBA float, GuardSide^2).
+    int      m_guardDims[2][2] = {};                     ///< The size of the level each buffer's read took.
+    int      m_guardFrame = 0;                           ///< Frames counted for the guard's read.
+    int      m_guardW = 0;                               ///< guardSample(): width.
+    int      m_guardH = 0;                               ///< guardSample(): height.
+    unsigned m_guardSeq = 0;                             ///< guardSeq()
+    float    m_guardRgb[GuardSide * GuardSide * 3] = {}; ///< guardSample(): the texels.
 
     // ---- Bloom ----
     GLuint m_texBloom[2] = { 0, 0 }; ///< Ping-pong bloom textures (quarter resolution).

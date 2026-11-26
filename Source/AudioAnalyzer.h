@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "AudioFeatures.h"
+#include "FeatureDelay.h"
 #include "TempoTracker.h"
 
 struct IMMDeviceEnumerator; // fwd (WASAPI) — only a pointer is used in the header
@@ -99,6 +100,30 @@ public:
      *   A copy of the current AudioFeatures (safe to call from any thread).
      **/
     AudioFeatures getFeatures() const;
+
+    /**  The newest snapshot, whatever delay is set (the web remote's tap-along reads the loopback's own beat grid).
+     *
+     * @return
+     *   A copy of the latest published AudioFeatures.
+     **/
+    AudioFeatures liveFeatures() const;
+
+    /**  Holds the analysis back: getFeatures() hands out the snapshot this much audio time behind the newest
+     * (FeatureDelay.h; the latency setting below zero, docs/PLAN_2026-11-26.md Z1).
+     *
+     * @param secs  The delay in seconds, 0 = off; clamped to 0..FeatureDelay::MaxSecs. (in)
+     *
+     * Set before the first analysed block it holds from the start; later it slews there at FeatureDelay::Slew.  A
+     * tap (tapTempo()) is taken as a beat this much earlier on the analysis' clock: the tapper hears the music late.
+     * Any thread.
+     **/
+    void setFeatureDelay( float secs );
+    /**  The delay asked for with setFeatureDelay().
+     *
+     * @return
+     *   Seconds (0 = none).
+     **/
+    float featureDelay() const { return m_delaySecs.load(); }
 
     /**  Selectable audio sources (outputs + inputs), refreshed by the capture thread.
      *
@@ -754,6 +779,9 @@ private:
     // ---- Shared output ----
     mutable QMutex m_mutex;    ///< Guards #m_features (and the device-selection / recording-path fields above).
     AudioFeatures  m_features; ///< Latest published analysis result; see getFeatures().
+
+    FeatureDelay       m_delay;            ///< The last second's published results, for setFeatureDelay() (#m_mutex).
+    std::atomic<float> m_delaySecs{ 0.f }; ///< setFeatureDelay()'s value, for tapTempo() on the GUI thread.
 
     // ---- Lifecycle ----
     std::atomic<bool> m_running{ false }; ///< Set true at the start of run(); cleared by stop() to end the

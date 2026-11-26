@@ -43,6 +43,7 @@
 #include <QtCore/QSettings>
 #include <QtCore/QDateTime>
 #include <QtCore/QFile>
+#include <QtCore/QMap>
 #include <cmath>
 #include <GL/GLU.h>
 
@@ -70,6 +71,7 @@ float RenderPipeline::M_RenderScaleMax = 1.0f; // no supersampling unless asked 
 bool  RenderPipeline::M_RenderScaleFromCli = false;
 float RenderPipeline::M_LightShow = 0.0f;      // corner lamps / light-show OFF by default
 bool  RenderPipeline::M_StrictLight = false;   // strict light protection (ini lightProtectionStrict)
+bool  RenderPipeline::M_PictureGuard = false;  // the picture guard (ini pictureGuard)
 bool  RenderPipeline::M_SpoutEnabled = false;  // Spout sender (CLI -o)
 bool  RenderPipeline::M_SpoutClean = false;    // Spout sends the displayed frame, not the raw render
 float RenderPipeline::M_DisplayHz = 60.f;      // the panel rate (glwidget sets it)
@@ -90,6 +92,14 @@ float RenderPipeline::freezeTime()
                                         ? qEnvironmentVariable( "KALEIDO_FREEZE_TIME" ).toFloat()
                                         : -1.f;
     return FreezeTime;
+}
+float RenderPipeline::featureDelay()
+{
+    // An export (M_FrameStep) and the scene plan (EffectShader::M_Headless) analyse a file on their own clock: there
+    // is no device between the analysis and an ear.
+    if ( M_FrameStep > 0.f || EffectShader::M_Headless || M_LatencyLead >= 0.f )
+        return 0.f;
+    return -M_LatencyLead;
 }
 bool                    RenderPipeline::M_Pinned = false;         // VJ pin ('u')
 QHash<QString, float>   RenderPipeline::M_Taste;                  // taste learning (skip/favourite)
@@ -188,7 +198,13 @@ void RenderPipeline::loadSettings()
     // user's ini.  Unset, nothing changes.
     if ( qEnvironmentVariableIsSet( "KALEIDO_MOOD" ) )
         M_MoodStrength = clampParam( qEnvironmentVariable( "KALEIDO_MOOD" ).toFloat(), 0.f, 2.5f );
-    M_LatencyLead = clampParam( s.value( "latencyLead", M_LatencyLead ).toFloat(), 0.f, 0.25f );
+    // Signed since 26.11.2026: below zero the delay of all audio features (FeatureDelay.h).
+    M_LatencyLead = clampParam( s.value( "latencyLead", M_LatencyLead ).toFloat(), LatencyMin, LatencyMax );
+    // KALEIDO_LATENCY=<seconds> for a test run, without touching the ini.
+    if ( qEnvironmentVariableIsSet( "KALEIDO_LATENCY" ) )
+        M_LatencyLead = clampParam( qEnvironmentVariable( "KALEIDO_LATENCY" ).toFloat(), LatencyMin, LatencyMax );
+    // The picture guard (PictureGuard.h, docs/PLAN_2026-11-26.md W1).
+    M_PictureGuard = s.value( "pictureGuard", M_PictureGuard ).toBool();
     setStereoMode( s.value( "stereoMode", M_StereoMode ).toInt() ); // 0..5; anything else is off
     M_SpoutClean = s.value( "spoutSource" ).toString().trimmed().compare( "clean", Qt::CaseInsensitive ) == 0;
     // Photo source. Empty (the shipped default) means "whatever the preset
@@ -354,6 +370,7 @@ QList<QPair<QString, QVariant>> RenderPipeline::lookSettings()
         { "calmMotion", M_CalmMotion },
         { "mood", M_MoodStrength },
         { "latencyLead", M_LatencyLead },
+        { "pictureGuard", M_PictureGuard },
         { "stereoMode", M_StereoMode },
         { "stereoDepth", M_StereoDepth },
         { "renderScale", M_RenderScale },
@@ -2631,6 +2648,10 @@ AudioFeatures RenderPipeline::conditionAudio( const AudioFeatures &audio, float 
     // is an integrator or a slew limiter.
     // Score cues (CueReceiver.h): drained here, once a frame, before the conditioner -- a cue file (-k) is a sender
     // too, and whatever of it the offline WAV has reached goes in first.  buildSchedulerTick() reads the same frame.
+    // A cue arrives on the audio's own timing -- with a feature delay (latency below zero) it waits as long as the
+    // analysis does, or the scheduler would cut on a drop the ear has not heard yet (FeatureDelay.h).
+    ScoreCueFile::instance().setDelay( featureDelay() );
+    ScoreCues::instance().setDelay( featureDelay() );
     ScoreCueFile::instance().feed();
     m_cueFrame = ScoreCues::instance().drain( timeSinceLastFrameSec );
     // THE DROP CHANNEL FOLLOWS THE CUES (22.10.2026).  A cue drop cut the scene but did not hit the picture: the
@@ -2662,7 +2683,7 @@ AudioFeatures RenderPipeline::conditionAudio( const AudioFeatures &audio, float 
     ac_ctx.meshUp = m_meshUp;
     ac_ctx.calm = M_CalmMotion;
     ac_ctx.reactivity = M_Reactivity;
-    ac_ctx.latencyLead = M_LatencyLead;
+    ac_ctx.latencyLead = std::max( M_LatencyLead, 0.f ); // below zero it is the analyzer's delay, not a lead
     ac_ctx.ssmHead = m_sims.ssmHeadNorm();
     ac_ctx.ssmFill = m_sims.ssmFillNorm();
     ac_ctx.spectroHead = m_sims.spectroHeadNorm();
@@ -2700,6 +2721,10 @@ void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
             // timerLT.start();
 
             loadNewTexture( m_nextTex );
+            {
+                QMutexLocker lock( &m_photoMutex ); // the loader names the photo it loaded (the guard counts it)
+                m_photoNextPath = m_lastPhoto;
+            }
 
             // float timeTexture = timerLT.elapsed();
             // printf( "Time Texture: %f\n", timeTexture );
@@ -2754,6 +2779,7 @@ void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
             GLuint temp = m_actTex;
             m_actTex = m_nextTex;
             m_nextTex = temp;
+            m_photoActPath = m_photoNextPath;
             // the photo just faded out becomes the second photo -- copied before the loader overwrites its slot
             takePhotoB( m_nextTex );
             // loadNewTexture( temp );
@@ -2772,6 +2798,156 @@ void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
                                                  : m_timeTextureInterpolationMin )
                                          / m_timingScale; // min==max would be % 0
         }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The picture guard (26.11.2026, docs/PLAN_2026-11-26.md W1; PictureGuard.h).
+//
+// The present pass reads the frame's tiny mip back every 6th frame without a stall; each new sample goes to the
+// guard together with whether it may count now.  It may count only while the show is meant to be seen and the
+// music plays: a scene stands alone (no fade, 3 s settled), the photo stands too (no photo fade or load), music is
+// detected and audible, no blackout, rest, sleep dimming, DJ stop, freeze or pin, the song is not fading out, no
+// live picture replaces the photos, and no bench (review walk, rating walk).  Off in scripted runs -- the snapshots,
+// sweeps and exports stay as they were -- unless KALEIDO_GUARD asks for it.
+// ---------------------------------------------------------------------------
+int RenderPipeline::guardMode()
+{
+    static const QByteArray Env = qgetenv( "KALEIDO_GUARD" ).trimmed().toLower();
+    if ( Env == "0" || Env == "off" )
+        return 0;
+    if ( Env == "log" )
+        return 2;
+    if ( Env == "1" || Env == "on" )
+        return 1;
+    return M_PictureGuard && !scriptedRun() ? 1 : 0;
+}
+
+void RenderPipeline::updateGuard( const AudioFeatures &audio, const AudioFeatures &audioFx, float dtWall )
+{
+    m_guardWall += dtWall;
+    const int mode = guardMode();
+    m_present.setGuardWanted( mode != 0 );
+    if ( mode == 0 || m_effectTextures.empty() )
+        return;
+    const bool fading = m_scheduler.texState() != 0;
+    if ( fading )
+    {
+        m_guard.sceneChanged(); // a new scene: everything starts over
+        m_guardSolo = 0.f;
+    }
+    else
+        m_guardSolo += dtWall;
+    m_guardDt += dtWall;
+    int          w = 0, h = 0;
+    const float *rgb = m_present.guardSample( w, h );
+    if ( !rgb || m_present.guardSeq() == m_guardSeq )
+        return;
+    m_guardSeq = m_present.guardSeq();
+    const float dt = m_guardDt;
+    m_guardDt = 0.f;
+
+    const bool bench = m_scheduler.reviewMode() || m_scheduler.rateWalk();
+    const bool music = audio.musicPresence > 0.5f && m_audioConditioner.gate() > 0.5f && audio.rawLevel > 0.1f;
+    const bool lit = !M_Blackout && !M_RestDim && M_Dim > 0.99f && m_present.blackLevel() < 0.01f;
+    const bool held = M_Freeze || M_Pinned || m_breakSmooth > 0.02f || audio.breakHold > 0.f || freezeTime() >= 0.f;
+    const bool armed = !fading && m_guardSolo > 3.f && music && lit && !held && audioFx.fadeOut < 0.3f
+                       && m_liveTex == 0 && ( mode == 2 || !bench );
+    // A photo fading in counts like any other picture -- it may well be the cure -- but the first stage waits for it.
+    const PictureGuard::PhotoE  photo = m_imageList.size() < 2 ? PictureGuard::PhotoE::NONE
+                                        : ( m_stateTexture == 1 && !m_waitForImageToLoad && !m_pendingImgChange )
+                                            ? PictureGuard::PhotoE::READY
+                                            : PictureGuard::PhotoE::BUSY;
+    const PictureGuard::ActionE a = m_guard.sample( rgb, w * h, dt, armed, photo );
+
+    // KALEIDO_GUARD_LOG=1: a line a second with what the guard sees (the thresholds were set from these).
+    static const bool SampleLog = qEnvironmentVariableIsSet( "KALEIDO_GUARD_LOG" );
+    m_guardLogT += dt;
+    if ( SampleLog && m_guardLogT >= 1.f )
+    {
+        m_guardLogT = 0.f;
+        QByteArray scene( m_effectTextures[m_scheduler.actTexture()]->fragmentName() );
+        scene = scene.mid( std::max( scene.lastIndexOf( '\\' ), scene.lastIndexOf( '/' ) ) + 1 );
+        fprintf( stderr, "GUARD sample scene=%s mean=%.4f peak=%.4f step=%.4f dark=%.1f still=%.1f armed=%d at=%.1f\n",
+                 scene.constData(), m_guard.mean(), m_guard.peak(), m_guard.step(), m_guard.darkFor(),
+                 m_guard.stillFor(), armed ? 1 : 0, m_guardWall );
+    }
+    if ( a != PictureGuard::ActionE::NONE )
+        noteGuard( a, mode == 1 );
+}
+
+void RenderPipeline::noteGuard( PictureGuard::ActionE a, bool acts )
+{
+    const bool photo = a == PictureGuard::ActionE::PHOTO;
+    const bool dark = m_guard.cause() == PictureGuard::CauseE::DARK;
+    QByteArray scene( m_effectTextures[m_scheduler.actTexture()]->fragmentName() );
+    scene = scene.mid( std::max( scene.lastIndexOf( '\\' ), scene.lastIndexOf( '/' ) ) + 1 );
+    if ( scene.endsWith( ".frag" ) )
+        scene.chop( 5 );
+    const QString pic = m_photoActPath.isEmpty() ? QStringLiteral( "?" ) : QFileInfo( m_photoActPath ).fileName();
+    // One line per action, for Tools/guard_report.py: GUARD <photo|scene> <dark|frozen> key=value ...
+    fprintf( stderr, "GUARD %s %s scene=%s photo=%s mean=%.4f peak=%.4f step=%.4f at=%.1f%s\n",
+             photo ? "photo" : "scene", dark ? "dark" : "frozen", scene.constData(), qPrintable( pic ), m_guard.mean(),
+             m_guard.peak(), m_guard.step(), m_guardWall, acts ? "" : " watching" );
+    if ( !acts )
+        return;
+    if ( photo )
+    {
+        // The photo cross-fade's own path: on the next downbeat, the photo the loader has waiting -- in at most 4 s
+        // (a preset's photo fades take 20-80 s, and the picture is black meanwhile).
+        m_pendingImgChange = true;
+        m_pendingImgAge = 0.f;
+        m_timeTextureInterpolation = std::min( m_timeTextureInterpolation, 4.f );
+    }
+    else
+        m_scheduler.requestGuardChange();
+
+    // The count, per scene and per photo, in a file of its own beside the settings -- whether it ever steers the
+    // choice is the user's decision after a week of numbers; the taste (M_Taste) is not touched.
+    struct Row
+    {
+        int     n[4] = {}; // dark, frozen, photo, scene
+        QString last;
+    };
+    static QMap<QString, Row> Rows;
+    static bool               Loaded = false;
+    const QString             path = QFileInfo( SettingsFile::path() ).absolutePath() + "/kaleidoscope_guard.tsv";
+    if ( !Loaded )
+    {
+        Loaded = true;
+        QFile f( path );
+        if ( f.open( QIODevice::ReadOnly | QIODevice::Text ) )
+            while ( !f.atEnd() )
+            {
+                const QStringList c = QString::fromUtf8( f.readLine() ).trimmed().split( QChar( '\t' ) );
+                if ( c.size() < 6 || c[0].startsWith( QChar( '#' ) ) || c[0] == QLatin1String( "kind" ) )
+                    continue;
+                Row &r = Rows[c[0] + QChar( '\t' ) + c[1]];
+                for ( int i = 0; i < 4; ++i )
+                    r.n[i] = c[2 + i].toInt();
+                r.last = c.size() > 6 ? c[6] : QString();
+            }
+    }
+    const QString     now = QDateTime::currentDateTime().toString( Qt::ISODate );
+    const QStringList keys = { QStringLiteral( "scene\t" ) + QString::fromUtf8( scene ),
+                               QStringLiteral( "photo\t" ) + pic };
+    for ( const QString &key : keys )
+    {
+        Row &r = Rows[key];
+        ++r.n[dark ? 0 : 1];
+        ++r.n[photo ? 2 : 3];
+        r.last = now;
+    }
+    QFile f( path );
+    if ( f.open( QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text ) )
+    {
+        QTextStream out( &f );
+        out << "# The picture guard's count (docs/engine-internals-69-guard.md): per scene and per photo, how often\n"
+               "# the picture stayed dark or stood still, and whether a new photo or a new scene was asked for.\n"
+               "kind\tname\tdark\tfrozen\tphoto\tscene\tlast\n";
+        for ( auto it = Rows.cbegin(); it != Rows.cend(); ++it )
+            out << it.key() << '\t' << it->n[0] << '\t' << it->n[1] << '\t' << it->n[2] << '\t' << it->n[3] << '\t'
+                << it->last << '\n';
     }
 }
 
@@ -3753,6 +3929,8 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
     updateTitleReveal( audio, dt_wall );
 
     const AudioFeatures audio_fx = conditionAudio( audio, time_since_last_frame_sec );
+    m_calibPhase = audio_fx.beatPhase; // the latency calibration ring (calibState())
+    m_calibKick = audio_fx.onsetKick;
 
     // KALEIDO_FEATURE_LOG=<file>: one CSV line per frame with the quantities
     // the direction decisions depend on.  Without it, "does the drop
@@ -3842,6 +4020,7 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
 
     glcoreDebugMark( "present" );
     runPresentPass( present_source, audio, audio_fx, time_since_last_frame_sec, dt_wall );
+    updateGuard( audio, audio_fx, dt_wall );
 
     // Spout output (-o): publish the displayed frame for OBS / Resolume etc. -- the one the present pass just wrote,
     // so the receiver gets what the room sees: the brightness limiter, the blackout, the grade, the stereo packing,

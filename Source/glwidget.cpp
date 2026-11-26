@@ -425,6 +425,17 @@ void GLwidget::remoteTapTempo()
         m_audioAnalyzer->tapTempo();
 }
 
+void GLwidget::remoteBeat( float &phase, float &bpm, float &conf ) const
+{
+    phase = bpm = conf = 0.f;
+    if ( !m_audioAnalyzer )
+        return;
+    const AudioFeatures f = m_audioAnalyzer->liveFeatures(); // the loopback's own grid, before any delay
+    phase = f.beatPhase;
+    bpm = f.estimatedBPM > 0.004f ? 40.f + 160.f * f.estimatedBPM : 0.f;
+    conf = f.rhythmStrength;
+}
+
 QString GLwidget::remoteShaderInfo() const
 {
     if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
@@ -1387,6 +1398,9 @@ void GLwidget::initializeGL()
         if ( !dev.isEmpty() )
             m_audioAnalyzer->requestDevice( dev, st.value( "audioDeviceInput", false ).toBool() );
     }
+    // The latency setting below zero holds the analysis back from the first block on (FeatureDelay.h).
+    m_featureDelaySet = RenderPipeline::featureDelay();
+    m_audioAnalyzer->setFeatureDelay( m_featureDelaySet );
     m_audioAnalyzer->start();
     m_recorder.setAudioAnalyzer( m_audioAnalyzer );
 
@@ -1897,7 +1911,17 @@ void GLwidget::draw()
 {
     AudioFeatures audio;
     if ( m_audioAnalyzer )
+    {
+        // The latency setting below zero: every feature this much later (FeatureDelay.h; the remote's slider, keys
+        // ; and ', the menu).  Handed over only when it changed.
+        const float delay = RenderPipeline::featureDelay();
+        if ( delay != m_featureDelaySet )
+        {
+            m_featureDelaySet = delay;
+            m_audioAnalyzer->setFeatureDelay( delay );
+        }
         audio = m_audioAnalyzer->getFeatures();
+    }
     if ( RenderPipeline::freezeTime() >= 0.f ) // a comparison run: silence, whatever is playing
         audio = AudioFeatures();
     m_eventLatch.apply( audio ); // the beats, onsets and track changes since the last frame, none lost
@@ -2127,7 +2151,8 @@ void GLwidget::draw()
         m_cardUntil = 0;
     if ( m_showSelectConfigurationMenu || m_showFeatureOverlay || m_showHelp
          || m_showAudioMenu || m_showShaderInfo || m_recorder.recording()
-         || fade_alpha > 0.f || np_alpha > 0.f || m_osd.isOpen() || notice_alpha > 0.f || card_alpha > 0.f )
+         || fade_alpha > 0.f || np_alpha > 0.f || m_osd.isOpen() || notice_alpha > 0.f || card_alpha > 0.f
+         || m_showCalibration )
     {
         QPainter painter( this );
         // painter.setRenderHint(QPainter::Antialiasing);
@@ -2137,6 +2162,8 @@ void GLwidget::draw()
             painter.drawPixmap( rect(), m_fadePixmap );
             painter.setOpacity( 1.0 );
         }
+        if ( m_showCalibration )
+            drawCalibration( &painter );
         if ( m_showSelectConfigurationMenu )
             showSelectConfigurationsMenu( &painter );
         if ( m_showFeatureOverlay )
@@ -3222,6 +3249,57 @@ void GLwidget::mouseMoveEvent( QMouseEvent *e /*the event*/ )
     updateGL();*/
 }
 
+
+// The latency calibration ring (docs/PLAN_2026-11-26.md Z1): switched from the web remote, never by a key.  The
+// arc is the beat phase the scenes get (the PLL, the lead, the delay), the dot the kick they get; set the latency on
+// the remote until the ring closes and the dot lights on the kick you hear.
+void GLwidget::drawCalibration( QPainter *painter )
+{
+    float phase = 0.f, kick = 0.f;
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+        m_actConfiguration->renderPipeline()->calibState( phase, kick );
+    const qint64 now = m_fpsTimer.elapsed();
+    if ( phase < m_calibPrevPhase - 0.5f ) // the phase wrapped: that was the beat
+        m_calibBeatMs = now;
+    m_calibPrevPhase = phase;
+    const float flash = std::clamp( 1.f - static_cast<float>( now - m_calibBeatMs ) / 180.f, 0.f, 1.f );
+
+    painter->save();
+    painter->setRenderHint( QPainter::Antialiasing, true );
+    const int     side = std::min( width(), height() );
+    const double  r = side * 0.16;
+    const QPointF c( width() * 0.5, height() * 0.5 );
+    painter->setPen( Qt::NoPen );
+    painter->setBrush( QColor( 0, 0, 0, 170 ) );
+    painter->drawEllipse( c, r * 1.35, r * 1.35 );
+    painter->setBrush( Qt::NoBrush );
+    painter->setPen( QPen( QColor( 255, 255, 255, 40 ), r * 0.14 ) );
+    painter->drawEllipse( c, r, r );
+    // From twelve o'clock clockwise; it closes on the beat.
+    painter->setPen( QPen( QColor( 140, 200, 255 ), r * 0.14, Qt::SolidLine, Qt::FlatCap ) );
+    painter->drawArc( QRectF( c.x() - r, c.y() - r, 2.0 * r, 2.0 * r ), 90 * 16,
+                      -static_cast<int>( std::clamp( phase, 0.f, 1.f ) * 360.f * 16.f ) );
+    if ( flash > 0.f ) // a small ring, at most one flash a beat
+    {
+        painter->setPen( QPen( QColor( 255, 255, 255, static_cast<int>( 220.f * flash ) ), r * 0.20 ) );
+        painter->drawEllipse( c, r, r );
+    }
+    painter->setPen( Qt::NoPen );
+    painter->setBrush( QColor( 255, 150, 60, static_cast<int>( 40.f + 215.f * std::clamp( kick, 0.f, 1.f ) ) ) );
+    painter->drawEllipse( c, r * 0.35, r * 0.35 );
+
+    const float   lat = RenderPipeline::latency();
+    const QString value = lat < 0.f ? ui( S_CALIB_DELAY_FMT ).arg( qRound( -lat * 1000.f ) )
+                                    : ui( S_CALIB_LEAD_FMT ).arg( qRound( lat * 1000.f ) );
+    painter->setPen( QColor( 230, 230, 240 ) );
+    painter->setFont( QFont( "Segoe UI", std::max( 10, side / 45 ) ) );
+    painter->drawText( QRectF( c.x() - 3.0 * r, c.y() + 1.45 * r, 6.0 * r, side * 0.06 ), Qt::AlignCenter, value );
+    painter->setPen( QColor( 170, 180, 200 ) );
+    painter->setFont( QFont( "Segoe UI", std::max( 9, side / 70 ) ) );
+    painter->drawText( QRectF( c.x() - 4.0 * r, c.y() + 1.45 * r + side * 0.06, 8.0 * r, side * 0.12 ),
+                       Qt::AlignHCenter | Qt::AlignTop | Qt::TextWordWrap, ui( S_CALIB_HINT ) );
+    painter->restore();
+}
 
 // Live audio-feature panel (toggled with the 'i' key) — handy for demos and for
 // tuning the mapping.  Drawn with QPainter over the rendered frame.
@@ -4596,6 +4674,10 @@ std::vector<OsdItem> GLwidget::osdRootItems()
         { return RenderPipeline::strictLight(); },
                        []( bool b )
         { RenderPipeline::setStrictLight( b ); } ),
+            osdToggle( S_OSD_GUARD, []
+        { return RenderPipeline::pictureGuard(); },
+                       []( bool b )
+        { RenderPipeline::setPictureGuard( b ); } ),
             osdToggle( S_OSD_NOWPLAYING, [this]
         { return nowPlayingEnabled(); },
                        [this]( bool b )
@@ -4638,7 +4720,7 @@ std::vector<OsdItem> GLwidget::osdRootItems()
         { return RenderPipeline::mood(); },
                        []( float v )
         { RenderPipeline::setMood( v ); }, f1 ),
-            osdSlider( S_OSD_LATENCY, 0.f, 0.25f, 0.01f, []
+            osdSlider( S_OSD_LATENCY, RenderPipeline::LatencyMin, RenderPipeline::LatencyMax, 0.01f, []
         { return RenderPipeline::latency(); },
                        []( float v )
         { RenderPipeline::setLatency( v ); },

@@ -221,11 +221,28 @@ void AudioAnalyzer::stop()
     m_running = false;
 }
 
-/** Returns a thread-safe copy of the latest published AudioFeatures. */
+/** Returns a thread-safe copy of the latest published AudioFeatures -- or, with a delay set (setFeatureDelay()), of
+ * the one that much audio time older. */
 AudioFeatures AudioAnalyzer::getFeatures() const
 {
     QMutexLocker lk( &m_mutex );
+    return m_delay.active() ? m_delay.delayed() : m_features;
+}
+
+AudioFeatures AudioAnalyzer::liveFeatures() const
+{
+    QMutexLocker lk( &m_mutex );
     return m_features;
+}
+
+void AudioAnalyzer::setFeatureDelay( float secs )
+{
+    QMutexLocker lk( &m_mutex );
+    const bool   first = !m_delay.started();
+    m_delay.setTarget( secs, first );
+    if ( first )
+        m_delay.setSilenceFirst( true );
+    m_delaySecs.store( m_delay.target() );
 }
 
 // ---------------------------------------------------------------------------
@@ -694,7 +711,9 @@ float AudioAnalyzer::tapTempo()
     float med = iv[n / 2];
     med = std::max( 250.f, std::min( med, 1500.f ) ); // 40..240 BPM
     m_tapIntervalMs = static_cast<int>( med + 0.5f );
-    m_tapAnchorMs = now;
+    // The tapper hears the music late by the feature delay (setFeatureDelay()): this beat passed the loopback that
+    // much earlier.  0 without a delay, as it always was.
+    m_tapAnchorMs = now - static_cast<qint64>( m_delaySecs.load() * 1000.f + 0.5f );
     m_tapUntilMs = now + 45000;
     fprintf( stderr, "TAP tempo: %.1f BPM (%d taps)\n", 60000.f / med, cnt );
     return 60000.f / med;
@@ -3688,4 +3707,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // display the harmony structurally (Planet4D pitch-class hypersphere).
     for ( int i = 0; i < 12; ++i )
         m_features.chroma[i] = m_smoothedChroma[i];
+    // The latency setting below zero (setFeatureDelay()): this block's result goes into the ring the reader takes
+    // the delayed one from.  Without a delay the ring keeps nothing and getFeatures() reads m_features as before.
+    m_delay.push( m_features, sampleRate > 0 ? static_cast<double>( numFrames ) / sampleRate : 0.0 );
 }

@@ -188,8 +188,18 @@ static const char *kPageTemplate = R"HTML(<!DOCTYPE html>
  <input type="range" id="mood" min="0" max="2.5" step="0.05"
         oninput="setv('mood',this.value)">
  <label>@@LATENCY@@ <span class="val" id="vlatency"></span></label>
- <input type="range" id="latency" min="0" max="250" step="5"
+ <input type="range" id="latency" min="-500" max="250" step="5"
         oninput="setv('latency',this.value/1000)">
+ <div class="row">
+  <button id="calib" onclick="cmd('/api/toggle?k=calib')">&#9711; @@CALIB@@</button>
+  <button id="tapopen" onclick="tapOpen()">&#9995; @@TAPALONG@@</button>
+ </div>
+ <div id="tapbox" style="display:none">
+  <div class="hint">@@TAPHINT@@</div>
+  <button class="big" id="tappad" style="padding:44px 16px;touch-action:manipulation">&#9679;</button>
+  <div class="rstat"><span id="tapres" style="color:#9ab"></span></div>
+  <button id="tapapply" onclick="tapApply()" disabled>@@TAPAPPLY@@</button>
+ </div>
 </div>
 
 <div class="panel" id="p-rate">
@@ -245,6 +255,9 @@ static const char *kPageTemplate = R"HTML(<!DOCTYPE html>
  <div class="row">
   <button id="shaderinfo" onclick="cmd('/api/toggle?k=shaderinfo')">@@SHADERNAMES@@</button>
   <button id="features" onclick="cmd('/api/toggle?k=features')">@@FEATUREOVERLAY@@</button>
+ </div>
+ <div class="row">
+  <button id="guard" onclick="cmd('/api/toggle?k=guard')">@@GUARD@@</button>
  </div>
 </div>
 
@@ -327,6 +340,42 @@ function rateToggle(){rateCmd(rActive?'/api/rate/stop':'/api/rate/start?s='+docu
 function rateSecs(v){document.getElementById('vratesecs').textContent=v; rSecsHold=Date.now()+1500;
  fetch('/api/rate/secs?s='+v,H);}
 setInterval(()=>{if(tab=='rate')ratePoll();},1000);
+// Tap-along (docs/PLAN_2026-11-26.md Z1): only a start value for the latency.  The loopback's own beat grid
+// (/api/beat, before any delay) is put on this phone's clock from the round trip with the shortest time; each tap's
+// distance to the nearest grid beat is how late the music reaches the ear -- minus the negative mean asynchrony:
+// people tap some tens of ms AHEAD of the beat they hear (Repp 2005), so 30 ms are added back.  The setting is then
+// the default lead of 50 ms (which fits speakers on a cable) less that lag.
+let tapGrid=null,tapOffs=[],tapSuggest=null,tapSyncT=null;
+function tapSync(){let best=null,n=0;
+ const one=()=>{const t0=performance.now();
+  fetch('/api/beat?ts='+Date.now()).then(r=>r.json()).then(j=>{const t1=performance.now();
+   if(j.bpm>0&&(!best||t1-t0<best.rtt))best={rtt:t1-t0,mid:(t0+t1)/2,phase:j.phase,bpm:j.bpm};
+   if(++n<5){one();return;}
+   if(best){const p=60000/best.bpm;tapGrid={p:p,t0:best.mid-best.phase*p};}
+   else{tapGrid=null;document.getElementById('tapres').textContent='@@TAPNOBEAT@@';}}).catch(()=>{});};
+ one();}
+function tapOpen(){const b=document.getElementById('tapbox'),on=b.style.display=='none';
+ b.style.display=on?'':'none';tapOffs=[];tapSuggest=null;
+ document.getElementById('tapres').textContent='';document.getElementById('tapapply').disabled=true;
+ if(tapSyncT){clearInterval(tapSyncT);tapSyncT=null;}
+ if(on){tapSync();tapSyncT=setInterval(tapSync,2000);}}
+document.getElementById('tappad').addEventListener('pointerdown',e=>{
+ if(!tapGrid)return;
+ const t=(e.timeStamp&&e.timeStamp<1e11)?e.timeStamp:performance.now();
+ let d=((t-tapGrid.t0)%tapGrid.p+tapGrid.p)%tapGrid.p;if(d>tapGrid.p/2)d-=tapGrid.p;
+ tapOffs.push(d);if(tapOffs.length>32)tapOffs.shift();
+ const r=document.getElementById('tapres');
+ if(tapOffs.length<12){r.textContent=tapOffs.length+' / 12';return;}
+ const s=tapOffs.slice().sort((a,b)=>a-b),med=s[s.length>>1];
+ const q=s.filter(x=>Math.abs(x-med)<tapGrid.p/4);
+ const m=q.reduce((a,b)=>a+b,0)/q.length;
+ const sd=Math.sqrt(q.reduce((a,b)=>a+(b-m)*(b-m),0)/q.length);
+ tapSuggest=Math.max(-0.5,Math.min(0.25,0.05-(m+30)/1000));
+ r.textContent='@@TAPRESULT@@'.replace('%1',Math.round(tapSuggest*1000)).replace('%2',Math.round(sd))
+  .replace('%3',q.length);
+ document.getElementById('tapapply').disabled=false;});
+function tapApply(){if(tapSuggest==null)return;setv('latency',tapSuggest);
+ document.getElementById('latency').value=Math.round(tapSuggest*1000);}
 const setCls=(id,on)=>{const e=document.getElementById(id);
  if(e) e.className=(e.id=='record'?'big rec':'')+(on?(e.id=='record'?' active':'active'):'');};
 function refresh(){ if(Date.now()<hold) return;
@@ -346,6 +395,7 @@ function refresh(){ if(Date.now()<hold) return;
   setCls('artistimages',s.artistImages); setCls('video',s.videoEnabled);
   setCls('freeze',s.frozen);       setCls('pin',s.pinned);
   setCls('shaderinfo',s.shaderInfo); setCls('features',s.featureOverlay);
+  setCls('calib',s.calib);         setCls('guard',s.guard);
   setCls('record',s.recording);
   document.getElementById('record').innerHTML=
     (s.recording?'⏹ @@RECORDSTOP@@':'⏺ @@RECORDSTART@@');
@@ -475,6 +525,15 @@ static QByteArray buildPage()
     sub( "@@TRAILS@@", S_WR_TRAILS );
     sub( "@@MOOD@@", S_WR_MOOD );
     sub( "@@LATENCY@@", S_WR_LATENCY );
+    // The latency calibration and the picture guard (26.11.2026); TAPRESULT and TAPNOBEAT go into single-quoted JS
+    // literals and hold neither a quote nor a backslash.
+    sub( "@@CALIB@@", S_WR_CALIB );
+    sub( "@@TAPALONG@@", S_WR_TAPALONG );
+    sub( "@@TAPHINT@@", S_WR_TAPALONG_HINT );
+    sub( "@@TAPAPPLY@@", S_WR_TAPALONG_APPLY );
+    sub( "@@TAPRESULT@@", S_WR_TAPALONG_RESULT );
+    sub( "@@TAPNOBEAT@@", S_WR_TAPALONG_NOBEAT );
+    sub( "@@GUARD@@", S_WR_GUARD );
     sub( "@@LIGHTSHOW@@", S_WR_LIGHTSHOW );
     sub( "@@AUTOPRESET@@", S_WR_AUTOPRESET );
     sub( "@@AUTOSCALE@@", S_WR_AUTOSCALE );
@@ -784,7 +843,7 @@ void WebRemote::handleConnection()
                     const QUrlQuery q( url );
                     const bool      reads = path == "/" || path == "/api/state" || path == "/api/snapshot"
                                             || path == "/api/thumb" || path == "/api/scenes" || path == "/api/lastshot"
-                                            || path == "/api/rate";
+                                            || path == "/api/rate" || path == "/api/beat";
                     const bool      allowed = reads || headerValue( req, "X-Kaleido" ) == "1";
 
                     // A request that does something wakes a resting show; the page's own polling does not.
@@ -839,6 +898,8 @@ void WebRemote::handleConnection()
                                  + ",\"pinned\":" + flag( RenderPipeline::pinned() )
                                  + ",\"shaderInfo\":" + flag( m_widget->shaderInfoVisible() )
                                  + ",\"featureOverlay\":" + flag( m_widget->featureOverlayVisible() )
+                                 + ",\"calib\":" + flag( m_widget->calibrationVisible() )
+                                 + ",\"guard\":" + flag( RenderPipeline::pictureGuard() )
                                  + ",\"stereoMode\":" + QString::number( RenderPipeline::stereoMode() )
                                  + ",\"stereoDepth\":" + num( RenderPipeline::stereoDepth() )
                                  + ",\"shaders\":\"" + jsonEscape( m_widget->remoteShaderInfo() ) + "\""
@@ -863,6 +924,16 @@ void WebRemote::handleConnection()
                     }
                     else if ( path == "/api/next" )
                         m_widget->remoteNextEffect();
+                    else if ( path == "/api/beat" )
+                    {
+                        // The tap-along's grid: the loopback's beat phase and tempo, before any feature delay.
+                        float phase = 0.f, bpm = 0.f, conf = 0.f;
+                        m_widget->remoteBeat( phase, bpm, conf );
+                        body = ( "{\"phase\":" + QString::number( phase, 'f', 4 ) + ",\"bpm\":"
+                                 + QString::number( bpm, 'f', 2 ) + ",\"conf\":" + QString::number( conf, 'f', 3 )
+                                 + "}" )
+                                   .toUtf8();
+                    }
                     else if ( path == "/api/scenes" )
                     {
                         QStringList names, tastes, bans;
@@ -999,6 +1070,10 @@ void WebRemote::handleConnection()
                             m_widget->setShaderInfoVisible( !m_widget->shaderInfoVisible() );
                         else if ( k == "features" )
                             m_widget->setFeatureOverlayVisible( !m_widget->featureOverlayVisible() );
+                        else if ( k == "calib" )
+                            m_widget->setCalibrationVisible( !m_widget->calibrationVisible() );
+                        else if ( k == "guard" )
+                            RenderPipeline::setPictureGuard( !RenderPipeline::pictureGuard() );
                         else if ( k == "autoconfig" )
                             m_widget->setAutoConfigEnabled( !m_widget->autoConfigEnabled() );
                         else if ( k == "autoscale" )

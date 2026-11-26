@@ -504,7 +504,8 @@ int ScoreCueFile::load( const QString &path )
 
 int ScoreCueFile::feed()
 {
-    const double now = m_clock.load( std::memory_order_relaxed );
+    // With a feature delay the picture shows the WAV that much later than the analysis reads it (FeatureDelay.h).
+    const double now = m_clock.load( std::memory_order_relaxed ) - m_delay;
     int          n = 0;
     while ( m_next < m_cues.size() && now >= 0.0 && m_cues[m_next].seconds <= now )
     {
@@ -530,9 +531,41 @@ ScoreCues &ScoreCues::instance()
     return s;
 }
 
+/**  Monotonic milliseconds (QElapsedTimer's reference), for the cue delay.
+ *
+ * @return
+ *   Milliseconds since an arbitrary fixed point.
+ **/
+static qint64 cueNowMs()
+{
+    QElapsedTimer now;
+    now.start();
+    return now.msecsSinceReference();
+}
+
 void ScoreCues::apply( const ScoreCue &c )
 {
     ++m_accepted;
+    // A beat keeps the time: the analysis' external clock hears it the moment it arrives, delay or not -- the
+    // analysis' whole output is held back by the delay afterwards, the beat with it.
+    if ( c.kind == ScoreCue::KindE::BEAT && m_onBeat )
+        m_onBeat( cueNowMs() );
+    // A feature delay (FeatureDelay.h): the cue waits as long as the analysis' snapshots do (drain()).
+    if ( m_delay > 0.f || !m_pending.empty() )
+    {
+        m_pending.emplace_back( cueNowMs(), c );
+        return;
+    }
+    take( c );
+}
+
+void ScoreCues::setDelay( float secs )
+{
+    m_delay = secs > 0.f ? secs : 0.f;
+}
+
+void ScoreCues::take( const ScoreCue &c )
+{
     m_silence = 0.f;
     switch ( c.kind )
     {
@@ -557,13 +590,7 @@ void ScoreCues::apply( const ScoreCue &c )
             // A beat carries no state of its own: the scheduler quantises to the BAR line, and a
             // per-beat trigger is exactly the kind of thing the temporal budget forbids. It still
             // counts as traffic, which is what keeps the live flag alive between bar lines -- and
-            // it keeps the time: the analysis' external clock hears it the moment it arrives.
-            if ( c.kind == ScoreCue::KindE::BEAT && m_onBeat )
-            {
-                QElapsedTimer now;
-                now.start();
-                m_onBeat( now.msecsSinceReference() );
-            }
+            // it keeps the time: apply() hands it to the analysis' external clock on arrival.
             break;
     }
 }
@@ -572,6 +599,16 @@ ScoreCues::Frame ScoreCues::drain( float dtSec )
 {
     if ( dtSec > 0.f )
         m_silence += dtSec;
+    // The cues held back by a feature delay, once they are as old as the delay (all of them once it is off).
+    if ( !m_pending.empty() )
+    {
+        const qint64 now = cueNowMs();
+        const qint64 wait = static_cast<qint64>( m_delay * 1000.f + 0.5f );
+        size_t       n = 0;
+        while ( n < m_pending.size() && now - m_pending[n].first >= wait )
+            take( m_pending[n++].second );
+        m_pending.erase( m_pending.begin(), m_pending.begin() + static_cast<std::ptrdiff_t>( n ) );
+    }
 
     Frame f;
     // A generator that was switched off, or a network that went away, must not leave the scheduler

@@ -215,8 +215,8 @@ submenus), **Back** goes one level up, **Esc** closes it. It hides itself after
 |---|---|
 | Presets | every preset; the running one is marked, OK switches to it |
 | Scene | next scene, hold scene, favourite, mark, save marked, never show again, undo favourite, forget this song's cues, banned scenes (each one allowed again with OK) |
-| Picture & overlays | blackout, freeze, stage lamps, strict light protection, now-playing title, lyrics mode, line slam, artist images, music videos |
-| Fine tuning | reactivity, trails, mood colour, latency lead (sliders) |
+| Picture & overlays | blackout, freeze, stage lamps, strict light protection, picture guard, now-playing title, lyrics mode, line slam, artist images, music videos |
+| Fine tuning | reactivity, trails, mood colour, latency (lead or delay) (sliders) |
 | Audio | audio source, tap tempo |
 | Stereo 3D | mode, depth |
 | Automation | pick preset by mood, adapt resolution, rest after silence (off/5/15/30/60 min), sleep timer (off/15/30/60/90 min) |
@@ -253,6 +253,44 @@ photosensitivity guidelines, which a steady mean of two halves flashing against
 each other never showed -- the picture dims to 60 % until it stops. The strict
 mode (menu, Setup tool, `lightProtectionStrict=true`) halves the rise and takes
 the beat flashes out of the stage lamps and the title.
+
+**Picture guard.** Switched on (menu Picture & overlays, the remote's Display
+tab, `pictureGuard=true` in the ini), it watches for a picture that stays black
+or stands still while music plays: 20 seconds of it and the next photo fades in
+(within 4 s; a dark photo is the usual cause), 15 more and the scene ends early
+-- on the phrase where the beat grid is known, with the preset's own fade. It
+never acts during a blackout, a freeze or a pin, a DJ stop, a scene fade, a
+song's fade-out, the rest mode or silence, and not on the rating walk. The
+darkest scenes by design stay well above its threshold (see
+docs/engine-internals-69-guard.md for the measurement). What it did is counted
+per scene and per photo in `kaleidoscope_guard.tsv` beside the settings file
+-- it does not change the taste; whether the counts should steer the choice is
+up to you. Each action is one log line (`GUARD photo dark scene=...`), which
+`python Tools/guard_report.py kaleidoscope.log` lists. For tests:
+`KALEIDO_GUARD=1` switches it on even in scripted runs and exports,
+`KALEIDO_GUARD=log` only says what it would do, `KALEIDO_GUARD=0` keeps it off,
+`KALEIDO_GUARD_LOG=1` adds a line a second with what it sees, and
+`Tools/guard_run.py` runs it over hours of music as video exports.
+
+**Latency: the picture and the sound you hear.** The loopback hears the music
+the moment the program hands it to the sound card; Bluetooth headphones play it
+150-250 ms later, a television 50-150 ms. `latencyLead` (keys `;` and `'`, the
+menu, the remote's slider) is one setting with a sign: above zero it leads the
+beat phase as before (default +50 ms, for speakers on a cable), below zero --
+down to -500 ms -- it delays every audio feature: levels, beats, onsets,
+tempo, sections and drops all arrive that much later, and so do the score cues
+of a generator and what the scheduler times by the phrase. A video export is
+never delayed (its audio is a file), a recording shifts its sound by the delay,
+so it stays in sync, and the OSC output follows the picture. To set it, switch
+on the **calibration ring** on the remote (Live tab): it closes on every beat
+the picture plays and its dot lights with every kick; move the slider until both
+land on the beat you hear (picture too early: towards minus). **Tap along** on
+the remote gives a start value: tap the pad in time with what you hear; the
+taps are measured against the loopback's own beat grid, and since people tap
+some tens of milliseconds ahead of a beat (Repp 2005), 30 ms are added back.
+A phone's touch screen adds its own latency, so take the value as a start, not
+as the answer. `KALEIDO_LATENCY=<seconds>` sets it for one run without touching
+the ini.
 
 **Both overlay menus** — the preset picker (`0`) and the audio-source picker
 (`d`) — scroll, so they reach entries the digit keys cannot. Anything past
