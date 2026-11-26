@@ -299,19 +299,21 @@ def morph(mask, op, it=1):
 
 SUBJECT_BG = "quad"                # the background the subject rises above: "plane" or "quad"
 SUBJECT_TOUCH = (0.10, 0.20)       # border factor: 1 up to 10 % of the region's outline on the frame, 0 from 30 %
+SUBJECT_EDGE = (0.20, 0.50)        # edge factor: 0 at this height over the surroundings, 1 from this one
 SUBJECT_FACTORS = ("edge", "area", "dom", "border", "fill")
 
 
 def subject(n, debug=None):
     """Subject centre and subject depth of one map (M1): the most prominent connected region that rises above the
-    background plane.
+    background surface.
 
-    The map is smoothed at MEASURE_SIDE; a robust plane through its far part is removed (a ground or wall that
-    recedes is no subject); Otsu's threshold on the rest splits near from far; after a small opening and closing the
+    The map is smoothed at MEASURE_SIDE; a robust quadratic surface through its far part is removed (a ground or
+    wall that recedes, or the bowl a model makes of a flat picture, is no subject); Otsu's threshold on the rest splits near from far; after a small opening and closing the
     connected region with the largest raised volume is the subject.  fx/fy is its centroid weighted by the height
     above the threshold.  thr is the value of the PLAIN map (the shader has no plane) whose mask `map >= thr` agrees
     best with the region (intersection over union).  conf is the product of factors 0..1:
-      edge   the region against a ring around it, in units of the map's 5..95 % spread
+      edge   the region's median height against a ring around it (in the detrended map's 1..99 % range): 0 up to
+             0.2, full from 0.5 -- textures with relief (wire wool, salt crust, foam) stand out by only 0.25-0.4
       area   its size (from 1 % rising, full from 4 % to 40 %, 0 at 65 % of the picture)
       dom    its share of all near volume (one subject, not one pebble of many)
       border how little of the picture's edge it covers (a foreground band at the bottom is no subject)
@@ -366,7 +368,7 @@ def subject(n, debug=None):
     filled = ndimage.binary_fill_holes(mask)
     fill = float(mask.sum()) / max(1.0, float(filled.sum()))
 
-    f = {"edge": float(np.clip((edge - 0.1) / 0.3, 0.0, 1.0)),
+    f = {"edge": float(np.clip((edge - SUBJECT_EDGE[0]) / (SUBJECT_EDGE[1] - SUBJECT_EDGE[0]), 0.0, 1.0)),
          "area": float(np.clip((area - 0.01) / 0.03, 0.0, 1.0) * np.clip((0.65 - area) / 0.25, 0.0, 1.0)),
          "dom": float(np.clip((dom - 0.35) / 0.35, 0.0, 1.0)),
          "border": float(np.clip(1.0 - (touch - SUBJECT_TOUCH[0]) / SUBJECT_TOUCH[1], 0.0, 1.0)),
