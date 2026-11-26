@@ -25,6 +25,10 @@ hue and lightness again. The remaining 0.07 % is that chroma pull-back and the 8
 `oldHue`, Source/PresentPass.cpp) brings back the RGB rotation for comparisons. The stage lamps of the light show keep
 `hueRotate`: they are light sources whose colours were tuned with it.
 
+The shader computes what the measurement computed: the GLSL functions, copied verbatim into a probe scene (an
+analytic colour field turned by 0.18 and 0.375) and rendered by the editor at 480x384, against the numpy version of
+the same field -- mean difference 0.03 of 255, at most 1 (8-bit rounding).
+
 The sheet (C:\Users\Rene\Desktop\kaleido-wt\sheets\lead\f1_hue_sheet.jpg; columns: frame, old 0.18, new 0.18, old
 0.375, new 0.375) shows where it was visible: a green glass vessel turned dark violet by the old rotation stays at its
 lightness, a pink heart stays light instead of turning deep magenta. The angles of the two rotations do not
