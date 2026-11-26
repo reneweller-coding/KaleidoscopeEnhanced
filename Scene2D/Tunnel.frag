@@ -118,14 +118,17 @@ void main()
     // coordinate, so consonant passages keep the wedges dead straight.
     uv.y = ( a / Pi ) + 0.030 * clamp( audioRoughness, 0.0, 1.0 ) * sin( r * 7.5 );
 
-    vec4 col = interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv );
+    // alpha 1 as before: the photo's alpha holds its depth since 26.11.2026 (Source/PhotoDepth.h)
+    vec4 col = vec4( ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb, 1.0 );
 
     // --- Beat: a VERY subtle radial breath only ---
     // The strong beat zoom/brightness flash was tiring on the eyes; the rhythmic
     // accent now lives in the gentle corner spotlights of the final present pass.
     float zoom = 1.0 + audioSwell * 0.04;
     vec2  uv_zoomed = ( uv - 0.5 ) / zoom + 0.5;
-    vec4 col_zoomed = interpolation * texture( tex0, uv_zoomed ) + ( 1.0 - interpolation ) * texture( tex1, uv_zoomed );
+    vec4  col_zoomed = vec4(
+        ( interpolation * texture( tex0, uv_zoomed ) + ( 1.0 - interpolation ) * texture( tex1, uv_zoomed ) ).rgb,
+        1.0 );
     col = mix( col, col_zoomed, audioBeat * 0.18 );
 
     // --- Spectral Centroid: colour temperature tint ---

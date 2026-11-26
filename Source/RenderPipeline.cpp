@@ -24,6 +24,7 @@
 #include <string>
 #include "RenderPipeline.h"
 #include "PlatformQt.h"
+#include "PhotoDepth.h"
 #include "SettingsFile.h"
 #include "Strings.h"
 #include "SpoutOut.h"
@@ -2754,6 +2755,7 @@ void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
             GLuint temp = m_actTex;
             m_actTex = m_nextTex;
             m_nextTex = temp;
+            std::swap( m_actDepth, m_nextDepth );
             // the photo just faded out becomes the second photo -- copied before the loader overwrites its slot
             takePhotoB( m_nextTex );
             // loadNewTexture( temp );
@@ -2772,6 +2774,20 @@ void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
                                                  : m_timeTextureInterpolationMin )
                                          / m_timingScale; // min==max would be % 0
         }
+    }
+
+    // What the shaders know about the two slots' depth (PhotoDepth.h): a live input stands in for both photos and
+    // has no map.
+    const PhotoDepth::Info none;
+    const PhotoDepth::Info &d0 = m_liveTex ? none : m_actDepth, &d1 = m_liveTex ? none : m_nextDepth;
+    EffectShader::M_PhotoDepthAmt[0] = d0.map ? 1.f : 0.f;
+    EffectShader::M_PhotoDepthAmt[1] = d1.map ? 1.f : 0.f;
+    const float focus[4] = { d0.focusU, d0.focusV, d1.focusU, d1.focusV };
+    const float subject[4] = { d0.thr, d0.conf, d1.thr, d1.conf };
+    for ( int i = 0; i < 4; ++i )
+    {
+        EffectShader::M_PhotoFocus[i] = focus[i];
+        EffectShader::M_PhotoSubject[i] = subject[i];
     }
 }
 
@@ -4481,6 +4497,7 @@ void RenderPipeline::loadNewTexture( GLuint &texID )
 
     // set up texture
     setupTexture( texID, m_nextImage );
+    m_nextDepth = m_nextImageDepth; // the slot's depth travels with its texture (swapped in updateImageState())
     savePhotoMemory();
     // KALEIDO_FRAME_LOG: photo swaps in the same log as the long frames and gaps (is a stall a swap?)
     static const bool FrameLog = qEnvironmentVariableIsSet( "KALEIDO_FRAME_LOG" );
@@ -4612,6 +4629,21 @@ static QImage loadImageOrFallback( const QString &path )
     return img;
 }
 
+/**  Loads and prepares a photo for its texture slot, its depth map in the alpha channel (PhotoDepth.h).
+ *
+ * @param path   Image file to load. (in)
+ * @param depth  What the slot then knows about the photo's depth; Info::map is false without a map. (out)
+ *
+ * @return
+ *   prepareImage() of the photo (or of the fallback image); alpha = the depth map, stretched the same way, or 255.
+ **/
+static QImage preparePhoto( const QString &path, PhotoDepth::Info &depth )
+{
+    QImage img = prepareImage( loadImageOrFallback( path ) );
+    depth = PhotoDepth::applyToAlpha( img, path );
+    return img;
+}
+
 void RenderPipeline::createTexture()
 {
     checkGLErrors( "createTextures() 0" );
@@ -4623,6 +4655,7 @@ void RenderPipeline::createTexture()
     // glGenTextures( 1, &m_texID3 );
     // set up texture
 
+    m_actDepth = m_nextDepth = PhotoDepth::Info();
     // Robustness: no images configured -> use the procedural fallback for both.
     if ( m_imageList.isEmpty() )
     {
@@ -4639,7 +4672,7 @@ void RenderPipeline::createTexture()
     {
         const QString path = pickFreePhoto();
         notePhoto( path );
-        setupTexture( tex, prepareImage( loadImageOrFallback( path ) ) );
+        setupTexture( tex, preparePhoto( path, tex == m_actTex ? m_actDepth : m_nextDepth ) );
         fprintf( stderr, "PHOTO %s\n", qPrintable( path ) );
         if ( first.isEmpty() )
             first = path;
@@ -4649,7 +4682,8 @@ void RenderPipeline::createTexture()
     {
         const int n = static_cast<int>( m_imageList.size() );
         const int k = static_cast<int>( m_imageList.indexOf( first ) );
-        createPhotoB( prepareImage( loadImageOrFallback( m_imageList[( ( k < 0 ? 0 : k ) + n / 2 ) % n] ) ) );
+        PhotoDepth::Info b_depth; // the second photo's depth rides in its alpha; no shader reads it yet
+        createPhotoB( preparePhoto( m_imageList[( ( k < 0 ? 0 : k ) + n / 2 ) % n], b_depth ) );
     }
 
     /*m_imageListIterator++;
@@ -4679,6 +4713,10 @@ void RenderPipeline::traverse( const QString &dirname, QStringList &imageList )
         {
             continue;
         }
+        // The depth maps' folder (PhotoDepth.h) holds PNGs that are no photos.  The test above already skipped it,
+        // but only because QFileInfo::baseName( ".depth" ) is empty -- said here in so many words.
+        if ( fi.isDir() && PhotoDepth::isDepthFolder( fi.fileName() ) )
+            continue;
         if ( fi.isDir() && fi.isReadable() )
         {
             // This is the conditional for recursion
@@ -5106,6 +5144,7 @@ void ImageLoader::run()
             if ( m_shader->m_imageList.isEmpty() )
             {
                 m_shader->m_nextImage = prepareImage( RenderPipeline::fallbackImage() );
+                m_shader->m_nextImageDepth = PhotoDepth::Info();
                 m_shader->m_triggerImageload = false;
                 continue;
             }
@@ -5152,8 +5191,15 @@ void ImageLoader::run()
             m_shader->m_imageListIterator = m_shader->m_imageList.begin() + best_idx;
             m_shader->notePhoto( *m_shader->m_imageListIterator );
 
-            m_shader->m_nextImage = prepareImage( loadImageOrFallback( *m_shader->m_imageListIterator ) );
+            NanoTimer load_timer;
+            load_timer.start();
+            m_shader->m_nextImage = preparePhoto( *m_shader->m_imageListIterator, m_shader->m_nextImageDepth );
             fprintf( stderr, "PHOTO %s\n", qPrintable( ( *m_shader->m_imageListIterator ) ) );
+            // KALEIDO_FRAME_LOG: the load in the loader thread, with or without a depth map (plan T1: load time)
+            static const bool FrameLog = qEnvironmentVariableIsSet( "KALEIDO_FRAME_LOG" );
+            if ( FrameLog )
+                fprintf( stderr, "[photo] loaded in %.1f ms (depth map: %s)\n", load_timer.elapsed(),
+                         m_shader->m_nextImageDepth.map ? "yes" : "no" );
             m_shader->m_triggerImageload = false;
 
             // float loadingtime = timer.elapsed();

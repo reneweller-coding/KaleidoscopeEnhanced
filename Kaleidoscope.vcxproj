@@ -346,6 +346,7 @@ if errorlevel 1 exit /b 1
     </CustomBuild>
     <ClInclude Include="Source\AudioFeatures.h" />
     <ClInclude Include="Source\SettingsFile.h" />
+    <ClInclude Include="Source\PhotoDepth.h" />
     <ClInclude Include="Source\EffectShader.h" />
     <ClInclude Include="Source\ComputeFX.h" />
     <ClInclude Include="Source\CfxTypes.h" />

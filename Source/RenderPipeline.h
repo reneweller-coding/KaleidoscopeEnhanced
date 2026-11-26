@@ -39,6 +39,7 @@
 #include "AudioFeatures.h"
 #include "ComputeFX.h"
 #include "GpuSims.h"
+#include "PhotoDepth.h"
 #include "PresentPass.h"
 #include "SceneScheduler.h"
 #include "CueReceiver.h"
@@ -1219,6 +1220,7 @@ private:
                                ///< loadNewTexture().
     QImage m_nextImage;        ///< The freshly loaded/prepared photo, written by ImageLoader::run(), consumed by
                                ///< loadNewTexture().
+    PhotoDepth::Info m_nextImageDepth; ///< m_nextImage's depth (its map is in the image's alpha), written with it.
 
 
     QStringList m_imageList; ///< Flat list of all image file paths found under the configured image directory (see
@@ -2307,6 +2309,10 @@ private:
     unsigned int m_timeTextureSoloMax;          ///< Maximum rolled solo duration (seconds), set via init().
     GLuint       m_actTex = 0;                  ///< Currently displayed background-photo texture.
     GLuint       m_nextTex = 0; ///< Incoming background-photo texture (cross-fade target / next solo image).
+    // The photo's depth (26.11.2026, PhotoDepth.h): what each slot knows, swapped with the textures; the shaders get
+    // it as photoDepthAmt, photoFocus, photoSubject (EffectShader::M_PhotoDepthAmt ..., set in updateImageState()).
+    PhotoDepth::Info m_actDepth;  ///< The depth of the photo in m_actTex (tex0).
+    PhotoDepth::Info m_nextDepth; ///< The depth of the photo in m_nextTex (tex1).
 
     // ---- The second photo (17.10.2026) ----
     // Scenes that set two pictures against each other (imgB() in Tools/scenegen) get the photo shown BEFORE the

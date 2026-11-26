@@ -209,6 +209,9 @@
     <ClInclude Include="Source\SettingsFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\PhotoDepth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Source\CueReceiver.h">
       <Filter>Header Files</Filter>
     </ClInclude>

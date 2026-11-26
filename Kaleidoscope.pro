@@ -106,6 +106,7 @@ HEADERS += \
     Source/QrCode.h \
     Source/ScheduleSim.h \
     Source/OsdMenu.h \
+    Source/PhotoDepth.h \
     Source/Platform.h \
     Source/PlatformQt.h \
     Source/PresentPass.h \

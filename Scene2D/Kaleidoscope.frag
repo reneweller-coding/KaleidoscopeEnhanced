@@ -116,7 +116,9 @@ void main()
     // polar to cartesian coordinates
     p = r * vec2( cos( a ), sin( a ) );
 
-    vec4 col = interpolation * texture( tex0, p + 0.5 ) + ( 1.0 - interpolation ) * texture( tex1, p + 0.5 );
+    // alpha 1 as before: the photo's alpha holds its depth since 26.11.2026 (Source/PhotoDepth.h)
+    vec4 col = vec4(
+        ( interpolation * texture( tex0, p + 0.5 ) + ( 1.0 - interpolation ) * texture( tex1, p + 0.5 ) ).rgb, 1.0 );
 
     // --- Beat: a VERY subtle radial breath only ---
     // The strong beat zoom/brightness flash was tiring on the eyes; the rhythmic
@@ -127,8 +129,10 @@ void main()
     float hcdf = clamp( audioHarmChange, 0.0, 1.0 );
     float zoom_k = 1.0 + audioSwell * 0.04;
     vec2  p_zoomed = p / zoom_k;
-    vec4  col_zoomed = interpolation * texture( tex0, p_zoomed + 0.5 )
-                       + ( 1.0 - interpolation ) * texture( tex1, p_zoomed + 0.5 );
+    vec4  col_zoomed = vec4( ( interpolation * texture( tex0, p_zoomed + 0.5 )
+                               + ( 1.0 - interpolation ) * texture( tex1, p_zoomed + 0.5 ) )
+                                 .rgb,
+                             1.0 );
     col = mix( col, col_zoomed, min( audioBeat * 0.18 + hcdf * 0.30, 0.45 ) );
 
     // Mood colour / saturation / loudness-brightness are applied GLOBALLY in the

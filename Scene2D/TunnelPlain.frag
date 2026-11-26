@@ -117,7 +117,8 @@ void main()
 
     // uv = clampQuadratic( uv );
 
-    vec4 col = interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv );
+    // alpha 1 as before: the photo's alpha holds its depth since 26.11.2026 (Source/PhotoDepth.h)
+    vec4 col = vec4( ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb, 1.0 );
     col.rgb *= ( 1.0 + audioBeat * 0.2 + audioLevel * 0.2 );
 
     // Hats catch only the RIM of the tunnel mouth (large r), never the deep
