@@ -35,6 +35,40 @@ depthVar -- that is the package.  Generated with `python Tools/scenegen/gen.py C
 MirrorBilliardLab` (ChainLab2D.frag, TimeChainLab.frag, MirrorBilliardLab.frag, Engine/ChainPass/Final_ChainLab2D.frag;
 the other chain passes came out unchanged).
 
+#### Measured (commit 0d844bb2 against the old shaders, both rendered with the build of cdab7da3)
+
+The screening music's full mix (Tools/reactivity.py's voices music, 128 BPM), kristallhoehle-indigo-fuchsia-2, seed 7,
+`depthVar` 0, 291 frames at 30 fps per lab.  What look 6 adds against the base look with the same rolls (ChainLab2D:
+look 0; the labs: look 4), mean per frame in the nearest and the farthest third of the pixels by the depth view (of
+255), as p3_cmp2.py; in brackets the largest frame:
+
+| lab | near third, before -> after | far third, before -> after |
+|---|---|---|
+| ChainLab2D | +2.82 (17.3) -> **+7.21** (32.0), 2.6x | +0.39 (2.0) -> **+0.86** (3.9), 2.2x |
+| TimeChainLab | +1.45 (4.5) -> **+2.93** (9.1), 2.0x | +0.24 (0.8) -> **+0.82** (2.8), 3.4x |
+| MirrorBilliardLab | +2.25 (8.7) -> **+5.75** (22.9), 2.6x | +0.34 (0.8) -> **+1.09** (2.9), 3.2x |
+
+So: two to two and a half times in the near layer, two to three and a half times in the far one -- below the "three
+to four times" aimed at for the near layer.  The picture is brighter than (71) assumed (mean 28..36 of 255 with the
+build of cdab7da3), so the near layer's gain counts more than its own-colour share, and the gain went 0.24 -> 0.60
+(2.5x).  A further step (0.60..0.90, own colour 0.55) would reach three times; it was not taken without a look at a
+bright photo (a full kick would lift a bright near layer by 75 %).
+
+Correlation with the voices' onsets (best Pearson over lags 0..6 frames), after: ChainLab2D near kick 0.18 / bass
+0.20 / hat 0.12, far kick 0.24 / bass 0.27 / hat 0.22; TimeChainLab near 0.25 / 0.37 / 0.12, far 0.36 / 0.40 / 0.34;
+MirrorBilliardLab near 0.27 / 0.40 / 0.13, far 0.39 / 0.46 / 0.35 -- as before within 0.01..0.08: the near layer
+follows the bass and not the hat; the far layer follows the hat better than the near one does, but the kick and the
+bass as much (the reasons of (71) hold: fine interleaving at 160 x 90, bloom, exposure).  The size grew, the
+separation did not.
+
+No flash: the limiter's samples dimmed / flash-on in the lab's own window -- ChainLab2D 1 / 0 of 120 before and
+after; TimeChainLab 66 / 0 (look 4: 65 / 0, old look 6: 66 / 0); MirrorBilliardLab 0 / 0.  The frame mean's largest
+step from one frame to the next (of 255): ChainLab2D 18.4 (look 0: 20.0 -- the lab's own), TimeChainLab 3.3 (look 4:
+2.0, old look 6: 2.5), MirrorBilliardLab 3.6 (1.4, 2.1).
+
+Sheets (kaleido-wt\sheets\look6labs\): `look6labs_<lab>_before_after.jpg` -- base look | look 6 before | look 6
+after | before - base x4 | after - base x4 | depth view, on a kick and on a hat between the kicks.
+
 #### Verified / not verified
 
 See the table at the end of this file ("State") -- it is kept current.
@@ -62,11 +96,14 @@ See the table at the end of this file ("State") -- it is kept current.
 
 | what | state |
 |---|---|
-| Komplett.xml roundtrip, --validate, check_schedule --quick | started 16:29, result not yet read |
-| the size, near / far third against the base look, three labs | started 16:29, result not yet read |
-| limiter (flash) counts of the runs with the new size | not yet read |
-| the sheets | not yet looked at |
+| Komplett.xml roundtrip, --validate, check_schedule --quick | queued in the lock at 16:29 (p3b_presets.log beside the helpers); NOT read when this was written |
+| the size, near / far third against the base look, three labs | measured, see "Measured" (commit 0d844bb2) |
+| limiter (flash) counts of the runs with the new size | read: no more than with the old size, see "Measured" |
+| the sheets | ChainLab2D and TimeChainLab looked at (the near layer's light and the glints show in "after - base"); MirrorBilliardLab's not looked at |
 | looks 0..5 bit for bit by render (p3_ident.py) | NOT run (by the diff only: freqDepth() alone changed) |
-| temporal_budget.py, shake_scan.py, shadercheck.py, doc_shaders --check, cgvr_format --check | NOT run yet |
+| temporal_budget.py | ran: 0 errors, 4 warnings (as before) |
+| shake_scan.py --summary --baseline | ran: 0 new SHAKE/FRAME/STEP hits, 74 known |
+| doc_shaders.py --check, cgvr_format.py --check (the four files) | ran: would change 0; 4 of 4 same |
+| shadercheck.py | NOT run (the app compiled and rendered all three labs with look 6 in the runs above) |
 | chain_regress with look 6 pinned (runner against uber shader) | NOT run (both are generated from the one source) |
 | cost (perf_labs) | NOT run (more lit cells cost nothing: the same hashes per pixel) |
