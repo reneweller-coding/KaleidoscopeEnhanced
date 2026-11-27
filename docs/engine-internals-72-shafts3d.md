@@ -16,7 +16,7 @@ it as dark beams.
 
 - `Tools/scenegen/patch_shaft3d.py` (new, in the style of `patch_shadow3d.py`): a block between the markers
   `// ---- light shafts of the scene's lamp (Tools/scenegen/patch_shaft3d.py) ----` and `// ---- end of the light
-  shafts ----`, right behind the shadow block's end marker, and two call sites in `main()` -- after the sky shell's
+  shafts ----`, right behind the shadow block's end marker, and two call sites in `main()` (three in MeshSeismograph: the paper on the drum has its own exit) -- after the sky shell's
   `fragColor = vec4( renderSky( ... ) )` and after the objects' last `fragColor = vec4( clamp( cat_tone ... ) )`.
   Idempotent (a second run: 7 x "unchanged").  It must run AFTER `patch_shadow3d.py`; when `patch_shadow3d.py` runs
   again later it puts its block inside this one (it inserts before the first function) -- the next run of
@@ -68,12 +68,26 @@ Verified:
   `shadowMapP` 0.6..1 (so the depth pass and the shadow lookup run): the three JPGs are byte-identical (md5), the
   tool's compare says 0 changed.
 
-NOT verified at the time of this commit (see the later commits / the report for what was added):
+- The real GLSL compile was repeated after MeshSeismograph's third call site (the paper on the drum, its own exit of
+  `main()`): `shadercheck.py --new cdab7da3`, 7 files, 0 errors, 0 warnings.
+- The picture, frozen frames, same rolls (`wt-shafts3d-p0`: preset entry `shaftP` 0..0, against `wt-shafts3d-on`:
+  0.45..0.7; sheet `C:/Users/Rene/Desktop/kaleido-wt/sheets/shafts3d/shaft_p0_on_diff8.jpg`: off, on, 8 x the
+  difference), mean of 255 off -> on: MeshZoetrope 15.4 -> 19.8 (difference mean 4.5, max 34), MeshDominoWave
+  10.3 -> 21.5 (11.2, max 38), MeshMetronomes 18.4 -> 28.8 (10.3, max 33).  No black frame, no error in the logs.
+  What the sheet shows: in MeshZoetrope a warm glow over the table with the zoetrope's shadow cut into it as a dark
+  shaft (clear in the difference, faint in the picture); in MeshDominoWave and MeshMetronomes mostly an even veil,
+  brightest in a band at the horizon, that doubles the mean of a dark scene -- a wash, not beams: the lamps stand
+  behind the camera, so the shadow volumes run away from the eye and the rays cross them only briefly.
+- Presets (separate commit): `shaftP` 0.4..0.6 for MeshZoetrope, 0.25..0.4 for MeshMetronomes; MeshDominoWave left
+  out because of the wash.  These ranges are LOWER than the ones looked at.
 
-- The picture with `shaftP` above 0 (nobody has looked at it yet), its strength, the grain.
-- MeshTuningForks, MeshSeismograph, MeshFoundryPour, MeshPendulumWave were not rendered at all (identity follows
-  from the same `if`, but was not shown by a snapshot).
-- GPU cost with the knob on.  Motion, music, the transition into and out of the scenes.
+NOT verified:
+
+- The committed preset ranges as a picture (a render `wt-shafts3d-final` was started; see the report whether it
+  came back), anything in motion or with music, the grain of the 12 steps at the panel's resolution, transitions.
+- MeshTuningForks, MeshSeismograph, MeshFoundryPour, MeshPendulumWave were compiled but not rendered at all, neither
+  with the knob at 0 (identity follows from the same `if`, not shown by a snapshot) nor above 0.
+- GPU cost with the knob on (12 shadow lookups per pixel of the whole screen).
 
 #### How to verify (from the worktree, Qt bin first in PATH, KALEIDO_NO_ACTIVATE=1)
 
@@ -94,7 +108,8 @@ files, cdab7da3), `wt-shafts3d-off` (patched files, no preset entry), `wt-shafts
   motion, not with music.
 - The grain of the 12 jittered steps is static per pixel; whether it shows at the panel's resolution under the bloom
   was not judged in motion.
-- MeshSeismograph has a second exit in `main()` (the paper trace, `fragColor = vec4( clamp( _t ...`) that does not
-  get the haze: those pixels would look cut out of it.  Do not switch `shaftP` on there before that site is patched.
+- With the lamp behind the camera the effect is a veil more than beams (see above).  Beams would need a lamp to the
+  side of or facing the camera, or a spot light with a cone; whether the veil is worth 12 lookups a pixel is the
+  user's call.  The constant 0.6 in `smShafts()` is the place to turn it down for all seven.
 - The old seven shadow scenes (PillarHall, ShadowForest ...) would be the more spectacular place for shafts (a
   turning sun through pillars and trees); they need their own block on `lightM`.
