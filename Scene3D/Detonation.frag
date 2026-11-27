@@ -267,7 +267,8 @@ void main()
         vec3 R = reflect( -V, n );
         vec2 env_uv = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5,
                             clamp( R.y * 0.5 + 0.5, 0.0, 1.0 ) );
-        vec3 env = textureLod( tex0, fract( env_uv ), 0.0 ).rgb;
+        // Both photos, cross-faded like img(): tex0 alone jumped at the end of every photo fade (27.11.2026).
+        vec3 env = envPhoto( fract( env_uv ), 0.0 );
         if ( envP > 0.0 )
         {
             // The photo environment (patch_env3d.py): no seam, both photos; an explicit mip, since this

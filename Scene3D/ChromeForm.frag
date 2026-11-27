@@ -188,7 +188,9 @@ float noise2( vec2 p )
 vec3 photo( vec2 uv )
 {
     uv = clamp( uv, 0.0, 1.0 );
-    return mix( texture( tex1, uv ).rgb, texture( tex0, uv ).rgb, 1.0 - interpolation );
+    // interpolation 1 = tex0 (the photo on screen), 0 = tex1; until 27.11.2026 the weight was 1 - interpolation:
+    // at rest the NEXT photo, and a jump at both ends of every photo fade.
+    return mix( texture( tex1, uv ).rgb, texture( tex0, uv ).rgb, interpolation );
 }
 
 /**  THE room.
