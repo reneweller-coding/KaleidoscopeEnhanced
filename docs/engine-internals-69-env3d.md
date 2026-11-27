@@ -36,12 +36,25 @@ bit, and no preset sets the knob yet -- which scenes get it and in which range i
   how strongly the photo's diffuse light adds.  A negative value is off too, so a preset range like -0.6..1 makes it
   a variant of some of the activations.
 - *The ten scenes* (smooth surfaces where a reflection shows):
-  SCENES_TABLE
+  | scene | before | with envP > 0 |
+  |---|---|---|
+  | SpectralOrb, SpectralTorus, JellyBody | no photo at all | diffuse photo light plus a Fresnel reflection |
+  | MetaSculpt, BloomSculpt, Detonation, Ocean | own equirect lookup, tex0 only (jumps at every photo change), mip 0 in three of them | the photo environment, both slots, mip by roughness |
+  | ChromeFlow, MirrorShardKaleidoscope | own equirect lookup with a seam | the photo environment |
+  | ChromeForm (11 entries) | own lookup inside `environment()`; its `photo()` mixes the two slots the wrong way round (at rest it shows the NEXT photo) -- left as it is in the old look | the photo environment inside `environment()`, so shell and mirror agree |
 - *Not here, and why.*  Derivatives in a pixel-dependent branch are undefined (fwidth-divergent-branch trap):
   Detonation shades its shell inside `if ( dot( n, V ) > 0.0 )`, so it takes an explicit mip (2.5) instead of
   envReflect().
 
-U1_RESULTS
+*U1 results* (snapshots of the env3d build, photo kristallhoehle-indigo-fuchsia-2, frozen time, seed 7):
+
+- Identity: all 13 entries with envP absent/0 byte-identical to the set rendered at b87fcc34 (JPG bytes equal, pixel
+  difference 0); 35 renders, no error in any log -- the patched shaders compile.
+- With envP = 1 the mean absolute difference per scene: SpectralTorus 12.2, SpectralOrb 11.1, ChromeFlow 10.7,
+  ChromeForm 8.7, MirrorShardKaleidoscope 8.6, JellyBody 2.8, BloomSculpt 2.3, MetaSculpt 1.4, Detonation 1.0,
+  Ocean 0.7 (of 255).  On the sheet (C:\Users\Rene\Desktop\kaleido-wt\sheets\env3d\u1_envP_off_on_photoA.jpg) orb and
+  torus visibly mirror the photo; in the other scenes the seam-free replacement is a subtle change.
+- Not measured: GPU time per scene with the knob on, other photos.  The weights are first guesses.
 
 ### U2 -- a shadow map for scenes on a floor
 
@@ -72,4 +85,20 @@ U1_RESULTS
   shadow scenes do not declare the knob and are unchanged.  Without that gate the pass would have run (and cost) at
   0 for a picture that does not use it.
 
-U2_RESULTS
+*U2 results* (checked by the lead after the agent had handed back; sheet
+C:\Users\Rene\Desktop\kaleido-wt\sheets\env3d\u2_shadow_before_off_on.jpg):
+
+- Identity, knob absent against the set rendered at b87fcc34: MeshDominoWave, MeshMetronomes, MeshZoetrope,
+  MeshPendulumWave and the old shadow scenes PillarHall and ShadowForest byte-identical; MeshTuningForks 0.0001 (max
+  2), SmokeHall 0.02, Origami 0.0001 -- the known run-to-run noise of those scenes.
+- MeshSeismograph and MeshFoundryPour came out BLACK in every set rendered after ~00:45 -- with the old code of the
+  main checkout (b87fcc34) just as with the new (two renders each, all four byte-identical, mean 0.0), while the
+  before set of 23:12 showed them.  So not U2: their models are the largest of the pack (11-13 MB .glb), and the
+  frozen shot waits for the programs, apparently not for the model load; under load the frame is taken first.  An
+  open point for the measuring tools (KALEIDO_FREEZE_SHOT should wait for pending model loads).
+- Knob 0 against 1: the shadow shows as a soft dark patch beside the base (clearest in MeshZoetrope); mean
+  differences 0.29-1.25 of 255 in the five scenes that rendered.  The framing differs between the "absent" and the
+  "0/1" sets because the appended knob changes the scene's rolls in the snapshot tool -- compare 0 with 1, not with
+  absent.
+- Not measured: the depth pass's GPU cost per scene; more photos.  The old ChromeForm crossfade and the tex0-only
+  reflections stay as they were in the old look (for the user to decide).
