@@ -9,7 +9,7 @@ generators' score cues, and builds a second signal from what the literature name
 | step | what | result |
 |---|---|---|
 | measure | Tools/buildup_lab.py: the signal against the Build sections that run into a drop, 41 demos | the old signal: AUC builds vs grooves 0.53 (chance), it FALLS inside the builds (corr. with time -0.09), 10 of 17 drops armed |
-| new signal | the groove's bass gone x the top rising (Source/AudioAnalyzer.cpp), port in the lab | EDM builds: AUC 0.53 -> 0.92, rise -0.09 -> 0.50, armed 10 -> 16 of 17, groove time above 0.45 6.3 % -> 0.8 % |
+| new signal | the groove's bass gone x the top rising (Source/AudioAnalyzer.cpp), port in the lab (matches) | EDM builds (C++): AUC 0.53 -> 0.92, rise -0.09 -> 0.50, armed 10 -> 16 of 17, groove time above 0.45 6.3 % -> 0.8 % |
 | default | new one only if better on every demo | not on every demo (Cinematic/Ritual crescendos, two breakdowns): **shipped off**, `KALEIDO_OLD_BUILDUP=0` turns it on |
 
 #### What was there
@@ -109,25 +109,27 @@ Indiana University Press 2006 (the breakdown/build-up/drop form); K. Yadati, M. 
 ISMIR 2014 (drops found from the contrast of the segments around a structural boundary -- the same contrast the gap
 measures causally).
 
-#### Results (lab port; the C++ against the port: see "Verification")
+#### Results
+
+The C++ (`PresetEditor --features` with `KALEIDO_OLD_BUILDUP=0`, every 50 ms; the lab port gives the same means):
 
 | demo | inB | inG | auc | aucX | rise | pre | arm | falseG |
 |---|---|---|---|---|---|---|---|---|
 | BerlinSchool cosmic | 0.03 | 0.02 | 0.71 | 0.34 | 0.21 | 0.07 | 0/1 | 0.000 |
 | Breakbeat block | 0.66 | 0.02 | 1.00 | 0.97 | 0.63 | 0.70 | 2/2 | 0.000 |
-| Breakbeat nuskool | 0.39 | 0.04 | 1.00 | 0.90 | 0.36 | 0.47 | 2/2 | 0.000 |
-| Breakbeat riot | 0.74 | 0.04 | 1.00 | 0.97 | 0.91 | 0.99 | 3/3 | 0.000 |
+| Breakbeat nuskool | 0.39 | 0.04 | 1.00 | 0.90 | 0.36 | 0.48 | 2/2 | 0.000 |
+| Breakbeat riot | 0.75 | 0.04 | 1.00 | 0.98 | 0.91 | 0.99 | 3/3 | 0.000 |
 | Breakbeat skank | 0.60 | 0.02 | 1.00 | 0.95 | -0.04 | 0.43 | 2/2 | 0.000 |
 | Breakbeat stomp | 0.47 | 0.05 | 0.99 | 0.92 | 0.65 | 0.62 | 2/2 | 0.000 |
-| Psytrance goa | 0.24 | 0.04 | 0.65 | 0.60 | 0.71 | 0.61 | 2/2 | 0.011 |
+| Psytrance goa | 0.24 | 0.04 | 0.66 | 0.60 | 0.72 | 0.61 | 2/2 | 0.011 |
 | Techno ostgut | 0.33 | 0.06 | 0.99 | 0.85 | 0.56 | 0.37 | 1/1 | 0.000 |
 | Trance uplifting | 0.22 | 0.04 | 0.92 | 0.79 | 0.55 | 0.33 | 2/2 | 0.000 |
 | **mean, EDM builds** | 0.41 | 0.04 | **0.92** | **0.81** | **0.50** | 0.51 | **16/17** | |
-| mean, long builds (11) | 0.11 | 0.07 | 0.51 | 0.54 | 0.09 | 0.22 | 4/11 | |
+| mean, long builds (11) | 0.11 | 0.07 | 0.51 | 0.53 | 0.11 | 0.22 | 4/11 | |
 
 Outside the builds 4.4 % of the time above 0.45 (old 5.7 %), groove time 0.8 % (old 6.3 %).  Per demo the groove
-time above 0.45 is at most 3.6 % in the demos without a build (Ritual didgeridoo; old 0.1 %; Breakbeat bristol 3.0 %,
-old 0) and 6.6 % in the Ritual serpent's grooves (old 0.8 %); it fell in the Analemma pieces (e.g. ancestors 11.0 ->
+time above 0.45 is at most 3.6 % in the demos without a build (Ritual didgeridoo; old 0.1 %; Breakbeat bristol 2.9 %,
+old 0) and 5.5 % in the Ritual serpent's grooves (old 0.8 %); it fell in the Analemma pieces (e.g. ancestors 11.0 ->
 2.6 %, didgeridoo 20.3 -> 0 %) and in Cinematic drift (24.6 -> 0 %).
 
 *Where it is worse*, demo by demo (the reason the default stays old):
@@ -137,8 +139,8 @@ old 0) and 6.6 % in the Ritual serpent's grooves (old 0.8 %); it fell in the Ana
   and the riser does not climb further; the old onset term climbed with its snare roll.
 - uplifting's mean inside the build (0.26 -> 0.22), though the shape is now right (rise -0.84 -> 0.55, auc 0.53 ->
   0.92, both drops armed).
-- The long builds (Cinematic crescendos, Ritual intros): aucX 0.63 -> 0.54.  They keep their bass and swell in level
-  over minutes -- the old level term saw that; the new signal does not look at the level.
+- The long builds (Cinematic crescendos, Ritual intros): aucX 0.63 -> 0.53.  They keep their bass and swell in level
+  over minutes; the new signal does not look at the level (and a level term does not help: tried and dropped).
 
 #### Verification
 
@@ -153,6 +155,13 @@ old 0) and 6.6 % in the Ritual serpent's grooves (old 0.8 %); it fell in the Ana
   (99.6 / 99.95 % of the rows).  Against the main checkout's editor (built 13:02 from a state I could not pin down)
   every column but `hat_c` is identical; this diff touches no drum code.
 - *Self test* (`Kaleidoscope.exe -q`): 186 passed, 0 failed at the default and with `KALEIDO_OLD_BUILDUP=0`.
+- *Tools/analyzer_regress.py* at the default: as the baseline (chords 24/38 with 4 false, drops 3/3, tempo 127.9 and
+  120.0 BPM).  Not run with `KALEIDO_OLD_BUILDUP=0` (its baseline holds the old build-up column).
+- *Tools/check_schedule.py --quick*: 20 plans, 0 violations at the default and with `KALEIDO_OLD_BUILDUP=0`.  With
+  the new build-up the scheduler's drop cuts land on a staged spectacle more often (its "drop ahead" fires on the
+  build-up's rising edge past 0.45), on the synthetic structure track: Electronic 264/288 -> 273/280, Psytrance
+  206/221 -> 213/220, Psychedelic 192/205 -> 200/206, Noir 292/306 -> 306/310, Allround 254/269 -> 252/258
+  (92-95 % -> 97-99 %).  The number of changes moves by -0.7 to -4.7 %; the silence plans are unchanged.
 
 #### Not done, next steps
 
