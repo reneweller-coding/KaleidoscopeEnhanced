@@ -523,10 +523,10 @@ vec3 depthLookCol(int look, int vi, vec2 p, vec2 c, vec3 ph, float lod, inout fl
     u += (s0.w - 0.5) * 0.012 * vec2(sin(0.07 * sceneTime), cos(0.05 * sceneTime));   // a slight parallax
     vec4 s = imgDepthOff(u, o0, o1, 0.0);
     float thr = interpolation * photoSubject.x + (1.0 - interpolation) * photoSubject.z;
-    // only where depth >= threshold really outlines the subject (photoMask, the maps' IoU; a receding photo's near
-    // foreground would pass the threshold too)
-    float sure = interpolation * smoothstep(0.45, 0.65, photoMask.x) * photoDepthAmt.x
-                 + (1.0 - interpolation) * smoothstep(0.45, 0.65, photoMask.y) * photoDepthAmt.y;
+    // only where depth >= threshold really outlines the subject (photoMask, the maps' IoU, from about 0.6; a receding
+    // photo's near foreground would pass the threshold too)
+    float sure = interpolation * smoothstep(0.55, 0.65, photoMask.x) * photoDepthAmt.x
+                 + (1.0 - interpolation) * smoothstep(0.55, 0.65, photoMask.y) * photoDepthAmt.y;
     float e = dv(vi, 11.0, 0.05, 0.12) * (0.7 + 0.6 * sw);
     float m = smoothstep(thr - e, thr + e, s.w) * sure;
     pd = mix(r.w, s.w, m);
