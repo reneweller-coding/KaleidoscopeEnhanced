@@ -21,6 +21,12 @@
  *    audioSectionId/Age -> a new section re-rolls every stage (a new scanner)
  *    voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
  *                       build-up and bar phase each light a part of the picture of their own; 0 = as before
+ *    depthLook 4     -> the subject anchor (plan M2, 26.11.2026): each photo is sampled shifted by its own
+ *                       subject's offset from the centre (photoFocus; none without a sure subject), so the
+ *                       lab's centre shows the subject; 0 = the old look
+ *    depthLook 6     -> the anchor and frequency by depth (freqDepth(), plan P3, 27.11.2026): the bass brightens
+ *                       the photo's near layer, the mids raise the colour of its middle layer, the highs set
+ *                       fine round glints into its far layer; light and colour only; depthVar = its variant
  *
  *  Knobs: seedP (the walk's seed), spanP (the base span of time on the screen), speedP (the photo's speed), hueP.
  *
@@ -56,6 +62,9 @@ uniform float audioStereoBal;   ///< Where the weight of the sound sits: -1 left
                                 ///< second-long average.
 uniform float audioBuildUp;     ///< Build-up toward a drop, 0..1.
 uniform float audioBarPhase;    ///< Position within the current bar, 0..1.
+uniform float audioBass;        ///< Bass band level, 0..1.
+uniform float audioMid;         ///< Mid band level, 0..1.
+uniform float audioHigh;        ///< High band level, 0..1.
 
 uniform float seedP;  ///< Seed knob: the walk's seed, 0..1.
 uniform float spanP;  ///< Span knob: the base span of time on the screen, 0..1.
@@ -66,6 +75,9 @@ uniform vec2 photoDepthAmt; ///< 1 where the photo in tex0 (x) / tex1 (y) carrie
                             ///< 0.
 uniform vec2 photoDepthWin; ///< Window depth of the photo's near end (x, depth 1) and far end (y, depth 0), from the
                             ///< host.
+uniform vec4 photoFocus;    ///< Subject centre of the photo in tex0 (xy) and tex1 (zw), texture coordinates.
+uniform vec4 photoSubject;  ///< Depth threshold (subject = depth >= it) and confidence of the photo in tex0 (xy), tex1
+                            ///< (zw).
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -556,6 +568,127 @@ void photoDepthOut( float d )
 }
 
 
+// ---- the subject anchor ----
+/**  The photos at a point, each shifted by an offset of its own (the subject anchor, plan M2), and their depth.
+ *
+ * @param uv   The point (mirrored at the edges, as imgLod()). (in)
+ * @param o0   The offset of the photo in tex0. (in)
+ * @param o1   The offset of the photo in tex1. (in)
+ * @param lod  The mip level. (in)
+ *
+ * @return
+ *   The cross-faded colour (rgb) and the depth, 0 far .. 1 near (w; as photoDepthLod()).
+ **/
+vec4 imgDepthOff( vec2 uv, vec2 o0, vec2 o1, float lod )
+{
+    vec4  a = textureLod( tex0, mirrorUV( uv + o0 ), lod ), b = textureLod( tex1, mirrorUV( uv + o1 ), lod );
+    float w0 = interpolation * photoDepthAmt.x, w1 = ( 1.0 - interpolation ) * photoDepthAmt.y;
+    return vec4( ( interpolation * a + ( 1.0 - interpolation ) * b ).rgb,
+                 ( w0 * a.a + w1 * b.a ) / max( w0 + w1, 1e-4 ) );
+}
+
+/**  How far one photo's subject lies from the picture's centre (plan M2): the shift that puts it where the fold's
+ * centre samples -- zero without a depth map or a sure measure, so such a photo stays centred.
+ *
+ * @param f     The photo's subject centre, texture coordinates (photoFocus). (in)
+ * @param conf  The confidence of the measure, 0..1 (photoSubject). (in)
+ * @param amt   1 where the photo has a depth map (photoDepthAmt). (in)
+ *
+ * @return
+ *   The offset from the picture's centre to the subject.
+ **/
+vec2 anchorOff( vec2 f, float conf, float amt )
+{
+    return ( f - 0.5 ) * smoothstep( 0.45, 0.55, conf ) * amt; // the maps trust a centre from conf 0.5 (26.11.)
+}
+
+
+// ---- frequency by depth (plan P3, 27.11.2026) ----
+/**  A constant of the frequency-by-depth look, set by its variant inside a range (variant 0: the middle of every
+ * range; the rule of the variant round of 23.10.2026).
+ *
+ * @param vi  The variant, 0..99. (in)
+ * @param j   The constant's number. (in)
+ * @param lo  The range's low end. (in)
+ * @param hi  The range's high end. (in)
+ *
+ * @return
+ *   The constant.
+ *
+ * The same formula as ChainLab2D's dv().
+ **/
+float fdVar( int vi, float j, float lo, float hi )
+{
+    return vi == 0 ? 0.5 * ( lo + hi )
+                   : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
+}
+
+/**  The layers of frequency by depth: where far turns into middle (x) and middle into near (y), and the softness of
+ * both edges (z) -- around the photos' mean depth (the depth map's 1 x 1 mip, cross-faded like the colour).
+ *
+ * @param vi  The variant, 0..99. (in)
+ *
+ * @return
+ *   The two edges and their half width.
+ *
+ * Fixed thirds of the depth missed the photos: the maps are stretched between their 2nd and 98th percentile, but a
+ * photo that recedes keeps most of its pixels far (the screening photo: mean 0.22 in the chain's view), and the near
+ * layer was nearly empty.
+ **/
+vec3 fdLayers( int vi )
+{
+    float m = photoDepthLod( vec2( 0.5 ), 12.0 );
+    float h = fdVar( vi, 12.0, 0.10, 0.18 );
+    return vec3( m - h, m + h, fdVar( vi, 14.0, 0.05, 0.10 ) );
+}
+
+/**  Frequency by depth: the photo's depth splits the picture softly into near, middle and far (fdLayers(): around the
+ * photo's mean depth); the bass (the kick's hit and the bass line under it) brightens the near layer, the mids
+ * raise the colour of the middle one (its chroma around its luma), the highs (the hi-hat and the high band) set
+ * fine round glints into the far one -- jittered points in cells of 1/110 .. 1/170 of the height, each with a size
+ * and a twinkle of its own, the field drifting with the music's advance (rule V8e: the jitter (+-0.2) and the
+ * radius (<= 0.24) keep every point inside its cell).
+ *
+ * @param col   The colour: the photo's own, at the pixel. (in)
+ * @param d     The photo's depth there, 0 far .. 1 near. (in)
+ * @param p     The centred screen position (screenP()). (in)
+ * @param tint  The photo's broad colour there (a coarse mip). (in)
+ * @param vi    The variant, 0..99. (in)
+ *
+ * @return
+ *   The colour with the music in its layers.
+ *
+ * Every signal is a continuous envelope; nothing moves.  Where neither photo has a depth map the colour stays as it is,
+ * and a cross-fade fades the look. The near layer's light and the glints carry the photo's own colour there brought up
+ * to full brightness (as the chain lab's glow does): a gain alone left a dark photo dark -- on the screening photo (the
+ * chain's picture at 18 of 255) the first version's glints added 0.2 of 255 to the far layer, and the eye saw none.
+ **/
+vec3 freqDepth( vec3 col, float d, vec2 p, vec3 tint, int vi )
+{
+    float have = interpolation * photoDepthAmt.x + ( 1.0 - interpolation ) * photoDepthAmt.y;
+    vec3  t = fdLayers( vi );
+    float w_n = smoothstep( t.y - t.z, t.y + t.z, d ) * have;
+    float w_f = ( 1.0 - smoothstep( t.x - t.z, t.x + t.z, d ) ) * have;
+    float w_m = max( have - w_n - w_f, 0.0 );
+    vec3  own = tint / max( max( tint.r, max( tint.g, tint.b ) ), 0.05 ); // tint is a coarse mip: no grain to lift
+    float bn = fdVar( vi, 16.0, 0.16, 0.32 ) * clamp( 0.7 * audioKick + 0.3 * clamp( audioBass, 0.0, 1.0 ), 0.0, 1.0 )
+               * w_n;
+    col = col * ( 1.0 + bn ) + 0.25 * bn * own;
+    float l = luma( col );
+    col = max( l + ( col - l ) * ( 1.0 + fdVar( vi, 17.0, 0.5, 1.1 ) * clamp( audioMid, 0.0, 1.0 ) * w_m ), 0.0 );
+    float hi = clamp( 0.8 * audioHat + 0.2 * audioHigh, 0.0, 1.0 );
+    vec2  g = p * fdVar( vi, 18.0, 110.0, 170.0 ) + vec2( 0.29, 0.13 ) * sceneAdvance;
+    vec2  gc = floor( g );
+    vec2  gf = fract( g ) - 0.5 - 0.4 * ( hash22( gc + 3.0 ) - 0.5 );
+    float gs = 0.6 + 0.4 * hash21( gc + 11.0 );
+    float pt = step( fdVar( vi, 19.0, 0.66, 0.80 ), hash21( gc + 29.0 ) )
+               * smoothstep( 0.24 * gs, 0.06 * gs, length( gf ) );
+    float tw = 0.55 + 0.45 * sin( 6.2831853 * hash21( gc + 7.0 ) + 1.1 * sceneAdvance );
+    float gl = fdVar( vi, 20.0, 1.2, 2.2 ) * hi * pt * tw * w_f;
+    return col * ( 1.0 + gl ) + 0.5 * gl * own;
+}
+
+
 // ---- the lab's walk ----
 /** Test pin of slot 0: 1 + the class to hold it on (0: the walk decides). */
 uniform float labPinA;
@@ -783,7 +916,10 @@ vec3 voiceRoles( vec3 col, vec2 p )
     return col;
 }
 
-float gPhD = 0.0; ///< the photo's depth at the look's photo lookup, 0 far .. 1 near (photoDepthLod)
+uniform float depthLook;  ///< 4: the subject anchor (plan M2) -- each photo is sampled around its own subject; 6: the
+                          ///< anchor and frequency by depth (plan P3); 0: the old look
+uniform float depthVar;   ///< the variant of look 6, 0..99: freqDepth()'s constants; 0 = the middle of every range
+float         gPhD = 0.0; ///< the photo's depth at the look's photo lookup, 0 far .. 1 near (photoDepthLod)
 /**  The scanner's moment at a place.
  *
  * @param kind  The scanner, 0..5: rows, columns, diagonal, radial, spiral, wavy rows. (in)
@@ -865,6 +1001,13 @@ vec3 stripLook( ivec4 k, ivec4 kv, vec2 p, float t, float sp, float sw )
     vec2  q = stripPath( k.y, kv.y, p, t + span * m );
     vec2  puv = q * 0.8 + 0.5;
     float plod = 0.5;
+    if ( depthLook > 3.5 )
+    { // the subject anchor (plan M2); without it the colour stays bit for bit
+        vec4 aq = imgDepthOff( puv, anchorOff( photoFocus.xy, photoSubject.y, photoDepthAmt.x ),
+                               anchorOff( photoFocus.zw, photoSubject.w, photoDepthAmt.y ), plod );
+        gPhD = aq.w;
+        return aq.rgb;
+    }
     gPhD = photoDepthLod( puv, plod ); // the depth where the colour is taken (26.11.2026)
     return imgLod( puv, plod );
 }
@@ -889,6 +1032,11 @@ void main()
             ws += gLabW[i];
         }
     }
-    photoDepthOut( dsum / max( ws, 1e-3 ) );
-    finish( voiceRoles( max( col / max( ws, 1e-3 ), 0.0 ), screenP() ) );
+    float ph_d = dsum / max( ws, 1e-3 );
+    photoDepthOut( ph_d );
+    col = max( col / max( ws, 1e-3 ), 0.0 );
+    if ( depthLook > 5.5 ) // look 6: the subject anchor and frequency by depth (plan P3, 27.11.2026)
+        col = freqDepth( col, ph_d, screenP(), imgLod( screenP() * 0.5 + 0.5, 6.0 ),
+                         int( clamp( depthVar, 0.0, 99.0 ) + 0.5 ) );
+    finish( voiceRoles( col, screenP() ) );
 }
