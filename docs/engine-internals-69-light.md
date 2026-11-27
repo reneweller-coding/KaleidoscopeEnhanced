@@ -100,13 +100,21 @@ white wall and a lamp give the same glow.  But most scenes cut their own output 
   highlight guard (`p98 * want <= 1`) work unchanged; only a NaN needed a guard (it would pick no defined bin).
   The limiter reads mips: `frameAt()` takes each texel at most 1 per channel and a NaN as black (one NaN would make
   its scale NaN for good).  That was not enough -- see the measure copy below.
-- *The readbacks* (every `glReadPixels`/`glGetTexImage`/`glCopyTexSubImage2D` in Source/, checked one by one):
-  the screenshot, the freeze shot and the web remote's preview (glwidget.cpp) read the default framebuffer, the
-  recorder (Recorder.cpp) and Spout read the presented picture, the video export (VideoExport.cpp) its own NV12
-  conversion of the presented picture -- all after Present.frag's final clamp, unchanged.  The mean colour
-  (PresentPass, the top mip, GL_FLOAT) is clamped to 0..1 on the CPU (with a NaN the clamp gives 0).  The CPU
-  limiter fallback (no compute) reads its mip as float: its texels are now clamped at 1 like the compute pass's.
-  The light-stats hook reads bytes or floats by the source's format.
+- *The readbacks* -- every `glReadPixels`, `glGetTexImage` and `glCopyTexSubImage2D` in Source/ (lines as of this
+  branch; the plan's "16" counted the comments that name them as well), one by one:
+
+  | where | reads | with the switch |
+  |---|---|---|
+  | glwidget.cpp:831, the web remote's preview | the default framebuffer (presented, 8 bit) | unchanged |
+  | glwidget.cpp:2000, the screenshot | the default framebuffer | unchanged |
+  | glwidget.cpp:2030, the freeze shot (snapshots) | the default framebuffer | unchanged |
+  | Recorder.cpp:633 (copy) and :1037 (PBO), the recorder | its own RGBA8 copy of the presented picture | unchanged |
+  | VideoExport.cpp:648, the video export | its NV12 conversion of the presented picture | unchanged |
+  | PresentPass.cpp:548, the mean colour (OSC, the guard) | the source's top mip as float | may hold > 1 or NaN: the CPU clamps to 0..1 (NaN gives 0) |
+  | PresentPass.cpp:660, the limiter without compute | its mip as float | now clamped at 1 per channel, like the compute pass |
+  | PresentPass.cpp:1112 / 1117, the light-stats hook | the source, bytes or floats by its format | both handled |
+
+  Spout sends the default framebuffer.  Everything after Present.frag's final clamp is 8 bit as before.
 
 - *The limiter needed a frame of its own* (Engine/LightMeasure.frag, `PresentPass::measureTexture()`).  The first
   flash test (below) showed the limiter acting far more with the switch than without: over ParticleTunnelFlight the
@@ -174,46 +182,64 @@ white wall and a lamp give the same glow.  But most scenes cut their own output 
 
 - *Which.*  From the L0 measurement the scenes whose light lies behind their final clamp (`unclamped`), in a small
   area -- lights, not surfaces: at least 0.2 % and at most 6 % of a typical frame above 1, at most 15 % in any frame,
-  and the glow at least 1.3 times as strong (`over_med` 0.002..0.06, `over_max` <= 0.15, `glow_gain` >= 1.3).  40 of
-  the 937 measured: 29 generated (lasers, light nets, sparks, bokeh, glowing rings and braids: LaserCausticLines,
-  SteelWoolSpiralSparks, BokehSphereGalaxy, MycenaGlowRings, LightCarouselRings ...) and 11 hand-written
-  (MayflyStreetLamps, VolcanicLightningAshColumn, HarmonicChangeLightning, WeatherProjectSun, the tears of wine's
-  pinch flashes ...).  No lab (none passes 1), no chain scene (none passes 1; and they belong to others).  The 27
-  scenes with more than 6 % of the frame above 1 (BioLuminescentTendrilTunnel 56 %, RelativisticKerrPlasmaDisk 28 %
-  ...) are left alone: that is a surface above white, and lifting it would make the frame glow.
+  and the glow at least 1.3 times as strong (`over_med` 0.002..0.06, `over_max` <= 0.15, `glow_gain` >= 1.3).  93 of
+  the 2,468 measured, in two batches (40 from the sample, 53 from the rest of the catalogue): 58 generated (lasers,
+  light nets, sparks, bokeh, glowing rings, braids and orbits: LaserCausticLines, SteelWoolSpiralSparks,
+  BokehSphereGalaxy, MycenaGlowRings, KuramotoRings, RetroReflectorBloom ...) and 35 hand-written (MayflyStreetLamps,
+  VolcanicLightningAshColumn, WeatherProjectSun, SolarEclipseTotality, OrbitalSunrise, EventHorizonSingularityPlunge,
+  the tears of wine's pinch flashes ...).  No lab (none passes 1), no chain scene (none passes 1; and they belong to
+  others), none that another agent's branch touches.  The 64 scenes with more than 6 % of the frame above 1
+  (BioLuminescentTendrilTunnel 56 %, RelativisticKerrPlasmaDisk 28 % ...) are left alone: that is a surface above
+  white, and lifting it would make the frame glow.
 - *How.*  Generated scenes get `//@light` in their source (Tools/scenegen/src); gen.py then writes the house finish
   with the clamp's upper bound at 3 instead of 1.  The finish's roll-off `t / (1 + 0.35 max)` passes 1 only where the
   scene's colour passes 1.54 -- its brightest light -- and reaches 2.86 at most, so everything the scene shows below
-  that stays exactly as before.  The hand-written ones get the same upper bound in their final clamp (8 of 11 have
-  the same roll-off before it; BioluminescentDeepSeaCombJelly, HyperbolicHoneycombTessellation and
-  HyperspaceKaleidoscopicMatrix are cut at 3).  An 8-bit target converts every value above 1 to 1 -- also before
+  that stays exactly as before.  The hand-written ones get the same upper bound in their final clamp (20 of 35 have
+  the same roll-off before it; the other 15 -- attractors, raymarched tunnels, a few kaleidoscopes -- are cut at 3,
+  and their surfaces stay below 1 because the measurement chose them by the small area above 1).  An 8-bit target converts every value above 1 to 1 -- also before
   blending -- so with the switch off the scene's output is the byte it was: no uniform, no second code path, and the
-  editor and the catalogue (8-bit) keep the old picture too.  28 of 29 generated scenes regenerated byte for byte
-  apart from the finish; TextureDelaunayLightNet's committed file had drifted from its generator (a library section
-  and a uniform less), so its two lines were changed by hand and the tag is in its source for the next regeneration.
+  editor and the catalogue (8-bit) keep the old picture too.  54 of 58 generated scenes regenerated byte for byte
+  apart from the finish; four committed files had drifted from their generator (TextureDelaunayLightNet,
+  KuramotoRings and TextureCausticCeiling a library section and a uniform less, HaarPyramidTiling a comment), so their
+  two lines were changed by hand and the tag is in their sources for the next regeneration.
 
-- *Switch off* (40 scenes, frozen, silent, the user's settings, against the same scenes rendered just before the
-  change with the same build).  The first render after the change: 28 byte-identical, 12 different -- 6 of the 8
-  scenes with a state field of their own (CounterpointBraids 3.18 of 255, RibbonGymnasticsNeon 0.85,
-  VortexColumnsDust 0.64 ... -- their forms stand a little elsewhere, not brighter) and 6 others by at most 0.08.  To
-  find out what did it, the 12 were rendered again, and with the OLD source put back for the length of a render: the
-  old source rendered now is byte-identical with the new source rendered now in 11 of 12; the first render after the
-  change differed from both (the driver's first compile of the changed source -- a repeat render agrees), and
-  ExBDriftCycloids and CounterpointBraids differ between the two sessions whatever the source.  The one real
-  difference: HyperspaceKaleidoscopicMatrix, reproducibly one JPEG block (mean 0.009, at most 9 of 255) -- the driver
-  compiles the changed clamp constant into slightly different arithmetic; with the old source it is byte-identical
-  again.  For the merge: a changed scene that differs in the full-catalogue comparison should be rendered once more
-  before it is judged.
-- *Switch on with the lift, against switch off* (`sheets/light/L2_off_vs_on_1.jpg`, `L2_off_vs_on_2.jpg`): 1.0..2.7
-  of 255 (MarangoniConvectionTearsOfWine 2.7, WeatherProjectSun 2.3, VolcanicLightningAshColumn 2.0 ...); against
-  switch on without the lift 1.1..2.7.  In a silent frozen frame the lights are dim -- much of their brightness is the
-  music's -- so the frames differ little; the cores no longer stand flat.  Surfaces do not change.
+- *Switch off* (frozen, silent, the user's settings, each batch against the same scenes rendered just before the
+  change with the same build).  First batch (40): 28 byte-identical at once; second batch (53, 56 entries): 36.  The
+  rest were rendered again -- with the OLD source put back for the length of a render, and with the new one, two to
+  five times over.  Many of these scenes are not reproducible from run to run: they come out in one of two frames
+  (QuantumSlipstream 4.3 of 255 apart, RetroReflectorBloom 0.22, CliffordAttractorSilkRibbons 0.17, the state-field
+  scenes CounterpointBraids 3.2 and RibbonGymnasticsNeon 0.85; most others one or a few JPEG blocks), and the old
+  source gives both as well as the new one.  For every scene of the second batch, each frame the new source rendered
+  was also rendered, byte for byte, by the old source in another run; in the first batch the same for 39 of 40.  The
+  one left: HyperspaceKaleidoscopicMatrix, one JPEG block (mean 0.009, at most 9 of 255) between old and new in two
+  renders each -- either the driver compiling the changed clamp constant into slightly different arithmetic, or the
+  same run-to-run variation not caught by four renders.  For the merge: a changed scene that differs in the
+  full-catalogue comparison should be rendered once more before it is judged; the run-to-run variation is the
+  catalogue's own.
+- *Against the common baseline* 2026-11-26-base (b87fcc34, the main checkout, the user's settings; checked at 07:25
+  when it held 1,566 entries): my switch-off sets with the user's settings -- L1 32 of 36 byte-identical (the rest:
+  Spaceship__6, BeeWaggleDance, CherenkovCascadeShower of the noise floor, and ChainLab2D 0.13); L2 first batch 12 of
+  12 for the before-set, the after-set 2 of 4 (HyperspaceKaleidoscopicMatrix 0.01, TextureDelaunayLightNet 0.003);
+  second batch 20 of 30 (QuantumSlipstream 4.3 and the other two-frame scenes; OrbitalSunrise 2.0 reads the time of
+  day, `dayPhase`; LightningStorm, an open scene, 13.8 -- its discharge is a GPU simulation).
+- *Switch on with the lift, against switch off* (sheets `sheets/light/L2_off_vs_on_1.jpg`, `L2_off_vs_on_2.jpg`
+  for the first batch, `L2_batch2_off_vs_on_1.jpg`, `_2.jpg` for the second): first batch 1.0..2.7 of 255
+  (MarangoniConvectionTearsOfWine 2.7, WeatherProjectSun 2.3, VolcanicLightningAshColumn 2.0 ...), second batch
+  1.1..3.4 apart from QuantumSlipstream (5.4, of which 4.3 is its run-to-run variation): PsychedelicReactionDiffusion
+  Wave 3.4, LyapunovSpaceBioLoom 3.2, FluidChladniKaleidoResonance 3.0, ThomasAttractorCosmicLabyrinth 2.6 (its two
+  light blobs keep their violet instead of going grey-white), RelativisticKelvinHelmholtzShear 2.6 (the bright ovals
+  keep a tint).  In a silent frozen frame the lights are dim -- much of their brightness is the music's -- so the
+  frames differ little; the cores no longer stand flat.  Surfaces do not change.
 - *With the music* (clips `sheets/light/clips/L2_*_off_left_on_right.mp4`, 20 s at 60 fps over the screening music,
   left off, right on; a frame at 9 s in `L2_clip_frames_9s.jpg`): the street lamps' cores keep their warm orange
   instead of clipping to white, the laser lines and the lightning gain a wider halo.  Flashes per second: LaserCaustic
   Lines 0.0 / 0.0, SteelWoolSpiralSparks 0.0 / 0.0, MayflyStreetLamps 0.0 / 0.0, VolcanicLightningAshColumn 0.5 /
   0.5; the limiter never acted (scale 1.000 throughout, no hazard), the exposure's median gain unchanged (1.05 / 1.01,
   1.51 / 1.51, 1.01 / 1.01, 1.02 / 1.01).  Mean luminance 0.023 -> 0.026, 0.023 -> 0.026, 0.027 -> 0.025, 0.066 -> 0.072.
+- *Screening* (`Tools/screen.py --scenes` the 93, 1080p over the screening music, once off and once on): 0 of 93
+  flagged either way (empty, frozen, strobe); the strobe measure median 1.89 -> 1.86, max 7.3 -> 7.5 (FusorStarMode;
+  the flag is at 12); white-clipped share max 1.3 % -> 1.3 %; median luma 0.027 -> 0.027; loud/quiet ratio median
+  1.29 -> 1.31.  Unremarkable, as the plan asks.
 - *GPU time* (`perf_labs`, 18 s live, median, off -> on with lift): LaserCausticLines 0.68 -> 0.85 ms,
   SteelWoolSpiralSparks 0.92 -> 1.07, MayflyStreetLamps 1.25 -> 1.38, VolcanicLightningAshColumn 0.54 -> 0.71 --
   +0.13..0.17 ms, the 16-bit targets and the measure pass (the lift itself costs nothing); 120 fps throughout.
