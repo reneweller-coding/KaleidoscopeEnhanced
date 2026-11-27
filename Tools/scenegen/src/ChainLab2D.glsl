@@ -28,6 +28,9 @@
  *   audioSwell      -> the relief light and the palette saturation (slow)
  *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
  *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
+ *   depthLook 6     -> frequency by depth (plan P3, 27.11.2026): the bass (audioKick, audioBass) brightens
+ *                      the photo's near layer, the mids (audioMid) raise the colour of its middle layer, the highs
+ *                      (audioHat, audioHigh) set fine round glints into its far layer; light and colour only
  *
  * Knobs: chainAP / chainBP / chainCP / chainDP (the transform of each stage and
  * its sub-variant -- rolled once per start, so the chain never switches while it
@@ -36,7 +39,7 @@
  * speed), detailP (texture sharpness), paletteP (photo colours / colour field), hueP.
  * chainPhotoOnly (chain_classes.PHOTO_ONLY, set since 17.10.2026): only the photo -- styleP and paletteP have no effect.
 //@params chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP
-//@audio audioSpread audioKick audioMode audioSwell
+//@audio audioSpread audioKick audioMode audioSwell audioBass audioMid audioHigh audioHat
 //@depth
 //@body
 float gT, gSpread, gRot, gMw;
@@ -471,7 +474,7 @@ vec2 chain(vec2 p)
 }
 
 // ---- depth looks (26.11.2026, plan T4, M2, M3): switched by depthLook, 0 = the old look, bit for bit ----
-uniform float depthLook;     // 0 off; 1 parallax before the fold, 2 depth cut, 3 depth wave, 4 subject anchor, 5 subject stays whole
+uniform float depthLook;     // 0 off; 1 parallax before the fold, 2 depth cut, 3 depth wave, 4 subject anchor, 5 subject stays whole, 6 frequency by depth
 uniform float depthVar;      // the look's variant 0..99: its constants; variant 0 = the middle of every range
 uniform vec2 photoMask;      // how well depth >= threshold outlines the subject of the photo in tex0 (x) / tex1 (y), 0..1
 
@@ -516,6 +519,22 @@ vec3 depthLookCol(int look, int vi, vec2 p, vec2 c, vec3 ph, float lod, inout fl
         vec4 r = imgDepthOff(c, s * o0, s * o1, lod);
         pd = r.w;
         return r.rgb;
+    }
+    if (look == 6) {                     // frequency by depth (plan P3, 27.11.2026): the music spread over the depth
+        // The depth splits the photo softly into near, middle and far around the photo's mean depth (fdLayers());
+        // the bass brightens the near layer, the mids raise the middle layer's colour, the highs set fine round glints
+        // into the far layer (freqDepth()).  A photo without a map keeps its colour (have = 0), and a cross-fade to or
+        // from one fades the look.  Light and colour only, on the photo's own colours: the frame never moves.
+        float have = interpolation * photoDepthAmt.x + (1.0 - interpolation) * photoDepthAmt.y;
+        vec3 t = fdLayers(vi);
+        // near, a slight size: the photo pulled toward its subject (or the centre) swells the near layer over what
+        // lies behind it -- with the slow swell and a fifth of the bass, at most 0.8..2.5 % (the rule for spatial
+        // scales: the swell, at most 0.2 of the bass); at rest the very colour of the chain
+        float sz = dv(vi, 15.0, 0.008, 0.025) * have * (0.8 * sw + 0.2 * clamp(audioBass, 0.0, 1.0));
+        vec4 r = imgDepthOff(c, (0.5 + o0 - c) * sz, (0.5 + o1 - c) * sz, lod);
+        float wS = smoothstep(t.y - t.z, t.y + t.z, r.w) * have;
+        pd = mix(pd, r.w, wS);
+        return freqDepth(mix(ph, r.rgb, wS), pd, p, imgLod(c, 5.0), vi);   // the glints shine in the photo's broad colour
     }
     // look 5, subject stays whole (M3): inside the subject's soft mask the photo unfolded, around it the chain
     // folding around the subject; the mask's edge breathes with the swell.

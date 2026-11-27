@@ -3530,7 +3530,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
-    <float name="depthLook" minValue="-1.17" maxValue="5.49"></float>
+    <float name="depthLook" minValue="-1.51" maxValue="6.49"></float>
     <float name="depthVar" minValue="0" maxValue="99.49"></float>
   </TextureShader>
   <CombineShader file="..\\FX\\FxDeformationFlow.frag" type="normal" mood="calm,dreamy" probability="0.003" complexity="5">

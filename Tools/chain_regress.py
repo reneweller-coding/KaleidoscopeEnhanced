@@ -93,6 +93,8 @@ def main():
     ap.add_argument("--photo", default=None, help="the fixed photo (default: the first in Images/)")
     ap.add_argument("--wait", type=float, default=22.0,
                     help="seconds before the screenshot (the exposure settles on the frozen frame: ~20 s)")
+    ap.add_argument("--pin", action="append", default=[], metavar="NAME=VALUE",
+                    help="pin one more knob of the entry in every run, e.g. --pin depthLook=6")
     ap.add_argument("--keep", help="keep the screenshots in this folder")
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
@@ -110,6 +112,7 @@ def main():
             pins = {k: "%.4f" % ((i % n + 0.5) / n) for k, n in N.items()}
             pins.update({"morphP": "0", "orderP": "%.4f" % ((i * 7 % 24 + 0.5) / 24), "tiltP": "%.2f" % (0.3 + 0.7 * (i % 3) / 2),
                          "styleP": "%.4f" % ((i % 5 + 0.5) / 5), "glowP": "0", "speedP": "0.5", "detailP": "0.6", "paletteP": "0.4"})
+            pins.update(dict(x.split("=", 1) for x in a.pin))
             # the class the shader picks from the pinned knob: pickStage(x, n) = min(floor(x * n), n - 1)
             names = " | ".join(cc.CLASSES[k][min(int(float(pins[k]) * n), n - 1)] or "none" for k, n in N.items())
             ra, rb = os.path.join(work, "run_%02d.png" % i), os.path.join(work, "uber_%02d.png" % i)

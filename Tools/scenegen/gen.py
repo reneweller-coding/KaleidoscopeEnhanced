@@ -292,6 +292,92 @@ vec2 anchorOff(vec2 f, float conf, float amt)
 }
 """
 
+# Frequency by depth (27.11.2026, plan P3; docs/engine-internals-71-p3.md): the music spread over the photo's depth --
+# the bass in the near layer, the mids in the middle one, the highs in the far one.  Light and colour only, on the
+# photo's own colours.  Appended for sources that call freqDepth( (with DEPTH_LIB, which they need); the uniforms it
+# reads are declared by assemble() (FREQ_AUDIO).  ChainLab2D's depth look 6 adds a slight size of the near layer at
+# its photo lookup (with fdLayers()); the labs use the light alone.
+FREQ_AUDIO = ["audioKick", "audioBass", "audioMid", "audioHigh", "audioHat"]
+FREQ_LIB = r"""
+// ---- frequency by depth (plan P3, 27.11.2026) ----
+/**  A constant of the frequency-by-depth look, set by its variant inside a range (variant 0: the middle of every
+ * range; the rule of the variant round of 23.10.2026).  The same formula as ChainLab2D's dv().
+ *
+ * @param vi  The variant, 0..99. (in)
+ * @param j   The constant's number. (in)
+ * @param lo  The range's low end. (in)
+ * @param hi  The range's high end. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float fdVar(int vi, float j, float lo, float hi)
+{
+    return vi == 0 ? 0.5 * (lo + hi) : mix(lo, hi, fract(sin(float(vi) * 12.9898 + j * 78.233 + 3.7) * 43758.5453));
+}
+
+/**  The layers of frequency by depth: where far turns into middle (x) and middle into near (y), and the softness of
+ * both edges (z) -- around the photos' mean depth (the depth map's 1 x 1 mip, cross-faded like the colour).  Fixed
+ * thirds of the depth missed the photos: the maps are stretched between their 2nd and 98th percentile, but a photo
+ * that recedes keeps most of its pixels far (the screening photo: mean 0.22 in the chain's view), and the near layer
+ * was nearly empty.
+ *
+ * @param vi  The variant, 0..99. (in)
+ *
+ * @return
+ *   The two edges and their half width.
+ **/
+vec3 fdLayers(int vi)
+{
+    float m = photoDepthLod(vec2(0.5), 12.0);
+    float h = fdVar(vi, 12.0, 0.10, 0.18);
+    return vec3(m - h, m + h, fdVar(vi, 14.0, 0.05, 0.10));
+}
+
+/**  Frequency by depth: the photo's depth splits the picture softly into near, middle and far (fdLayers(): around
+ * the photo's mean depth); the bass (the kick's hit and the bass line under it)
+ * brightens the near layer, the mids raise the colour of the middle one (its chroma around its luma), the highs (the
+ * hi-hat and the high band) set fine round glints into the far one -- jittered points in cells of 1/110 .. 1/170 of
+ * the height, each with a size and a twinkle of its own, the field drifting with the music's advance (rule V8e: the
+ * jitter (+-0.2) and the radius (<= 0.24) keep every point inside its cell).  Every signal is a continuous envelope;
+ * nothing moves.  Where neither photo has a depth map the colour stays as it is, and a cross-fade fades the look.
+ * The near layer's light and the glints carry the photo's own colour there brought up to full brightness (as the
+ * chain lab's glow does): a gain alone left a dark photo dark -- on the screening photo (the chain's picture at 18 of
+ * 255) the first version's glints added 0.2 of 255 to the far layer, and the eye saw none.
+ *
+ * @param col   The colour: the photo's own, at the pixel. (in)
+ * @param d     The photo's depth there, 0 far .. 1 near. (in)
+ * @param p     The centred screen position (screenP()). (in)
+ * @param tint  The photo's broad colour there (a coarse mip). (in)
+ * @param vi    The variant, 0..99. (in)
+ *
+ * @return
+ *   The colour with the music in its layers.
+ **/
+vec3 freqDepth(vec3 col, float d, vec2 p, vec3 tint, int vi)
+{
+    float have = interpolation * photoDepthAmt.x + (1.0 - interpolation) * photoDepthAmt.y;
+    vec3 t = fdLayers(vi);
+    float wN = smoothstep(t.y - t.z, t.y + t.z, d) * have;
+    float wF = (1.0 - smoothstep(t.x - t.z, t.x + t.z, d)) * have;
+    float wM = max(have - wN - wF, 0.0);
+    vec3 own = tint / max(max(tint.r, max(tint.g, tint.b)), 0.05);   // tint is a coarse mip: no grain to lift
+    float bn = fdVar(vi, 16.0, 0.16, 0.32) * clamp(0.7 * audioKick + 0.3 * clamp(audioBass, 0.0, 1.0), 0.0, 1.0) * wN;
+    col = col * (1.0 + bn) + 0.25 * bn * own;
+    float l = luma(col);
+    col = max(l + (col - l) * (1.0 + fdVar(vi, 17.0, 0.5, 1.1) * clamp(audioMid, 0.0, 1.0) * wM), 0.0);
+    float hi = clamp(0.8 * audioHat + 0.2 * audioHigh, 0.0, 1.0);
+    vec2 g = p * fdVar(vi, 18.0, 110.0, 170.0) + vec2(0.29, 0.13) * sceneAdvance;
+    vec2 gc = floor(g);
+    vec2 gf = fract(g) - 0.5 - 0.4 * (hash22(gc + 3.0) - 0.5);
+    float gs = 0.6 + 0.4 * hash21(gc + 11.0);
+    float pt = step(fdVar(vi, 19.0, 0.66, 0.80), hash21(gc + 29.0)) * smoothstep(0.24 * gs, 0.06 * gs, length(gf));
+    float tw = 0.55 + 0.45 * sin(6.2831853 * hash21(gc + 7.0) + 1.1 * sceneAdvance);
+    float gl = fdVar(vi, 20.0, 1.2, 2.2) * hi * pt * tw * wF;
+    return col * (1.0 + gl) + 0.5 * gl * own;
+}
+"""
+
 # The scene's colour family (22.10.2026): one wandering hue from the photo and its neighbours, instead of a different
 # colour for every cell -- the list of 22.10. asks for "not too colourful" (docs/proposals-2026-10-22-abstrakt-400.md,
 # guideline 9).  Appended for sources that call famHue(.
@@ -3726,6 +3812,8 @@ def assemble(name):
         audio += [a for a in ("audioBeatPhase", "audioBarPhase", "audioPhrasePos", "audioSectionId", "audioSectionPrev", "audioSectionAge") if a not in audio]
     if re.search(r"\bvoiceRoles\s*\(", src):
         audio += [a for a in VOICE_AUDIO if a not in audio]
+    if re.search(r"\bfreqDepth\s*\(", src):
+        audio += [a for a in FREQ_AUDIO if a not in audio]
     for a in BASE_AUDIO + [a for a in audio if a not in BASE_AUDIO]:
         m = re.match(r"(\w+)\[(\d+)\]", a)
         if a in VEC3_AUDIO:
@@ -3768,6 +3856,8 @@ def assemble(name):
         out.append(DEPTH_LIB)
     if anchor:
         out.append(ANCHOR_LIB)
+    if depth and re.search(r"\bfreqDepth\s*\(", src):
+        out.append(FREQ_LIB)
     if re.search(r"\bfamHue\s*\(", src):
         out.append(FAMILY_LIB)
     if re.search(r"\blabWalk\s*\(", src):
