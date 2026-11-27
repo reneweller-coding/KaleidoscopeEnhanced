@@ -370,11 +370,12 @@ void main()
 
     if ( haloP > 0.0 ) // 27.11.2026, the halo: the far side of a depth edge glows, the near side gets a thin rim
     {
-        vec2 h = mix( haloAt( texDepth1, uv, depthValid.y, depthPhoto.y ), haloAt( texDepth0, uv, depthValid.x, depthPhoto.x ),
-                      clamp( interpolation, 0.0, 1.0 ) );
+        vec2 h = mix( haloAt( texDepth1, uv, depthValid.y, depthPhoto.y ),
+                      haloAt( texDepth0, uv, depthValid.x, depthPhoto.x ), clamp( interpolation, 0.0, 1.0 ) );
         // The strength follows the swell (seconds), never the beat.  Screen-blended in the frame's own colour lifted
         // toward a warm white: what is added shrinks with what is there, so nothing clips to a flat white.
-        float amt = min( haloP, 2.0 ) * HaloGain * ( 0.3 + 0.7 * clamp( audioSwell, 0.0, 1.0 ) ) * ( h.x + HaloNear * h.y );
+        float amt = min( haloP, 2.0 ) * HaloGain * ( 0.3 + 0.7 * clamp( audioSwell, 0.0, 1.0 ) )
+                    * ( h.x + HaloNear * h.y );
         vec3  lifted = mix( clamp( col, 0.0, 1.0 ), HaloWarm, HaloLift );
         col += lifted * min( amt, 1.0 ) * ( 1.0 - clamp( col, 0.0, 1.0 ) );
     }
