@@ -160,7 +160,7 @@ static int dumpFeatures( const QString &wav, const QString &csv, int every )
         "chroma,chroma_c,hcdf,kick_c,onset_c,beat_c,buildup,swell_c,sections,section_id,known,drops,advance,"
         "rotphase,flip,ambient,phrase_pos,keyclarity,roughness,sharpness,novelty,valence_raw,sec_thr,spread_c,harm_c,harm_adv,"
         "pitch,melody,melody_conf,melody_note,tempo_ac,tempo_ac_conf,tempo_kick,tempo_kick_expl,"
-        "beat_phase,beat_phase_c,beats,snare_c,hat_c,stereo_bal,bar_phase_c\n",
+        "beat_phase,beat_phase_c,beats,snare_c,hat_c,stereo_bal,bar_phase_c,drop_c,breath\n",
         out );
     // One analysis block is 480 samples (analyzeWavToTimeline): its length follows the file's sample rate.
     unsigned int rate = 48000;
@@ -196,7 +196,7 @@ static int dumpFeatures( const QString &wav, const QString &csv, int every )
             out,
             "%.2f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.1f,%.4f,%.4f,%.4f,%.4f,%.3f,%.4f,%.4f,%.3f,%.3f,%.3f,%.3f,"
             "%.3f,%.3f,%d,%d,%d,%d,%.4f,%.4f,%.0f,%.3f,%.3f,%.3f,%.3f,%.3f,%.4f,%.3f,%.3f,%.4f,%.3f,%.4f,"
-            "%.4f,%.4f,%.3f,%.4f,%.1f,%.3f,%.1f,%.3f,%.4f,%.4f,%u,%.3f,%.3f,%.4f,%.4f\n",
+            "%.4f,%.4f,%.3f,%.4f,%.1f,%.3f,%.1f,%.3f,%.4f,%.4f,%u,%.3f,%.3f,%.4f,%.4f,%.4f,%.4f\n",
             ctx.globalTime, a.musicPresence, cond.gate(), a.overallLevel, c.overallLevel, a.arousal, c.arousal,
             c.valence, a.rhythmStrength, a.estimatedBPM > 0.004f ? 40.f + 160.f * a.estimatedBPM : 0.f, a.spectralFlux,
             c.spectralFlux, a.spectralSpread, a.spectralCentroid, a.musicalMode, a.chromaHue, c.chromaHue,
@@ -205,7 +205,8 @@ static int dumpFeatures( const QString &wav, const QString &csv, int every )
             a.ambientFactor, c.phrasePos, a.keyClarity, a.roughness, a.sharpness, a.sectionNovelty, a.valence,
             a.sectionThreshold, c.spectralSpread, c.harmonicChange, c.harmAdvance, a.dominantPitch, a.melodyPitch,
             a.melodyConf, a.melodyNote, a.tempoAc, a.tempoAcConf, a.tempoKick, a.tempoKickExplained, a.beatPhase,
-            c.beatPhase, static_cast<unsigned>( a.beatCount ), c.onsetSnare, c.onsetHat, c.stereoBalance, c.barPhase );
+            c.beatPhase, static_cast<unsigned>( a.beatCount ), c.onsetSnare, c.onsetHat, c.stereoBalance, c.barPhase,
+            c.dropPulse, cond.breath() );
     }
     fclose( out );
     fprintf( stderr, "features: %d rows -> %s\n", static_cast<int>( ( tl.size() + every - 1 ) / every ),

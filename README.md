@@ -627,6 +627,13 @@ On the score-cued demos it marks the EDM build-ups far better than the old one (
 falling, and reads low in the grooves), but not every demo improves, so the old one stays the default.
 `KALEIDO_OLD_BUILDUP=0` publishes the new one, `1` the old one. Details: docs/engine-internals-71-buildup.md.
 
+### The held breath at a drop
+
+In a build-up the whole picture holds its breath: it pales, dims a little and darkens toward the edges. Since
+27.11.2026 the drop lets it go a quarter to half a second after the hit, together with the depth effects' tension
+(before, it waited until the build-up had died away, a second or more). `KALEIDO_BREATH_DROP=0` brings back the old
+breath for one run (for comparisons). Details: docs/engine-internals-71-fixes.md.
+
 ---
 
 ## Stereo 3D in a headset

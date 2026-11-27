@@ -13,8 +13,9 @@
  *
  *  @author René Weller
  */
-// @hdrcap 1.2  (27.11.2026: with 16-bit intermediates the host keeps this frame at most 1.2 -- its open light
-//   pulsed through the glow, 0.5 -> 2.5 flashes a second; docs/engine-internals-70-defaults.md)
+// @hdrcap 1.0  (27.11.2026: with 16-bit intermediates the host keeps this frame at most 1.0 -- its open light
+//   pulsed through the glow, 0.5 -> 2.5 flashes a second, still 1.0-1.5 at a cap of 1.2;
+//   docs/engine-internals-70-defaults.md, docs/engine-internals-71-fixes.md)
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;        ///< Position (from the vertex stage).

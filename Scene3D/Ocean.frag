@@ -152,7 +152,9 @@ void main()
     vec3 R = reflect( -V, n );
     vec2 sky_uv = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5,
                         clamp( R.y, 0.0, 1.0 ) );
-    vec3 sky = texture( tex0, fract( sky_uv ) ).rgb;
+    // Both photos, cross-faded like img(): tex0 alone jumped at the end of every photo fade (27.11.2026).
+    vec3 sky = interpolation * texture( tex0, fract( sky_uv ) ).rgb
+               + ( 1.0 - interpolation ) * texture( tex1, fract( sky_uv ) ).rgb;
     if ( envP > 0.0 )
         sky = envReflect( R, 0.12 ); // the photo environment (patch_env3d.py): no seam, both photos
     sky = mix( vec3( dot( sky, vec3( 0.33 ) ) ), sky, 0.55 ) * 0.75 + 0.03;

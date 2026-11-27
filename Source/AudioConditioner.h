@@ -211,10 +211,11 @@ public:
     {
         return m_echoOverride;
     }
-    /**  Slewed "breath-hold" amount (0..1), driven by the upper half of build-up.
+    /**  Slewed "breath-hold" amount (0..1), driven by the upper half of build-up and let go at a drop.
      *
      * @return
-     *   Slewed "breath-hold" amount (0..1), driven by the upper half of build-up.
+     *   Slewed "breath-hold" amount (0..1), driven by the upper half of build-up; a drop releases it with the depth
+     *   effects' tension-arc envelope (0.25-0.5 s after the hit).
      **/
     float breath() const
     {
