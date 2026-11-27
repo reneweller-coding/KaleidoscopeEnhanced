@@ -356,11 +356,14 @@ float reliefH(vec3 fq, vec3 n, float lod)
 }
 """
 MAIN = MAIN.replace("void main()", RELIEF + "\nvoid main()", 1)
-# The 3D chain scenes end in finish(voiceRoles(col, p)) since 26.11.2026 (the voices' roles, gen.py VOICE_LIB): the
-# afterglow goes under the voices' light, so a hit lights the frame it falls on.
+# The 3D chain scenes end in finish(voiceRoles(col, p)) since 26.11.2026 (the voices' roles, gen.py VOICE_LIB).  In
+# the lab the voices go onto col itself: Engine/ChainPass/Final_ChainLab3D.frag ends in a finish(col) of its own
+# (make_chainpass.py, write_3d), which would drop a role applied only inside the call.
 FIN = "finish(voiceRoles(col, p));" if "finish(voiceRoles(col, p));" in MAIN else "finish(col);"
 assert MAIN.rstrip().endswith(FIN + "\n}") or MAIN.rstrip().endswith(FIN + "\r\n}")
-MAIN = MAIN[:MAIN.rindex(FIN)] + FIN.replace("(col", "(chainAfterglow(col)", 1) + MAIN[MAIN.rindex(FIN) + len(FIN):]
+LAB_FIN = ("col = voiceRoles(col, screenP());\n    finish(chainAfterglow(col));" if "voiceRoles" in FIN
+           else "finish(chainAfterglow(col));")
+MAIN = MAIN[:MAIN.rindex(FIN)] + LAB_FIN + MAIN[MAIN.rindex(FIN) + len(FIN):]
 MAIN = MAIN.replace("        vec3 tex = colour3(fp, n, lod, ", """        vec3 nGeo = n;                                          // texture on the geometric normal, light on the bumped one
         if (!chainPhotoOnly && reliefP > 0.3) {                 // a knob: every pixel takes the same branch
             vec3 t1 = normalize(cross(n, abs(n.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0))), t2 = cross(n, t1);

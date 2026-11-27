@@ -823,5 +823,8 @@ void main()
         vec3 sc = mix(surf + rimC * fres * (chainPhotoOnly ? 0.0 : 0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.12 * ao, smoothstep(0.5, 1.0, st));
         col = mix(fogC, sc, exp(-t * (0.09 + 0.04 * swell)));
     }
-    finish(voiceRoles(chainAfterglow(col), screenP()));
+    // the voices on col itself: Engine/ChainPass/Final_ChainLab3D.frag ends in a finish(col) of its own
+    // (make_chainpass.py, write_3d), and a role applied only inside this call would not reach the app
+    col = voiceRoles(col, screenP());
+    finish(chainAfterglow(col));
 }
