@@ -59,6 +59,7 @@ lights.*
 
 - [Quick start](#quick-start)
 - [Extra content: photos and 3D models](#extra-content-photos-and-3d-models)
+  - [Depth maps for the photos](#depth-maps-for-the-photos)
 - [Controls](#controls)
 - [Mood detection, and OSC output for VJ tools](#mood-detection-and-osc-output-for-vj-tools)
   - [Score cues: letting a generator say where the bars are](#score-cues-letting-a-generator-say-where-the-bars-are)
@@ -144,6 +145,13 @@ What actually suits this program — format, tone, contrast, composition — is
 written down in **[docs/photo-set-spec.md](docs/photo-set-spec.md)**, with a
 checker that scores any folder against it (`Tools/check_image_set.py`).
 
+Building the packs yourself, from folders you have filled:
+
+```powershell
+.\Tools\make_image_pack.ps1
+.\Tools\make_model_pack.ps1
+```
+
 ### Depth maps for the photos
 
 Since 26.11.2026 a photo can bring a **depth map**: a grey picture that says for every point how near it is
@@ -159,7 +167,7 @@ What the depth does in the picture:
   gliding against each other inside the fold, the far layer folded once more, bands of light running from near to
   far, the fold centred on the photo's subject, the subject kept whole while the kaleidoscope folds around it, and
   frequency by depth -- the bass brightens the near layer, the mids colour the middle, the hi-hat sets glints into
-  the far one. TimeChainLab and MirrorBilliardLab centre their fold on the subject.
+  the far one. TimeChainLab and MirrorBilliardLab anchor on the photo's subject.
 - **Depth effects on photo scenes.** The five overlays that work on depth (fog, depth of field, sun shafts, rim
   light, ambient occlusion), the 2.5D parallax and the stereo output take the photo's depth where a scene passes
   it on -- ChainLab2D, nine more labs and the Chain scenes do.
@@ -180,7 +188,7 @@ them have relief, the other 559 are flat by the table and stay without depth. Th
 only -- for that pack, and for your own photos, make the maps yourself.
 
 **Maps for your own photos:** `Tools/depth_maps.py` makes them, in a Python environment of its own (the exact
-versions and the steps are in `Tools/depth_maps_requirements.txt`; it wants a GPU with CUDA for the model):
+versions and the steps are in `Tools/depth_maps_requirements.txt`; it runs the model on the GPU where torch finds CUDA, else on the CPU):
 
 ```powershell
 uv venv depthenv --python 3.12
@@ -208,13 +216,6 @@ chooses the photos by mood alone, as before. For people who edit presets: the kn
 [docs/kettenlabor-erklaert.md](docs/kettenlabor-erklaert.md) (the labs' depth looks) and in
 [Tools/SHADER_AUTHORING.md](Tools/SHADER_AUTHORING.md), V15 (both in German); in every one of them 0 is the
 picture as it was.
-
-Building the packs yourself, from folders you have filled:
-
-```powershell
-.\Tools\make_image_pack.ps1
-.\Tools\make_model_pack.ps1
-```
 
 ---
 

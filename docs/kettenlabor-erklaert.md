@@ -651,7 +651,7 @@ der Shader nimmt oberhalb von 0,5 `int( x + 0.5 )` -- Look 0 also in etwa 25 % d
 12,5 %; `depthVar` 0..99,49. TimeChainLab und MirrorBilliardLab haben nur `depthLook` (2,83..5,49): über 3,5 der
 Motiv-Anker (etwa 75 %), darunter aus; über 5,5 käme dort die Frequenz nach Tiefe dazu, die Presets würfeln das
 nicht. Einen Look festhalten: im Preset-Eintrag `minValue` = `maxValue`, für einen Probelauf
-`--expr depthLook=6,depthVar=0`.
+`--expr depthLook=6 --expr depthVar=0`.
 
 Zum Bild gehören außerdem: die Fotowahl (eine Szene, die die Tiefe nutzt, bekommt bevorzugt ein Foto mit Relief;
 `KALEIDO_PHOTO_BY_DEPTH=0` schaltet das ab) und der Spannungsbogen der Tiefen-Effekte (`arcP`, siehe
