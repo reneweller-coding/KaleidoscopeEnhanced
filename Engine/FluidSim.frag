@@ -91,13 +91,15 @@ float psi( vec2 p )
 }
 
 /**  The photos' relief at a coordinate: nearness (1 = near, 0 = far) from the photos' alpha, cross-faded like the
- *   colour and weighted per slot by photoDepthAmt -- 0 for a photo without a map, so its slot adds nothing and a
- *   photo change fades the landscape instead of switching it.  A coarse mip level: the map is 8 bit and 512 wide.
+ * colour and weighted per slot by photoDepthAmt -- 0 for a photo without a map, so its slot adds nothing and a
+ * photo change fades the landscape instead of switching it.
  *
  * @param uv  Coordinate in the photo, 0..1. (in)
  *
  * @return
  *   The weighted nearness, 0..1.
+ *
+ * A coarse mip level: the map is 8 bit and 512 wide.
  **/
 float relief( vec2 uv )
 {
