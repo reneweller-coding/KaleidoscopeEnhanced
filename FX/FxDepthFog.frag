@@ -11,7 +11,8 @@
  *
  *  Height falloff gives the fog a layer with a surface rather than a
  *  uniform fill; the sun's direction and colour drift with dayPhase and the
- *  harmonic hue.
+ *  harmonic hue.  A 2D scene that passes the photo's depth on (26.11.2026,
+ *  depthPhoto) gets the same haze with thinner air (PhotoDensity).
  *    interpolation -> cross-fades the two fogged scene layers
  *    audioSubBass  -> thickens the fog density and widens the forward-scatter halo
  *    audioKick     -> flashes the sun colour brighter
@@ -48,6 +49,9 @@ uniform vec2      depthValid;    ///< 1 where texDepth0 (x) and texDepth1 (y) ho
 uniform vec2      nearFar;       ///< Near and far clip distances.
 uniform float     tanHalfFov;    ///< Tangent of half the vertical field of view of the 3D scene.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      depthPhoto;    ///< 1 where texDepth0 (x) / texDepth1 (y) hold a photo's depth (a 2D scene), else 0.
+
+const float PhotoDensity = 0.7; ///< The air's density on a photo, relative to a room (26.11.2026).
 
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioBeat;      ///< Beat envelope, 0..1.
@@ -111,16 +115,18 @@ float phaseHG( float cosT, float g )
  * @param sunDir  Direction to the sun. (in)
  * @param sunCol  Colour of the sun. (in)
  * @param airCol  Colour of the air. (in)
- * @param valid   1 where the depth buffer is valid, else 0. (in)
+ * @param valid   1 where the depth buffer is valid, else 0; between, the fog fades in (a photo with a map only on
+ *                one side of a photo cross-fade). (in)
+ * @param ph      1 where the depth is a photo's (a 2D scene): thinner air. (in)
  *
  * @return
  *   The colour (RGB).
  **/
 vec3 fogged( sampler2D src, sampler2D dep, vec2 uv, vec3 sunDir, vec3 sunCol,
-             vec3 airCol, float valid )
+             vec3 airCol, float valid, float ph )
 {
     vec3 c = texture( src, uv ).rgb;
-    if ( valid < 0.5 )
+    if ( valid <= 0.0 )
         return c;
 
     float z = linearise( texture( dep, uv ).r );
@@ -137,6 +143,8 @@ vec3 fogged( sampler2D src, sampler2D dep, vec2 uv, vec3 sunDir, vec3 sunCol,
     float h_fall = exp( -max( y, 0.0 ) * ( 0.045 * heightP ) );
 
     float density = densityP * ( 0.9 + 0.6 * audioSubBass ) * h_fall;
+    if ( ph > 0.5 ) // a photo is no room: the haze stays a hint in its far parts
+        density *= PhotoDensity;
     float ext = 1.0 - exp( -z * density * 0.0055 );
     ext = clamp( ext, 0.0, 1.0 );
 
@@ -155,6 +163,8 @@ vec3 fogged( sampler2D src, sampler2D dep, vec2 uv, vec3 sunDir, vec3 sunCol,
 
     vec3 air = airCol + sunCol * in_scatter * ( 0.35 + 1.5 * glowP );
 
+    if ( valid < 1.0 )
+        ext *= valid;
     return mix( c, air, ext );
 }
 
@@ -176,8 +186,8 @@ void main()
     vec3 airCol = mix( vec3( 0.045, 0.060, 0.095 ), vec3( 0.16, 0.20, 0.28 ),
                        0.3 + 0.5 * audioAmbient );
 
-    vec3 a = fogged( tex0, texDepth0, uv, sunDir, sunCol, airCol, depthValid.x );
-    vec3 b = fogged( tex1, texDepth1, uv, sunDir, sunCol, airCol, depthValid.y );
+    vec3 a = fogged( tex0, texDepth0, uv, sunDir, sunCol, airCol, depthValid.x, depthPhoto.x );
+    vec3 b = fogged( tex1, texDepth1, uv, sunDir, sunCol, airCol, depthValid.y, depthPhoto.y );
     vec3 col = mix( b, a, clamp( interpolation, 0.0, 1.0 ) );
 
     col *= 1.0 + 0.12 * audioBeat;

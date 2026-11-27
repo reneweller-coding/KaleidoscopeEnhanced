@@ -3963,6 +3963,19 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
         pin.depthPar = m_trailDepth3D;
         pin.nearZ = EffectShader::SceneNear;
         pin.farZ = EffectShader::SceneFar;
+        // The photo's depth (plan T3): a 2D scene with `// @depth` on screen, as real as its photos have maps -- eased
+        // in and out on the same 2.5/s ramp as the 3D parallax.  Its parallax is small (PhotoParallax) and moves only
+        // with the existing camera drift (camOff; none with calmMotion); the stereo takes the real depth instead of
+        // the brightness guess.
+        {
+            static const float PhotoParallax = 0.35f;
+            const float        up = full_src ? 0.f : EffectShader::M_DepthPhoto[0] * EffectShader::M_DepthValid[0];
+            m_photoDepthUp = slewToward( m_photoDepthUp, up, 2.5f, dtWall );
+            pin.depthParPhoto = PhotoParallax * m_photoDepthUp;
+            pin.stereoPhoto = m_photoDepthUp;
+            pin.photoWin[0] = EffectShader::windowDepth( EffectShader::M_PhotoDepthDist[0] );
+            pin.photoWin[1] = EffectShader::windowDepth( EffectShader::M_PhotoDepthDist[1] );
+        }
         m_present.run( pin );
     }
 }

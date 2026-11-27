@@ -120,6 +120,9 @@ uniform float     depthPar;      ///< parallax strength (the scene's slewed 3D-n
 uniform vec2      nearFar2;      ///< clip planes for the linearisation
 uniform float     oldHue;        ///< 1 = the harmony drift rotates RGB about the grey axis as before 26.11.2026
                                  ///< (KALEIDO_OLD_HUE=1, for comparisons); 0 = OKLab at constant lightness
+uniform float     depthParPhoto; ///< parallax strength on a photo's depth (a 2D scene with @depth; slewed, 0 = none)
+uniform float     stereoPhoto;   ///< share of the photo's real depth in the stereo depth (slewed, 0 = the old guess)
+uniform vec2      photoDepthWin; ///< window depth of the photo's near end (x, depth 1) and far end (y, depth 0)
 
 /**  Pseudo-random number 0..1 from a 2D point.
  *
@@ -334,6 +337,19 @@ float coneLight( vec2 p, vec2 origin, vec2 dir, float spread, float reach )
     return across * along;
 }
 
+/**  The photo's depth in the active scene's depth buffer (a 2D scene that passes it on, `// @depth`).
+ *
+ * @param puv  Coordinate in the frame. (in)
+ *
+ * @return
+ *   The depth, 0 far .. 1 near (the window depths photoDepthWin mapped back).
+ **/
+float photoDepthAt( vec2 puv )
+{
+    float z = texture( sceneDepth, clamp( puv, 0.0, 1.0 ) ).r;
+    return clamp( ( z - photoDepthWin.y ) / ( photoDepthWin.x - photoDepthWin.y ), 0.0, 1.0 );
+}
+
 /**  Pseudo-depth for the stereoscopic reprojection: smoothed brightness (the blurred bloom buffer doubles as a depth
  * cue) pops bright structures toward the viewer; the radial term sinks the tunnel centre behind the screen.
  *
@@ -348,8 +364,12 @@ float stereoDepthAt( vec2 puv, vec2 cuv )
     float bl = ( useBloom > 0.5 )
                    ? dot( texture( bloomTex, puv ).rgb, vec3( 0.299, 0.587, 0.114 ) )
                    : dot( texture( tex, puv, 4.0 ).rgb, vec3( 0.299, 0.587, 0.114 ) );
-    return clamp( bl * 1.4, 0.0, 1.0 ) * 0.7
-           + clamp( length( cuv ) * 1.5, 0.0, 1.0 ) * 0.3;
+    float guess = clamp( bl * 1.4, 0.0, 1.0 ) * 0.7
+                  + clamp( length( cuv ) * 1.5, 0.0, 1.0 ) * 0.3;
+    // A 2D scene that passes the photo's depth on (26.11.2026): its real depth, 0 far .. 1 near, in place of the guess.
+    if ( stereoPhoto > 0.001 )
+        guess = mix( guess, photoDepthAt( puv ), stereoPhoto );
+    return guess;
 }
 
 /**  Scene grade looks: 1 faded (most colour gone, blacks lifted like old print), 2 grey (a cool black-and-white), 3
@@ -431,6 +451,10 @@ void main()
         float nearness = 1.0 - clamp( ( lin - nearFar2.x ) / ( nearFar2.y - nearFar2.x ), 0.0, 1.0 );
         puv -= camOff * ( 1.8 * nearness * depthPar );
     }
+    // The same on a photo's depth (26.11.2026): near and far shift against each other around the middle depth, so the
+    // frame as a whole stays where the camera drift puts it.  Its only motion is camOff (none with calmMotion).
+    if ( depthParPhoto > 0.001 )
+        puv -= camOff * ( 1.8 * ( photoDepthAt( puv ) - 0.5 ) * depthParPhoto );
 
     // --- Bass shock wave: an expanding ring of distortion from the centre
     // (small on a kick, large on a drop).  Pure displacement - no brightness.

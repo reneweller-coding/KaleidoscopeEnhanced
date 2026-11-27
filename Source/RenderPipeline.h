@@ -1590,6 +1590,8 @@ private:
     GLint m_trailDepthUni = -1;  ///< depth-aware trails (3D scenes) — uniform location of "depth3D" in m_trailProgId.
     float m_trailDepth3D = 0.f;  ///< slewed 0..1 "a 3D scene is up" — drives depth-aware trails and camera zoom
                                  ///< headroom.
+    float m_photoDepthUp = 0.f;  ///< slewed 0..1 "the active scene passes a photo's depth on" (plan T3): the photo's
+                                 ///< parallax and its share in the stereo, eased like m_trailDepth3D.
     float m_meshUp = 0.f; ///< slewed 0..1 "a loaded-model scene is up" — damps the time echo, whose scaled ghost reads
                           ///< as a fault on a solid object.
     float m_meshHoldSecs = 0.f; ///< How long the current fade has been held waiting for an async mesh warm-up; releases
