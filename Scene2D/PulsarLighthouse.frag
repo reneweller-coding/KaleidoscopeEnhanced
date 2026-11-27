@@ -159,7 +159,9 @@ void main()
     vec3 beam_h = normalize( u * cos( ph + 4.189 ) + w * sin( ph + 4.189 ) - spin_axis * 1.1 );
     vec3 col_k = imgPalette( hue * 0.159 + 0.05 ) * ( 0.3 + 1.7 * audioKick );
     vec3 col_s = imgPalette( hue * 0.159 + 0.4 ) * ( 0.2 + 1.5 * audioSnare );
-    vec3 col_h = imgPalette( hue * 0.159 + 0.75 ) * ( 0.15 + 1.2 * audioHat );
+    // Hat gain 0.4 (was 1.2 until 27.11.2026): the hat envelope follows the hats since then (DrumSeparator) and
+    // blinked the light on every eighth -- the limiter's flash-on samples rose 1 -> 20 of 120; at 0.4 none.
+    vec3 col_h = imgPalette( hue * 0.159 + 0.75 ) * ( 0.15 + 0.4 * audioHat );
 
     // Camera on the plain, looking slightly up at the pulsar.
     vec3 ro = vec3( 0.0, 0.6, 0.0 );
