@@ -10,14 +10,17 @@
  *
  *  Standalone pass used by PresentPass's GPU percentile auto-exposure step
  *  (see Source/PresentPass.cpp), not chained to another CfxHistogram sibling.
- *  A single workgroup strides over `texFrame` accumulating a shared-memory
- *  histogram (sqrt-remapped bins so low luminances get more resolution), then
- *  invocation 0 finds the 50th and 98th percentiles and computes a new
- *  exposure gain that pulls the median toward `target` while never letting
- *  the 98th-percentile highlight clip, slewed by `slew` per frame. Result is
- *  written to the four-float `Result` SSBO (binding 0: exposure, p50, p98,
- *  pad) that the present pass reads back to grade the frame, avoiding a
- *  costly CPU readback of the whole image.
+ *  Two dispatches of this program a frame (`stage`).  Stage 0: one work group
+ *  per 64 x 64 tile of `texFrame` counts the tile's top-left 16 x 16 pixels in
+ *  a shared-memory histogram (sqrt-remapped bins so low luminances get more
+ *  resolution) and adds it to the frame's histogram (`Bins`, binding 4).
+ *  Stage 1: one work group takes the frame's histogram (and clears it for the
+ *  next frame), then invocation 0 finds the 50th and 98th percentiles and
+ *  computes a new exposure gain that pulls the median toward `target` while
+ *  never letting the 98th-percentile highlight clip, slewed by `slew` per
+ *  frame. Result is written to the four-float `Result` SSBO (binding 3:
+ *  exposure, p50, p98, pad) that the present pass reads back to grade the
+ *  frame, avoiding a costly CPU readback of the whole image.
  *
  *  @author René Weller
  */
@@ -31,9 +34,16 @@
 // highlights are really clipping, so the exposure can be corrected without
 // touching contrast.
 //
-// One workgroup, 256 bins, atomics in shared memory.  Reading back a whole
+// 256 bins, atomics in shared memory.  Reading back a whole
 // frame per histogram would cost a full GPU sync; here it stays on the GPU
 // and the result lands in a 4-float buffer the present pass reads.
+//
+// Until 27.11.2026 ONE work group walked all the samples (1 in 16 pixels,
+// 292,000 at 2880 x 1620): 0.20 ms of every frame on an RTX 5090, a single
+// multiprocessor busy while the others idled -- more than the scene of a
+// simple 2D effect.  Now every 64 x 64 tile has its own work group (stage 0)
+// and the same pixels are counted, so the histogram -- integer counts -- and
+// with it the exposure are exactly what they were.
 // -----------------------------------------------------------------------
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 16, local_size_y = 16 ) in;
@@ -52,6 +62,12 @@ layout( std430, binding = 3 ) buffer Result
     float p98;
     float pad;
 };
+/// Binding 4: the frame's histogram, summed by the work groups of stage 0, read and cleared by stage 1.
+layout( std430, binding = 4 ) buffer Bins
+{
+    uint bins[256];
+};
+uniform int       stage;    ///< 0: count the tiles into Bins (one work group per 64 x 64 tile); 1: the exposure.
 uniform sampler2D texFrame; ///< The finished frame.
 uniform ivec2     size;     ///< Size of the simulation grid in cells.
 uniform float     target;   ///< where the median should sit
@@ -66,18 +82,23 @@ shared uint hist[256]; ///< Histogram of the work group (256 bins).
 void main()
 {
     uint lid = gl_LocalInvocationIndex;
-    if ( lid < 256u )
+    if ( stage == 1 )
+    {
+        // The frame's histogram into shared memory, and Bins cleared for the next frame.
+        hist[lid] = bins[lid];
+        bins[lid] = 0u;
+        barrier();
+    }
+    else
+    {
         hist[lid] = 0u;
-    barrier();
-
-    // Each invocation walks a strided set of pixels: 16x16 threads cover the
-    // frame in a grid, sampling roughly 1 in 16 pixels, which is plenty for a
-    // 256-bin histogram and costs almost nothing.
-    ivec2 base = ivec2( gl_LocalInvocationID.xy );
-    for ( int y = base.y; y < size.y; y += 16 * 4 )
-        for ( int x = base.x; x < size.x; x += 16 * 4 )
+        barrier();
+        // The pixels sampled are 1 in 16: the top-left 16 x 16 of every 64 x 64 tile, one invocation each -- the
+        // pixels the single work group's strided walk (x, y = its invocation + 64 k) counted until 27.11.2026.
+        ivec2 p = ivec2( gl_WorkGroupID.xy ) * 64 + ivec2( gl_LocalInvocationID.xy );
+        if ( p.x < size.x && p.y < size.y )
         {
-            vec3  c = texelFetch( texFrame, ivec2( x, y ), 0 ).rgb;
+            vec3  c = texelFetch( texFrame, p, 0 ).rgb;
             float l = dot( c, vec3( 0.299, 0.587, 0.114 ) );
             // 16-bit intermediates (KALEIDO_HDR_BUFFERS) keep a scene's stray NaN, which would pick no defined bin;
             // light above 1 falls into the top bin, as white does.
@@ -85,7 +106,11 @@ void main()
             uint b = uint( clamp( sqrt( max( l, 0.0 ) ), 0.0, 0.999 ) * 256.0 );
             atomicAdd( hist[b], 1u );
         }
-    barrier();
+        barrier();
+        if ( hist[lid] != 0u )
+            atomicAdd( bins[lid], hist[lid] );
+        return;
+    }
 
     if ( lid != 0u )
         return;

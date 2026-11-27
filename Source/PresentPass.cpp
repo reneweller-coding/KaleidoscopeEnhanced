@@ -101,9 +101,11 @@ void PresentPass::setup( int renderW, int renderH,
     // 16-bit intermediates (RenderPipeline::hdrBuffers()): Present.frag rolls the light above 1 off (hdrBuffers).
     if ( !m_hdr && internalFmt == GL_RGBA16F )
         fprintf( stderr, "Intermediate pictures: RGBA16F (setting hdrBuffers / KALEIDO_HDR_BUFFERS)\n" );
-    else if ( m_fboFinal == 0 && internalFmt != GL_RGBA16F )
+    else if ( !m_hdr && internalFmt != GL_RGBA8 )
+        fprintf( stderr, "Intermediate pictures: R11F_G11F_B10F (KALEIDO_HDR_FORMAT=r11, measuring only)\n" );
+    else if ( m_fboFinal == 0 && internalFmt == GL_RGBA8 )
         fprintf( stderr, "Intermediate pictures: RGBA8\n" );
-    m_hdr = internalFmt == GL_RGBA16F;
+    m_hdr = internalFmt != GL_RGBA8;
 
     if ( m_fboFinal == 0 )
         glGenFramebuffers( 1, &m_fboFinal );
@@ -372,7 +374,13 @@ GLuint PresentPass::measureTexture( const Inputs &in )
     }
     if ( !m_measureProg )
         return in.source;
-    if ( m_measureTex == 0 || m_measureW != in.renderW || m_measureH != in.renderH )
+    // A quarter of the frame's size: each texel the mean of 4 x 4 measured pixels (KALEIDO_MEASURE_FULL=1: one each).
+    // From 64 pixels on, so the limiter's finer level (long side at most 16 texels) is still one of the target's.
+    static const bool Full = getenv( "KALEIDO_MEASURE_FULL" ) != 0;
+    const int         cell = ( Full || std::max( in.renderW, in.renderH ) < 64 ) ? 1 : 4;
+    const int         mw = std::max( 1, in.renderW / cell ), mh = std::max( 1, in.renderH / cell );
+    m_measureShift = cell == 4 ? 2 : 0;
+    if ( m_measureTex == 0 || m_measureW != mw || m_measureH != mh )
     {
         if ( m_measureTex == 0 )
             glGenTextures( 1, &m_measureTex );
@@ -381,13 +389,13 @@ GLuint PresentPass::measureTexture( const Inputs &in )
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, in.renderW, in.renderH, 0, GL_RGBA, GL_FLOAT, NULL );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, mw, mh, 0, GL_RGBA, GL_FLOAT, NULL );
         if ( m_measureFbo == 0 )
             glGenFramebuffers( 1, &m_measureFbo );
         glBindFramebuffer( GL_FRAMEBUFFER, m_measureFbo );
         glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_measureTex, 0 );
-        m_measureW = in.renderW;
-        m_measureH = in.renderH;
+        m_measureW = mw;
+        m_measureH = mh;
     }
     // The glow Present.frag adds back from the bright pass: the bloom (0.12 + 0.05 beat + 0.10 swell) and the
     // streaks (0.30 x (0.10 + 0.30 swell + 0.80 drop) of the bloom, their cool tint 0.75 in luma).
@@ -395,12 +403,13 @@ GLuint PresentPass::measureTexture( const Inputs &in )
     const float          glow = 0.12f + 0.05f * a.beatDecay + 0.10f * a.swell
                                 + 0.30f * 0.75f * ( 0.10f + 0.30f * a.swell + 0.80f * a.dropPulse );
     glBindFramebuffer( GL_FRAMEBUFFER, m_measureFbo );
-    glViewport( 0, 0, in.renderW, in.renderH );
+    glViewport( 0, 0, mw, mh );
     glUseProgram( m_measureProg );
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, in.source );
     glUniform1i( glGetUniformLocation( m_measureProg, "tex" ), 0 );
     glUniform1f( glGetUniformLocation( m_measureProg, "glowWeight" ), glow );
+    glUniform1i( glGetUniformLocation( m_measureProg, "cellSize" ), cell );
     drawFullscreen();
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
     glBindTexture( GL_TEXTURE_2D, m_measureTex );
@@ -513,13 +522,17 @@ void PresentPass::run( const Inputs &in )
     // Frame history ring: record the fresh frame BEFORE anything is
     // presented - so even a running rewind keeps feeding the ring with the
     // live picture (the pipeline keeps rendering normally, after all).
+    glcoreDebugMark( "present:history" ); // the stations KALEIDO_GPU_PASSES times
     captureHistory( in.source, in.renderW, in.renderH, in.dtWall );
 
+    glcoreDebugMark( "present:mips" );
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, in.source );
     glGenerateMipmap( GL_TEXTURE_2D ); // every frame (bloom samples a mip)
+    glcoreDebugMark( "present:measure" );
     // 16-bit intermediates: the limiter measures the frame as an 8-bit target holds it (measureTexture()).
     const GLuint measured = m_hdr ? measureTexture( in ) : in.source;
+    glcoreDebugMark( "present:readback" );
     glBindTexture( GL_TEXTURE_2D, in.source );
 
     // The picture's mean colour for the OSC output (setMeanColourWanted()): the top mip is the mean, read into one
@@ -628,16 +641,24 @@ void PresentPass::run( const Inputs &in )
             glGenBuffers( 1, &m_autoExpBuf );
             glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_autoExpBuf );
             glBufferData( GL_SHADER_STORAGE_BUFFER, sizeof( init ), init, GL_DYNAMIC_COPY );
+            // The histogram's bins, summed over the tiles (CfxHistogram.comp, stage 0); stage 1 clears them.
+            static const unsigned Zero[256] = {};
+            glGenBuffers( 1, &m_histBinsBuf );
+            glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_histBinsBuf );
+            glBufferData( GL_SHADER_STORAGE_BUFFER, sizeof( Zero ), Zero, GL_DYNAMIC_COPY );
             glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
         }
         fprintf( stderr, "Auto-exposure: %s; brightness limiter: %s\n", m_autoExpProg ? "histogram (GPU)" : "off",
                  m_limitProg && m_autoExpBuf ? "every frame (GPU)" : "every 3rd frame (CPU readback)" );
     }
 
+    glcoreDebugMark( "present:limit" );
     // The limiter measures the mip whose long side is at most 4 texels.
     int lvl = 0;
     for ( int d = std::max( in.renderW, in.renderH ); d > 4; d >>= 1 )
         ++lvl;
+    // The measure frame at a quarter of the frame's size lacks its first two levels (measureTexture()).
+    const int shift = measured == m_measureTex ? m_measureShift : 0;
     ++m_safetyFrame;
     // The limiter's scale for the uniform: 1 when the compute pass applies it in Present.frag (limScale), the CPU
     // path's own value otherwise.
@@ -665,7 +686,7 @@ void PresentPass::run( const Inputs &in )
         glActiveTexture( GL_TEXTURE0 );
         glBindTexture( GL_TEXTURE_2D, measured );
         glUniform1i( glGetUniformLocation( m_limitProg, "texFrame" ), 0 );
-        glUniform1i( glGetUniformLocation( m_limitProg, "lvl" ), lvl );
+        glUniform1i( glGetUniformLocation( m_limitProg, "lvl" ), lvl - shift );
         glUniform2i( glGetUniformLocation( m_limitProg, "lsize" ), std::max( 1, in.renderW >> lvl ),
                      std::max( 1, in.renderH >> lvl ) );
         glUniform1f( glGetUniformLocation( m_limitProg, "dt" ), in.dtFrame );
@@ -674,7 +695,7 @@ void PresentPass::run( const Inputs &in )
         int lvl2 = 0; // the flashing areas' mip: long side at most 16 texels (1080p: 15 x 8 cells, 720p: 10 x 5)
         for ( int d = std::max( in.renderW, in.renderH ); d > 16; d >>= 1 )
             ++lvl2;
-        glUniform1i( glGetUniformLocation( m_limitProg, "lvl2" ), lvl2 );
+        glUniform1i( glGetUniformLocation( m_limitProg, "lvl2" ), lvl2 - shift );
         glUniform2i( glGetUniformLocation( m_limitProg, "lsize2" ), std::max( 1, in.renderW >> lvl2 ),
                      std::max( 1, in.renderH >> lvl2 ) );
         glUniform1i( glGetUniformLocation( m_limitProg, "fading" ), in.sceneFade ? 1 : 0 );
@@ -704,8 +725,8 @@ void PresentPass::run( const Inputs &in )
         {
             glBindTexture( GL_TEXTURE_2D, measured );
             int lw = 1, lh = 1;
-            glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_WIDTH, &lw );
-            glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_HEIGHT, &lh );
+            glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl - shift, GL_TEXTURE_WIDTH, &lw );
+            glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl - shift, GL_TEXTURE_HEIGHT, &lh );
             if ( lw < 1 )
                 lw = 1;
             if ( lh < 1 )
@@ -714,7 +735,7 @@ void PresentPass::run( const Inputs &in )
             if ( npx > 64 )
                 npx = 64;
             float buf[4 * 64];
-            glGetTexImage( GL_TEXTURE_2D, lvl, GL_RGBA, GL_FLOAT, buf );
+            glGetTexImage( GL_TEXTURE_2D, lvl - shift, GL_RGBA, GL_FLOAT, buf );
             float mean = 0.f;
             float lum[64];
             for ( int i = 0; i < npx; ++i )
@@ -769,12 +790,14 @@ void PresentPass::run( const Inputs &in )
         }
     }
 
+    glcoreDebugMark( "present:expo" );
     // ---- GPU percentile auto-exposure (Engine/CfxHistogram.comp) ----
     // Writes into the same SSBO, which Present.frag reads directly: no CPU sync at all.
-    if ( m_autoExpProg && m_autoExpBuf )
+    if ( m_autoExpProg && m_autoExpBuf && m_histBinsBuf )
     {
         glUseProgram( m_autoExpProg );
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 3, m_autoExpBuf );
+        glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 4, m_histBinsBuf );
         glActiveTexture( GL_TEXTURE0 );
         // The DESTINATION during a fade, the presented frame otherwise -- see
         // Inputs::fadeMeasureTex. This is what lets the gain glide across the
@@ -847,6 +870,15 @@ void PresentPass::run( const Inputs &in )
                 k = 1.f; // first standing frame: adopt the new scene's statistics outright
             glUniform1f( glGetUniformLocation( m_autoExpProg, "smoothK" ), k );
         }
+        // Stage 0: one work group per 64 x 64 tile counts its samples into the bins (until 27.11.2026 one work group
+        // walked them all: 0.20 ms a frame at 2880 x 1620); stage 1: the percentiles and the gain, as before.
+        const GLint  stage = glGetUniformLocation( m_autoExpProg, "stage" );
+        const GLuint tiles_x = static_cast<GLuint>( ( in.renderW + 63 ) / 64 );
+        const GLuint tiles_y = static_cast<GLuint>( ( in.renderH + 63 ) / 64 );
+        glUniform1i( stage, 0 );
+        glDispatchCompute( tiles_x, tiles_y, 1 );
+        glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+        glUniform1i( stage, 1 );
         glDispatchCompute( 1, 1, 1 );
         glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
         {
@@ -866,6 +898,7 @@ void PresentPass::run( const Inputs &in )
         }
     }
 
+    glcoreDebugMark( "present:bloom" );
     // ---- Two-pass Gaussian bloom (quarter res) ----
     // Pass 1 extracts the brights from the fresh frame + blurs horizontally
     // while downsampling; pass 2 blurs vertically.  Present adds the result.
@@ -895,6 +928,7 @@ void PresentPass::run( const Inputs &in )
         drawFullscreen();
     }
 
+    glcoreDebugMark( "present:draw" );
     // The present pass is the ONLY one at full display resolution — it upscales
     // the render-resolution result to the window.
     glBindFramebuffer( GL_FRAMEBUFFER, in.targetFbo );

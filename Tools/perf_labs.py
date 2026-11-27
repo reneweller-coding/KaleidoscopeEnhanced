@@ -11,6 +11,11 @@ ShaderForge log on and the same rolls (--seed), for --secs seconds.  Per scene:
   gaps > 50 ms           count and the longest (between frames: swap, other processes)
   first draws            the longest first draw of a forged 3D-lab program
   GL                     KHR_debug messages of high or medium severity (--gldebug: a debug context, slower)
+  --passes               the GPU time of each station of the frame (KALEIDO_GPU_PASSES: the scene, the FX, the
+                         trails, the present pass's mips, measure frame, limiter, exposure, bloom and draw ...),
+                         the median of the per-second means, on a line of its own under the scene
+  --gpumem               the app's dedicated GPU memory (MB) four seconds before its end (the Windows counter
+                         "GPU Process Memory(pid_*)\\Dedicated Usage", as Tools/soak.py reads it)
 
 The app runs on a private copy of the settings (KALEIDO_SETTINGS, private_settings.py), the
 temporary preset removed.  Nothing is sent anywhere; the app ends itself
@@ -20,6 +25,7 @@ temporary preset removed.  Nothing is sent anywhere; the app ends itself
   python Tools/perf_labs.py ChainLab2D --secs 60  # some scenes
   python Tools/perf_labs.py --tsv perf.tsv        # also as a table file
   python Tools/perf_labs.py --wav Tools/review128.wav   # with music (a steady beat: phrase-locked walks)
+  python Tools/perf_labs.py ChainLab2D --passes --gpumem   # where the GPU time goes, and the memory
 """
 import argparse, io, os, re, statistics, subprocess, sys, time
 
@@ -53,12 +59,36 @@ def preset(scene, still, pins=()):
             'ConfigurationName="_perf" hidden="true">\n' + blk + "\n" + fx + "\n</configuration>\n")
 
 
-SEED, GLDEBUG = 1, False
+SEED, GLDEBUG, PASSES, GPUMEM = 1, False, False, False
 PS = None  # the private settings of this run (main())
 
 
 WAV = None
 PINS = []   # --pin NAME=VALUE
+
+
+def gpu_mb(pid):
+    """The process's dedicated GPU memory in MB (sum over its adapters), or -1 (as Tools/soak.py reads it)."""
+    cmd = ("$c = Get-Counter -ErrorAction SilentlyContinue '\\GPU Process Memory(pid_%d_*)\\Dedicated Usage'; "
+           "if ($c) { ($c.CounterSamples | Measure-Object -Property CookedValue -Sum).Sum } else { -1 }" % pid)
+    try:
+        out = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True,
+                             timeout=30).stdout.strip()
+        v = float(out.splitlines()[-1].replace(",", "."))
+        return v / 1048576.0 if v >= 0 else -1.0
+    except (ValueError, IndexError, subprocess.TimeoutExpired):
+        return -1.0
+
+
+def passes(log, skip):
+    """{station: median ms per frame} over the per-second [gpupass] lines after the first skip seconds (a station
+    missing from a second -- the incoming scene outside a fade -- counts 0 there)."""
+    secs = [dict((k, float(v)) for k, v in re.findall(r"(\S+)=([0-9.]+)", line) if k != "n")
+            for line in re.findall(r"\[gpupass\] (.*)", log)[skip:]]
+    names = []
+    for s in secs:
+        names += [k for k in s if k not in names]
+    return {k: statistics.median([s.get(k, 0.0) for s in secs]) for k in names}
 
 
 def run(scene, secs, skip, still):
@@ -67,9 +97,17 @@ def run(scene, secs, skip, still):
                       KALEIDO_GPU_TIMING="1", KALEIDO_FRAME_LOG="25", KALEIDO_SPEC_LOG="1", KALEIDO_SEED=str(SEED)))
     if GLDEBUG:
         env["KALEIDO_GL_DEBUG"] = "1"
+    if PASSES:
+        env["KALEIDO_GPU_PASSES"] = "1"
     cmd = [os.path.join(REL, EXE), "-c", "_perf", "-l"] + (["-w", os.path.abspath(WAV)] if WAV else [])
     p = subprocess.Popen(cmd, cwd=REL, env=env,
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    mem = -1.0
+    if GPUMEM:
+        try:
+            p.wait(timeout=max(1, secs - 4))
+        except subprocess.TimeoutExpired:
+            mem = gpu_mb(p.pid)
     p.wait(timeout=secs + 120)
     log = io.open(os.path.join(REL, "kaleidoscope.log"), encoding="utf-8", errors="replace").read()
     fps = [int(x) for x in re.findall(r"\[fps\] (\d+) fps", log)][skip:]
@@ -85,7 +123,8 @@ def run(scene, secs, skip, still):
         "gpu_med": pick(gpu, 0.5), "gpu_p90": pick(gpu, 0.9), "gpu_max": gpu[-1] if gpu else float("nan"),
         "frames": len(frames), "frame_max": max(frames) if frames else 0.0,
         "gaps": len(gaps), "gap_max": max(gaps) if gaps else 0.0,
-        "first_draw_max": max(geom) if geom else 0.0, "gl": gl,
+        "first_draw_max": max(geom) if geom else 0.0, "gl": gl, "gpu_mb": mem,
+        "passes": passes(log, skip) if PASSES else {},
     }
 
 
@@ -101,9 +140,11 @@ def main():
     ap.add_argument("--pin", action="append", default=[], metavar="NAME=VALUE",
                     help="set a knob of every scene's entry (an <expr>), e.g. --pin depthLook=6")
     ap.add_argument("--gldebug", action="store_true", help="KHR_debug on (a debug context: slower, the GL column counts)")
+    ap.add_argument("--passes", action="store_true", help="the GPU time per station of the frame (KALEIDO_GPU_PASSES)")
+    ap.add_argument("--gpumem", action="store_true", help="the app's dedicated GPU memory four seconds before its end")
     a = ap.parse_args()
-    global SEED, GLDEBUG, WAV, PS
-    SEED, GLDEBUG, WAV = a.seed, a.gldebug, a.wav
+    global SEED, GLDEBUG, WAV, PS, PASSES, GPUMEM
+    SEED, GLDEBUG, WAV, PASSES, GPUMEM = a.seed, a.gldebug, a.wav, a.passes, a.gpumem
     PINS[:] = [tuple(x.split("=", 1)) for x in a.pin]
     sys.stdout.reconfigure(encoding="utf-8")
     PS = PrivateSettings("perf")
@@ -117,7 +158,10 @@ def main():
             rows.append(r)
             print("%-26s %6.0f %5.0f %7.2f %7.2f %7.2f %4d/%5.0f %4d/%5.0f %8.1f %4d" % (
                 s, r["fps_med"], r["fps_min"], r["gpu_med"], r["gpu_p90"], r["gpu_max"], r["frames"], r["frame_max"],
-                r["gaps"], r["gap_max"], r["first_draw_max"], r["gl"]), flush=True)
+                r["gaps"], r["gap_max"], r["first_draw_max"], r["gl"]) + (
+                "  %6.0f MB" % r["gpu_mb"] if GPUMEM else ""), flush=True)
+            if r["passes"]:
+                print("    passes ms: " + "  ".join("%s %.3f" % kv for kv in r["passes"].items()), flush=True)
     finally:
         PS.close()
         try:
@@ -125,11 +169,14 @@ def main():
         except OSError:
             pass
     if a.tsv and rows:
-        keys = list(rows[0].keys())
+        keys = [k for k in rows[0].keys() if k != "passes"]
+        stations = []
+        for r in rows:
+            stations += [k for k in r["passes"] if k not in stations]
         with io.open(a.tsv, "w", encoding="utf-8") as f:
-            f.write("\t".join(keys) + "\n")
+            f.write("\t".join(keys + ["pass:" + s for s in stations]) + "\n")
             for r in rows:
-                f.write("\t".join(str(r[k]) for k in keys) + "\n")
+                f.write("\t".join([str(r[k]) for k in keys] + [str(r["passes"].get(s, "")) for s in stations]) + "\n")
 
 
 if __name__ == "__main__":

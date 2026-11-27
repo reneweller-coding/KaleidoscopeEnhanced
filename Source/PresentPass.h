@@ -412,8 +412,11 @@ private:
      * Averaged at 16 bit as it is, a dense field of lights above 1 read as a bright area that the present pass's
      * roll-off never shows (ParticleTunnelFlight tripped the flash hazard in 48 of 400 logged frames and was dimmed
      * to 0.35, against none at 8 bit); clamped alone, it missed the glow that light adds and that pulses with the
-     * beat.  A frame without light above 1 is measured exactly as an 8-bit one.  One full-resolution pass and one
-     * mipmap generation a frame, only with the switch (docs/engine-internals-69-light.md).
+     * beat.  A frame without light above 1 is measured exactly as an 8-bit one.  One pass and one mipmap generation a
+     * frame, only with the switch (docs/engine-internals-69-light.md) -- at a quarter of the frame's size since
+     * 27.11.2026, each texel the mean of its 4 x 4 measured pixels (what the frame-sized target's level 2 held; the
+     * limiter reads levels far above it): 0.08 -> 0.02 ms and 50 -> 3 MB at 2880 x 1620.  KALEIDO_MEASURE_FULL=1 keeps
+     * the frame-sized target, to compare.  m_measureShift says how many levels the target lacks against the frame.
      **/
     GLuint measureTexture( const Inputs &in );
 
@@ -498,6 +501,8 @@ private:
                                           ///< prevSample[64], the flashing areas' cells and their reversal ages }
                                           ///< from SafetyLimit.comp; read directly by Present.frag.
     GLuint m_autoExpProg = 0;             ///< CfxHistogram.comp compute program (0 if unavailable).
+    GLuint m_histBinsBuf = 0;             ///< SSBO (bind point 4): the frame's 256-bin histogram, summed by the work
+                                          ///< groups of CfxHistogram.comp's stage 0, read and cleared by its stage 1.
     GLuint m_limitProg = 0;               ///< SafetyLimit.comp compute program (0: the CPU readback path).
     bool   m_autoExpTried = false; ///< True once auto-exposure program creation has been attempted (tried only once).
 
@@ -598,6 +603,7 @@ private:
     bool   m_measureTried = false;     ///< measureTexture(): the program was asked for (once).
     /** Width m_measureTex was allocated at. */
     int   m_measureW = 0, m_measureH = 0; ///< Height m_measureTex was allocated at.
+    int   m_measureShift = 0; ///< Mip levels m_measureTex lacks against the frame (2: a quarter of its size; 0: full).
     GLint m_presentPhParUni = -1;         ///< Uniform location: parallax strength on a photo's depth ("depthParPhoto").
     GLint m_presentPhStereoUni = -1; ///< Uniform location: the photo's depth's share in the stereo ("stereoPhoto").
     GLint m_presentPhWinUni = -1;         ///< Uniform location: the photo's near/far window depths ("photoDepthWin").
