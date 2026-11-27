@@ -39,6 +39,91 @@ in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex st
 in vec3  vNrm;  ///< Nrm (from the vertex stage).
 in float vDist; ///< Distance (from the vertex stage).
 
+// ---- photo environment light (Tools/scenegen/patch_env3d.py) ----
+// The photo stands behind the viewer and lights the scene: the normal finds diffuse light in a very coarse mip, the
+// reflected ray a reflection in a mip chosen by roughness.  At envP = 0 none of it runs and the scene renders as
+// before.
+uniform float envP; ///< Photo environment light: 0 = off (the old look) .. 1 = full; rolled per activation.
+
+/**  Where a direction looks in the photo environment.
+ *
+ * @param d  The direction (any length): x screen right, y screen up; the sign of z does not matter. (in)
+ *
+ * @return
+ *   The coordinate in the photo.
+ *
+ * The photo stands behind the viewer, its centre straight back toward the eye, and the far half of the sphere of
+ * directions is the near half mirrored at the plane z = 0 -- so the map is continuous over the whole sphere (no seam,
+ * no pole) and folds only where a direction turns from toward the viewer to away from it.  Past the photo's edge the
+ * texture's mirrored repeat continues it.
+ **/
+vec2 envUV( vec3 d )
+{
+    return 0.5 + 0.6 * normalize( d ).xy;
+}
+
+/**  The photo as the environment sees it: tex0 and tex1 cross-faded with interpolation like img(), at a mip level,
+ * colour only (the alpha channel carries the photo's depth).
+ *
+ * @param uv   Coordinate in the photo. (in)
+ * @param lod  Mip level: 0 = full size, 7 = 8 x 8 texels of a 1024 photo. (in)
+ *
+ * @return
+ *   The photo's colour (RGB).
+ **/
+vec3 envPhoto( vec2 uv, float lod )
+{
+    return interpolation * textureLod( tex0, uv, lod ).rgb + ( 1.0 - interpolation ) * textureLod( tex1, uv, lod ).rgb;
+}
+
+/**  Diffuse light from the photo: its very coarse mip in the normal's direction stands in for the light gathered over
+ * the half sphere around the normal.
+ *
+ * @param n  The surface normal (frame as for envUV()). (in)
+ *
+ * @return
+ *   The diffuse light (RGB), 0..1.
+ **/
+vec3 envDiffuse( vec3 n )
+{
+    return envPhoto( envUV( n ), 7.0 );
+}
+
+/**  The photo reflected along a ray, in a mip chosen by the roughness and never finer than the pixel's footprint in
+ * the photo -- a small or strongly curved mirror does not shimmer.
+ *
+ * @param r      The reflected ray (frame as for envUV()). (in)
+ * @param rough  Roughness: 0 = mirror .. 1 = matt (the diffuse mip). (in)
+ *
+ * @return
+ *   The reflected light (RGB), 0..1.
+ *
+ * The footprint comes from screen-space derivatives: call it outside pixel-dependent branches.
+ **/
+vec3 envReflect( vec3 r, float rough )
+{
+    vec2  uv = envUV( r );
+    vec2  ts = vec2( textureSize( tex0, 0 ) );
+    vec2  dx = dFdx( uv ) * ts, dy = dFdy( uv ) * ts;
+    float px = 0.5 * log2( max( max( dot( dx, dx ), dot( dy, dy ) ), 1.0 ) );
+    return envPhoto( uv, max( px, 1.0 + 6.0 * clamp( rough, 0.0, 1.0 ) ) );
+}
+
+/**  How much light a surface reflects at this angle (Schlick's approximation of Fresnel's equations).
+ *
+ * @param n   The surface normal (unit length). (in)
+ * @param v   The direction toward the eye (unit length). (in)
+ * @param f0  The reflectance looking straight on. (in)
+ *
+ * @return
+ *   The reflectance, f0..1.
+ **/
+float envFresnel( vec3 n, vec3 v, float f0 )
+{
+    return f0 + ( 1.0 - f0 ) * pow( 1.0 - clamp( dot( n, v ), 0.0, 1.0 ), 5.0 );
+}
+// ---- end of the photo environment light ----
+
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
  * @param uv  Coordinate in the photo, 0..1. (in)
@@ -109,11 +194,13 @@ void main()
 
     // TRUE mirror: reflect the view ray and look the reflection up in the
     // photo as a wrap-around environment — this is what makes it CHROME.
-    vec3  rd = normalize( vec3( ( vUV.x - 0.5 ) * 1.6, -0.35, 1.0 ) );
-    vec3  R = reflect( rd, n );
-    vec2  env_uv = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5,
-                         clamp( 0.55 - R.y * 0.55, 0.02, 0.98 ) );
-    vec3  env_photo = img( env_uv );
+    vec3 rd = normalize( vec3( ( vUV.x - 0.5 ) * 1.6, -0.35, 1.0 ) );
+    vec3 R = reflect( rd, n );
+    vec2 env_uv = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5,
+                        clamp( 0.55 - R.y * 0.55, 0.02, 0.98 ) );
+    vec3 env_photo = img( env_uv );
+    if ( envP > 0.0 )
+        env_photo = envReflect( R, 0.10 ); // the photo environment (patch_env3d.py): no seam
     float fres = pow( 1.0 - clamp( dot( -rd, n ), 0.0, 1.0 ), 3.0 );
 
     // Sheen bands sweep with the reflection vector (metal polish streaks)

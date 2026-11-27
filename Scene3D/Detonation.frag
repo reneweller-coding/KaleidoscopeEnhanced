@@ -68,6 +68,91 @@ uniform float     audioAdvance; ///< The music's advance: integrated tempo-weigh
                                 ///< backwards).
 uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
 
+// ---- photo environment light (Tools/scenegen/patch_env3d.py) ----
+// The photo stands behind the viewer and lights the scene: the normal finds diffuse light in a very coarse mip, the
+// reflected ray a reflection in a mip chosen by roughness.  At envP = 0 none of it runs and the scene renders as
+// before.
+uniform float envP; ///< Photo environment light: 0 = off (the old look) .. 1 = full; rolled per activation.
+
+/**  Where a direction looks in the photo environment.
+ *
+ * @param d  The direction (any length): x screen right, y screen up; the sign of z does not matter. (in)
+ *
+ * @return
+ *   The coordinate in the photo.
+ *
+ * The photo stands behind the viewer, its centre straight back toward the eye, and the far half of the sphere of
+ * directions is the near half mirrored at the plane z = 0 -- so the map is continuous over the whole sphere (no seam,
+ * no pole) and folds only where a direction turns from toward the viewer to away from it.  Past the photo's edge the
+ * texture's mirrored repeat continues it.
+ **/
+vec2 envUV( vec3 d )
+{
+    return 0.5 + 0.6 * normalize( d ).xy;
+}
+
+/**  The photo as the environment sees it: tex0 and tex1 cross-faded with interpolation like img(), at a mip level,
+ * colour only (the alpha channel carries the photo's depth).
+ *
+ * @param uv   Coordinate in the photo. (in)
+ * @param lod  Mip level: 0 = full size, 7 = 8 x 8 texels of a 1024 photo. (in)
+ *
+ * @return
+ *   The photo's colour (RGB).
+ **/
+vec3 envPhoto( vec2 uv, float lod )
+{
+    return interpolation * textureLod( tex0, uv, lod ).rgb + ( 1.0 - interpolation ) * textureLod( tex1, uv, lod ).rgb;
+}
+
+/**  Diffuse light from the photo: its very coarse mip in the normal's direction stands in for the light gathered over
+ * the half sphere around the normal.
+ *
+ * @param n  The surface normal (frame as for envUV()). (in)
+ *
+ * @return
+ *   The diffuse light (RGB), 0..1.
+ **/
+vec3 envDiffuse( vec3 n )
+{
+    return envPhoto( envUV( n ), 7.0 );
+}
+
+/**  The photo reflected along a ray, in a mip chosen by the roughness and never finer than the pixel's footprint in
+ * the photo -- a small or strongly curved mirror does not shimmer.
+ *
+ * @param r      The reflected ray (frame as for envUV()). (in)
+ * @param rough  Roughness: 0 = mirror .. 1 = matt (the diffuse mip). (in)
+ *
+ * @return
+ *   The reflected light (RGB), 0..1.
+ *
+ * The footprint comes from screen-space derivatives: call it outside pixel-dependent branches.
+ **/
+vec3 envReflect( vec3 r, float rough )
+{
+    vec2  uv = envUV( r );
+    vec2  ts = vec2( textureSize( tex0, 0 ) );
+    vec2  dx = dFdx( uv ) * ts, dy = dFdy( uv ) * ts;
+    float px = 0.5 * log2( max( max( dot( dx, dx ), dot( dy, dy ) ), 1.0 ) );
+    return envPhoto( uv, max( px, 1.0 + 6.0 * clamp( rough, 0.0, 1.0 ) ) );
+}
+
+/**  How much light a surface reflects at this angle (Schlick's approximation of Fresnel's equations).
+ *
+ * @param n   The surface normal (unit length). (in)
+ * @param v   The direction toward the eye (unit length). (in)
+ * @param f0  The reflectance looking straight on. (in)
+ *
+ * @return
+ *   The reflectance, f0..1.
+ **/
+float envFresnel( vec3 n, vec3 v, float f0 )
+{
+    return f0 + ( 1.0 - f0 ) * pow( 1.0 - clamp( dot( n, v ), 0.0, 1.0 ), 5.0 );
+}
+// ---- end of the photo environment light ----
+
 /**  Same normal-offset lookup as PillarHall; the offset is in world units, so it follows this scene's much smaller
  * shadow box automatically.
  *
@@ -179,10 +264,17 @@ void main()
         col += rock * vec3( 0.45, 0.58, 0.95 )
                * max( dot( n, normalize( vec3( -0.6, -0.3, -0.7 ) ) ), 0.0 ) * 0.55;
 
-        vec3  R = reflect( -V, n );
-        vec2  env_uv = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5,
-                             clamp( R.y * 0.5 + 0.5, 0.0, 1.0 ) );
-        vec3  env = textureLod( tex0, fract( env_uv ), 0.0 ).rgb;
+        vec3 R = reflect( -V, n );
+        vec2 env_uv = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5,
+                            clamp( R.y * 0.5 + 0.5, 0.0, 1.0 ) );
+        vec3 env = textureLod( tex0, fract( env_uv ), 0.0 ).rgb;
+        if ( envP > 0.0 )
+        {
+            // The photo environment (patch_env3d.py): no seam, both photos; an explicit mip, since this
+            // branch depends on the pixel (no screen-space derivatives here).  And its diffuse light.
+            env = envPhoto( envUV( R ), 2.5 );
+            col += rock * envDiffuse( n ) * ( 0.5 * envP );
+        }
         float fres = pow( 1.0 - clamp( dot( n, V ), 0.0, 1.0 ), 4.0 );
         col = mix( col, env * 0.55, fres * 0.45 );
 
