@@ -4564,6 +4564,7 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
     <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
+    <float name="reliefParP" minValue="-0.3" maxValue="0.6"></float>
   </TextureShader>
   <TextureShader minTimeSolo="14" maxTimeSolo="36" interest="4" file="..\Scene3D\HolographicLaserDiffractionGrid.frag" type="scene3d" geom="quads" probability="0.5" mood="dark,psychedelic" complexity="10" gpuMs="0.44">
     <rig preset="procedural"/>
@@ -4760,6 +4761,7 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
     <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
+    <float name="reliefParP" minValue="-0.3" maxValue="0.6"></float>
   </TextureShader>
   <TextureShader minTimeSolo="32" maxTimeSolo="85" interest="6" file="..\Scene3D\OceanAbyssalBrinePool.frag" type="scene3d" geom="grid" probability="0.5" mood="calm,dark,dreamy" complexity="8" gpuMs="0.58">
     <rig preset="procedural"/>
@@ -8138,6 +8140,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <float name="shadowMapP" minValue="0.6" maxValue="1"></float>
+    <float name="shaftP" minValue="0.4" maxValue="0.6"></float>
   </TextureShader>
   <TextureShader minTimeSolo="9" maxTimeSolo="23" interest="3" file="..\\Scene3D\\MeshMetronomes.frag" type="scene3d" geom="mesh" model="..\\Models\\Metronome_lod.glb" model2="..\\Models\\Pendulum_lod.glb" instances="12" mood="dark,calm" probability="0.45" complexity="7" gpuMs="0.50">
     <rig preset="mesh-15"/>
@@ -8148,6 +8151,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <float name="shadowMapP" minValue="0.6" maxValue="1"></float>
+    <float name="shaftP" minValue="0.25" maxValue="0.4"></float>
   </TextureShader>
   <TextureShader minTimeSolo="9" maxTimeSolo="23" interest="3" file="..\\Scene3D\\MeshSeismograph.frag" type="scene3d" geom="mesh" model="..\\Models\\SeismographBase.glb" model2="..\\Models\\SeismographDrum.glb" mood="calm,dark" probability="0.45" complexity="1" gpuMs="0.44">
     <rig preset="mesh-15"/>
@@ -15393,7 +15397,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
-    <float name="depthLook" minValue="2.83" maxValue="5.49"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
   <TextureShader minTimeSolo="77" maxTimeSolo="202" interest="8" file="..\\Scene2D\\StripLab.frag" type="normal" mood="dreamy,psychedelic,calm" probability="0.45" complexity="5" gpuMs="0.60">
     <rig preset="flat"/>
@@ -15403,6 +15407,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
+    <float name="depthLook" minValue="2.83" maxValue="5.49"></float>
   </TextureShader>
   <TextureShader minTimeSolo="50" maxTimeSolo="131" interest="7" file="..\\Scene2D\\GlassLab.frag" type="normal" mood="calm,dreamy,bright" probability="0.45" complexity="2" gpuMs="0.63">
     <rig preset="flat"/>
@@ -15421,7 +15426,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
-    <float name="depthLook" minValue="2.83" maxValue="5.49"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
   <TextureShader minTimeSolo="77" maxTimeSolo="202" interest="8" file="..\\Scene2D\\DefectLab.frag" type="normal" mood="psychedelic,dreamy,dark" probability="0.45" complexity="1" gpuMs="0.63">
     <rig preset="flat"/>

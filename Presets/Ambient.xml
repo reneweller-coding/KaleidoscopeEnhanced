@@ -1295,6 +1295,7 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
     <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
+    <float name="reliefParP" minValue="-0.3" maxValue="0.6"></float>
   </TextureShader>
   <TextureShader minTimeSolo="17" maxTimeSolo="45" interest="5" file="..\Scene2D\MantleConvectionPlume.frag" type="normal" probability="0.5" mood="dark,aggressive" complexity="7" gpuMs="0.37">
     <rig preset="flat"/>
@@ -1329,6 +1330,7 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
     <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
+    <float name="reliefParP" minValue="-0.3" maxValue="0.6"></float>
   </TextureShader>
   <TextureShader minTimeSolo="26" maxTimeSolo="69" interest="6" file="..\Scene3D\OceanAbyssalBrinePool.frag" type="scene3d" geom="grid" probability="0.5" mood="calm,dark,dreamy" complexity="8" gpuMs="0.58">
     <rig preset="procedural"/>
@@ -4395,6 +4397,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
+    <float name="depthLook" minValue="2.83" maxValue="5.49"></float>
   </TextureShader>
   <TextureShader minTimeSolo="50" maxTimeSolo="132" interest="7" file="..\\Scene2D\\GlassLab.frag" type="normal" mood="calm,dreamy,bright" probability="0.45" complexity="2" gpuMs="0.63">
     <rig preset="flat"/>
