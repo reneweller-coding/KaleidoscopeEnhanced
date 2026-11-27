@@ -287,7 +287,7 @@ void main()
         s = arcP
             * mix( depthPhoto.y > 0.5 ? PhotoArc : 1.0, depthPhoto.x > 0.5 ? PhotoArc : 1.0,
                    clamp( interpolation, 0.0, 1.0 ) );
-        sharp = mix( sharp, 1.0, 0.6 * arc.x * s ) * ( 1.0 - 0.5 * arc.y * s );
+        sharp = mix( sharp, 1.0, 0.6 * arc.x * s ) * ( 1.0 - 0.2 * arc.y * s );
     }
     // A photo's depth (a 2D scene, depthPhoto) gets its own light; a 3D layer gets what it always got.
     vec3 A = depthPhoto.x > 0.5 ? litPhoto( tex0, texDepth0, uv, depthValid.x, px, keyDir, keyCol, sharp )
@@ -297,8 +297,10 @@ void main()
     vec3 col = mix( B, A, clamp( interpolation, 0.0, 1.0 ) );
     if ( arcP > 0.0 ) // the light itself: a little fainter in the build-up, flaring at the drop
     {
+        // The flare is modest (x 1.4): the rim pulses with the kick, and a stronger gain doubled that pulse into more
+        // flashes (ostgut 1.5 -> 2.0 a second at x 2 with a wider rim; plan P2, 27.11.2026).
         vec3 base = mix( texture( tex1, uv ).rgb, texture( tex0, uv ).rgb, clamp( interpolation, 0.0, 1.0 ) );
-        col = base + ( col - base ) * ( ( 1.0 - 0.3 * arc.x * s ) * ( 1.0 + 1.0 * arc.y * s ) );
+        col = base + ( col - base ) * ( ( 1.0 - 0.3 * arc.x * s ) * ( 1.0 + 0.4 * arc.y * s ) );
     }
 
     col *= 1.0 + 0.12 * audioBeat + 0.10 * audioSubBass;
