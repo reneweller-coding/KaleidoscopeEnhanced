@@ -100,6 +100,78 @@ float smShadow( vec3 p, vec3 n )
 }
 // ---- end of the shadow map ----
 
+// ---- light shafts of the scene's lamp (Tools/scenegen/patch_shaft3d.py) ----
+uniform float shaftP; ///< Light shafts in the haze: 0 = none (the old look) .. 1 = strong; acts only with shadowMapP >
+                      ///< 0.
+const vec3 ShaftCol = vec3( 1.0, 0.9, 0.75 ); ///< Colour of the lamp's light in the haze.
+
+/**  Whether the lamp sees a point in the air: one lookup of the shadow map (the hardware's 2 x 2 comparison filter).
+ *
+ * @param p  The point (world units). (in)
+ *
+ * @return
+ *   1 lit .. 0 in an object's shadow; 1 outside the map.
+ **/
+float smLit( vec3 p )
+{
+    vec3 t = smClip( p ).xyz * 0.5 + 0.5;
+    if ( t.z > 1.0 || any( lessThan( t.xy, vec2( 0.0 ) ) ) || any( greaterThan( t.xy, vec2( 1.0 ) ) ) )
+        return 1.0;
+    return textureLod( texShadow, vec3( t.xy, t.z - 0.0015 ), 0.0 );
+}
+
+/**  The lamp's light scattered toward the eye by a thin haze over the floor, added to a pixel: light shafts with the
+ * objects' shadows cut into them.
+ *
+ * @param col  The pixel's colour so far, 0..1. (in)
+ * @param p    The surface point the pixel shows (world units, the eye at the origin); of the sky shell only the
+ *             direction counts. (in)
+ * @param sky  True for the sky shell: the ray ends on the floor (below the horizon) or leaves the haze. (in)
+ *
+ * @return
+ *   The colour with the haze's light added (a screen blend, stays in 0..1).
+ *
+ * 12 steps through the part of the ray inside a sphere of 1.6 SmBox around SmCentre, the start jittered with a
+ * static interleaved-gradient noise; the haze's density falls with the height above the floor and toward the edge of
+ * the sphere; a Henyey-Greenstein lobe (g = 0.45) toward the lamp; 0.75 .. 1 with the slow swell.
+ **/
+vec3 smShafts( vec3 col, vec3 p, bool sky )
+{
+    const int   Steps = 12;
+    const float G = 0.45;
+    float       radius = 1.6 * SmBox;
+    vec3        dir = normalize( p );
+    float       b = dot( dir, SmCentre );
+    float       disc = b * b - dot( SmCentre, SmCentre ) + radius * radius;
+    if ( disc <= 0.0 )
+        return col;
+    float root = sqrt( disc );
+    float t0 = max( b - root, 0.0 );
+    float t1 = b + root;
+    if ( !sky )
+        t1 = min( t1, length( p ) );
+    else if ( dir.y < -0.004 )
+        t1 = min( t1, SmCentre.y / dir.y );
+    if ( t1 <= t0 )
+        return col;
+    float ds = ( t1 - t0 ) / float( Steps );
+    float jit = fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );
+    float sum = 0.0;
+    for ( int i = 0; i < Steps; ++i )
+    {
+        vec3  q = dir * ( t0 + ( float( i ) + jit ) * ds );
+        float fog = exp( -max( q.y - SmCentre.y, 0.0 ) / ( 0.45 * SmBox ) )
+                    * ( 1.0 - smoothstep( 0.5 * radius, radius, distance( q, SmCentre ) ) );
+        sum += fog * smLit( q );
+    }
+    float c = dot( dir, normalize( SmLamp ) );
+    float phase = ( 1.0 - G * G ) / pow( 1.0 + G * G - 2.0 * G * c, 1.5 );
+    float env = 0.75 + 0.25 * clamp( audioSwell, 0.0, 1.0 );
+    vec3  s = ShaftCol * ( shaftP * 0.6 * env * phase * sum * ds / SmBox );
+    return col + ( 1.0 - col ) * ( 1.0 - exp( -s ) );
+}
+// ---- end of the light shafts ----
+
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
  * @param c  The colour. (in)
@@ -221,6 +293,8 @@ void main()
     if ( vBg > 0.5 )
     {
         fragColor = vec4( renderSky( normalize( vPos ) ), 1.0 );
+        if ( shaftP > 0.0 && shadowMapP > 0.0 )
+            fragColor.rgb = smShafts( fragColor.rgb, vPos, true ); // patch_shaft3d.py
         return;
     }
 
@@ -265,4 +339,6 @@ void main()
     vec3 cat_tone = max( col, 0.0 );
     cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
     fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
+    if ( shaftP > 0.0 && shadowMapP > 0.0 )
+        fragColor.rgb = smShafts( fragColor.rgb, vPos, false ); // patch_shaft3d.py
 }
