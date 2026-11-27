@@ -10,7 +10,9 @@
  *
  *  Falls back to no shafts where depth isn't valid (2D layers); shaft
  *  intensity fades with distance from the light source, and a separate
- *  unoccluded bloom marks the source itself.
+ *  unoccluded bloom marks the source itself.  A 2D scene that passes the
+ *  photo's depth on (26.11.2026, depthPhoto) lets the light through where the
+ *  photo is far (its farthest third), at a fraction of the strength (PhotoShaft).
  *    interpolation -> cross-fades the two scene layers and their shaft-occlusion terms
  *    audioKick     -> nudges the light source's position
  *    audioLevel    -> brightens the shafts
@@ -46,6 +48,10 @@ uniform sampler2D texDepth1;     ///< Depth buffer of the next 3D scene (the sou
 uniform vec2      depthValid;    ///< 1 where texDepth0 (x) and texDepth1 (y) hold a 3D scene's depth, else 0.
 uniform vec2      nearFar;       ///< Near and far clip distances.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      depthPhoto;    ///< 1 where texDepth0 (x) / texDepth1 (y) hold a photo's depth (a 2D scene), else 0.
+uniform vec2      photoDepthWin; ///< Window depth of the photo's near end (x, depth 1) and far end (y, depth 0).
+
+const float PhotoShaft = 0.6; ///< The shafts on a photo, relative to a room (26.11.2026).
 
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioBeat;      ///< Beat envelope, 0..1.
@@ -92,6 +98,7 @@ vec3 hue2rgb( float h )
  * @param uv       Screen coordinate. (in)
  * @param lightUV  Screen coordinate of the light. (in)
  * @param valid    1 where the depth buffer is valid, else 0. (in)
+ * @param ph       1 where the depth is a photo's (a 2D scene): open where the photo is far. (in)
  *
  * @return
  *   The openness, 0..1.
@@ -104,10 +111,25 @@ vec3 hue2rgb( float h )
  * along the ray is the sky's light; what the frame contributes is only the
  * occluders.  So this returns openness, and the caller supplies the colour.
  **/
-float shafts( sampler2D dep, vec2 uv, vec2 lightUV, float valid )
+float shafts( sampler2D dep, vec2 uv, vec2 lightUV, float valid, float ph )
 {
-    if ( valid < 0.5 )
+    if ( valid <= 0.0 )
         return 0.0;
+    if ( ph > 0.5 ) // a photo: no sky behind it, but its far parts let the light through (its depth 0..1 here)
+    {
+        vec2  dlt = ( lightUV - uv ) * ( lengthP * 0.85 ) / float( Steps );
+        vec2  q = uv + dlt * fract( sin( dot( uv, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
+        float sum = 0.0, dec = 1.0;
+        for ( int i = 0; i < Steps; ++i )
+        {
+            q += dlt;
+            float d = ( texture( dep, clamp( q, vec2( 0.002 ), vec2( 0.998 ) ) ).r - photoDepthWin.y )
+                      / ( photoDepthWin.x - photoDepthWin.y );
+            sum += ( 1.0 - smoothstep( 0.05, 0.35, d ) ) * dec;
+            dec *= 0.955 - 0.10 * dustP;
+        }
+        return sum / float( Steps ) * PhotoShaft * min( valid, 1.0 );
+    }
 
     vec2 delta = ( lightUV - uv ) * ( lengthP * 0.85 ) / float( Steps );
 
@@ -148,8 +170,8 @@ void main()
     vec3 b = texture( tex1, uv ).rgb;
     vec3 col = mix( b, a, clamp( interpolation, 0.0, 1.0 ) );
 
-    float sa = shafts( texDepth0, uv, lightUV, depthValid.x );
-    float sb = shafts( texDepth1, uv, lightUV, depthValid.y );
+    float sa = shafts( texDepth0, uv, lightUV, depthValid.x, depthPhoto.x );
+    float sb = shafts( texDepth1, uv, lightUV, depthValid.y, depthPhoto.y );
     float shaft = mix( sb, sa, clamp( interpolation, 0.0, 1.0 ) );
 
     // Shafts fade with distance from the source, the way a beam of light in

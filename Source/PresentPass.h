@@ -341,6 +341,10 @@ public:
         float  depthPar = 0.f;    ///< Parallax strength (slewed by the caller).
         float nearZ = 0.5f; ///< Near-plane distance (world units) of the scene camera, used to linearise sceneDepthTex.
         float farZ = 220.f; ///< Far-plane distance (world units) of the scene camera, used to linearise sceneDepthTex.
+        // The photo's depth (26.11.2026, plan T3): a 2D scene that passes it on (`// @depth`) in sceneDepthTex.
+        float depthParPhoto = 0.f;        ///< Parallax strength on the photo's depth (slewed by the caller; 0 = none).
+        float stereoPhoto = 0.f; ///< Share of the photo's real depth in the stereo's depth (slewed; 0 = the old guess).
+        float photoWin[2] = { 0.f, 1.f }; ///< Window depth of the photo's near end (depth 1) and far end (depth 0).
     };
 
     /**  Run the full present sequence: history capture, brightness limiter, auto-exposure, bloom, then Present.frag
@@ -513,6 +517,9 @@ private:
                                        ///< 6).
     GLint m_presentDepthParUni = -1;   ///< Uniform location: parallax strength ("depthPar").
     GLint m_presentNearFar2Uni = -1;   ///< Uniform location: near/far plane distances ("nearFar2").
+    GLint m_presentPhParUni = -1;      ///< Uniform location: parallax strength on a photo's depth ("depthParPhoto").
+    GLint m_presentPhStereoUni = -1;   ///< Uniform location: the photo's depth's share in the stereo ("stereoPhoto").
+    GLint m_presentPhWinUni = -1;      ///< Uniform location: the photo's near/far window depths ("photoDepthWin").
 
     // ---- Lyrics / artist image ----
     GLuint m_lyricsTex = 0;               ///< Uploaded lyrics overlay texture.

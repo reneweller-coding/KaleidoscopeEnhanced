@@ -163,6 +163,9 @@ void PresentPass::setup( int renderW, int renderH,
         m_presentSceneDepthUni = glGetUniformLocation( m_presentProgId, "sceneDepth" );
         m_presentDepthParUni = glGetUniformLocation( m_presentProgId, "depthPar" );
         m_presentNearFar2Uni = glGetUniformLocation( m_presentProgId, "nearFar2" );
+        m_presentPhParUni = glGetUniformLocation( m_presentProgId, "depthParPhoto" );
+        m_presentPhStereoUni = glGetUniformLocation( m_presentProgId, "stereoPhoto" );
+        m_presentPhWinUni = glGetUniformLocation( m_presentProgId, "photoDepthWin" );
     }
 
     m_safetyReady = fbo_ok && ( m_presentProgId != 0 ) && ( m_presentTexUni >= 0 );
@@ -937,7 +940,10 @@ void PresentPass::run( const Inputs &in )
         if ( m_presentSceneDepthUni >= 0 )
             glUniform1i( m_presentSceneDepthUni, 6 );
         float dp = ( in.sceneDepthTex != 0 ) ? in.depthPar : 0.f;
-        if ( dp > 0.001f )
+        // The photo's depth (plan T3): its parallax and its share in the stereo read the same texture.
+        const float dpp = ( in.sceneDepthTex != 0 ) ? in.depthParPhoto : 0.f;
+        const float sp = ( in.sceneDepthTex != 0 ) ? in.stereoPhoto : 0.f;
+        if ( dp > 0.001f || dpp > 0.001f || sp > 0.001f )
         {
             glActiveTexture( GL_TEXTURE6 );
             glBindTexture( GL_TEXTURE_2D, in.sceneDepthTex );
@@ -947,6 +953,12 @@ void PresentPass::run( const Inputs &in )
             glUniform1f( m_presentDepthParUni, dp );
         if ( m_presentNearFar2Uni >= 0 )
             glUniform2f( m_presentNearFar2Uni, in.nearZ, in.farZ );
+        if ( m_presentPhParUni >= 0 )
+            glUniform1f( m_presentPhParUni, dpp );
+        if ( m_presentPhStereoUni >= 0 )
+            glUniform1f( m_presentPhStereoUni, sp );
+        if ( m_presentPhWinUni >= 0 )
+            glUniform2f( m_presentPhWinUni, in.photoWin[0], in.photoWin[1] );
     }
 
     if ( m_presentResUni >= 0 )

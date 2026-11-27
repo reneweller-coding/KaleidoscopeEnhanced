@@ -11,7 +11,11 @@
  *  Uses whichever of the forward/backward depth differences spans the
  *  smaller step, per axis, so the reconstructed normal (and therefore the
  *  rim) stays clean right up to silhouette edges; the key light's direction
- *  and colour drift with dayPhase and the harmonic hue.
+ *  and colour drift with dayPhase and the harmonic hue.  A 2D scene that
+ *  passes the photo's depth on (26.11.2026, depthPhoto) is relit at a fraction
+ *  of the rim (PhotoRim), without the fill, its normal over a wider step
+ *  (PhotoStep, across the map's 8-bit terraces) and a flattened relief
+ *  (PhotoFlat, so only its edges catch the light): a photo's relief is a hint.
  *    interpolation -> cross-fades the two rim-lit scene layers
  *    audioKick     -> flashes the rim-light intensity
  *    audioLevel    -> adds to the rim-light intensity
@@ -49,6 +53,11 @@ uniform vec2      depthValid;    ///< 1 where texDepth0 (x) and texDepth1 (y) ho
 uniform vec2      nearFar;       ///< Near and far clip distances.
 uniform float     tanHalfFov;    ///< Tangent of half the vertical field of view of the 3D scene.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      depthPhoto;    ///< 1 where texDepth0 (x) / texDepth1 (y) hold a photo's depth (a 2D scene), else 0.
+
+const float PhotoRim = 0.35;  ///< The rim light on a photo, relative to a room (26.11.2026); a photo gets no fill.
+const float PhotoStep = 2.0;  ///< The normal's step on a photo, in 1/270 of the height: across 8-bit terraces.
+const float PhotoFlat = 0.15; ///< The relief a photo's normal sees, relative to its depth: only its edges catch light.
 
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioBeat;      ///< Beat envelope, 0..1.
@@ -167,6 +176,61 @@ vec3 lit( sampler2D src, sampler2D dep, vec2 uv, float valid, vec2 px,
     return col;
 }
 
+/**  A photo relit by the key light alone: the rim of its relief, at PhotoRim of a room's.
+ *
+ * @param src     The frame. (in)
+ * @param dep     The depth texture: the photo's depth, as the 2D scene wrote it. (in)
+ * @param uv      Screen coordinate. (in)
+ * @param valid   The share of the photos with a map, 0..1: the light fades in with it (a photo cross-fade between a
+ *                photo with and one without a map). (in)
+ * @param px      Size of a pixel. (in)
+ * @param keyDir  Direction of the key light. (in)
+ * @param keyCol  Colour of the key light. (in)
+ * @param sharp   Sharpness of the rim. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ *
+ * Not lit(): a photo's depth has 256 levels, and a one-pixel difference sees every level as a cliff -- the rim drew
+ * the terraces as lines (ramp sheet of 27.11.2026).  The normal here spans PhotoStep on both sides, which measures
+ * the slope across several levels; the shorter side of lit() would lie flat on any terrace wider than the step.  The
+ * relief is flattened (PhotoFlat) and seen straight on, so the rim outlines the photo's depth edges instead of
+ * covering every slope and the frame's edges.  And no fill: a photo faces the camera almost everywhere, so the fill
+ * lay over the whole picture as a veil.
+ **/
+vec3 litPhoto( sampler2D src, sampler2D dep, vec2 uv, float valid, vec2 px, vec3 keyDir, vec3 keyCol, float sharp )
+{
+    vec3 c = texture( src, uv ).rgb;
+    if ( valid <= 0.0 )
+        return c;
+
+    vec2  st = px * ( PhotoStep * max( resolution.y / 270.0, 1.0 ) );
+    float zc = linearise( texture( dep, uv ).r );
+    if ( zc > nearFar.y * 0.94 )
+        return c;
+    // The relief flattened to PhotoFlat: a photo's depth spans 8..80 units, so nearly every slope of it is steep and
+    // the rim lay on the whole picture (+17 of 255 on the sheet of 27.11.2026); flat, only its edges stay steep.
+    float zr = zc + PhotoFlat * ( linearise( texture( dep, uv + vec2( st.x, 0.0 ) ).r ) - zc );
+    float zl = zc + PhotoFlat * ( linearise( texture( dep, uv - vec2( st.x, 0.0 ) ).r ) - zc );
+    float zu = zc + PhotoFlat * ( linearise( texture( dep, uv + vec2( 0.0, st.y ) ).r ) - zc );
+    float zd = zc + PhotoFlat * ( linearise( texture( dep, uv - vec2( 0.0, st.y ) ).r ) - zc );
+
+    vec3 dx = viewPos( uv + vec2( st.x, 0.0 ), zr ) - viewPos( uv - vec2( st.x, 0.0 ), zl );
+    vec3 dy = viewPos( uv + vec2( 0.0, st.y ), zu ) - viewPos( uv - vec2( 0.0, st.y ), zd );
+    vec3 N = normalize( cross( dx, dy ) );
+    // A photo is a picture facing the eye: only its relief turns away, not the edges of the frame (seen from the
+    // camera, a flat photo's corners lit up like a vignette).
+    vec3 V = vec3( 0.0, 0.0, 1.0 );
+    if ( dot( N, V ) < 0.0 )
+        N = -N;
+
+    float fres = pow( 1.0 - clamp( dot( N, V ), 0.0, 1.0 ), mix( 1.6, 6.0, clamp( sharp, 0.0, 1.0 ) ) );
+    float back = clamp( dot( N, keyDir ) * 0.5 + 0.5, 0.0, 1.0 );
+    return c
+           + keyCol * fres * back * ( 0.8 + 2.2 * rimP ) * ( 0.55 + 0.9 * audioKick + 0.35 * audioLevel )
+                 * ( PhotoRim * min( valid, 1.0 ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -184,9 +248,12 @@ void main()
     vec3 fillCol = mix( vec3( 0.25, 0.35, 0.55 ), hue2rgb( fract( 0.12 + 0.2 * sin( a ) ) ), 0.35 );
 
     float sharp = clamp( sharpP, 0.0, 1.0 );
-    vec3  A = lit( tex0, texDepth0, uv, depthValid.x, px, keyDir, keyCol, fillDir, fillCol, sharp );
-    vec3  B = lit( tex1, texDepth1, uv, depthValid.y, px, keyDir, keyCol, fillDir, fillCol, sharp );
-    vec3  col = mix( B, A, clamp( interpolation, 0.0, 1.0 ) );
+    // A photo's depth (a 2D scene, depthPhoto) gets its own light; a 3D layer gets what it always got.
+    vec3 A = depthPhoto.x > 0.5 ? litPhoto( tex0, texDepth0, uv, depthValid.x, px, keyDir, keyCol, sharp )
+                                : lit( tex0, texDepth0, uv, depthValid.x, px, keyDir, keyCol, fillDir, fillCol, sharp );
+    vec3 B = depthPhoto.y > 0.5 ? litPhoto( tex1, texDepth1, uv, depthValid.y, px, keyDir, keyCol, sharp )
+                                : lit( tex1, texDepth1, uv, depthValid.y, px, keyDir, keyCol, fillDir, fillCol, sharp );
+    vec3 col = mix( B, A, clamp( interpolation, 0.0, 1.0 ) );
 
     col *= 1.0 + 0.12 * audioBeat + 0.10 * audioSubBass;
     col += keyCol * 0.04 * audioHigh;

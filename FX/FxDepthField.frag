@@ -11,6 +11,10 @@
  *  Layers without valid depth (2D scenes) pass through unblurred. A
  *  foreground-stays-sharp occlusion test keeps in-focus objects from
  *  smearing into the blurred background behind them.
+ *  A 2D scene that passes the photo's depth on (26.11.2026, depthPhoto) is
+ *  blurred too, quieter: the focus sits on the photo's subject (photoSubject,
+ *  or the near half without one), half the aperture, at most PhotoMaxCoc of
+ *  the blur, no rack focus.
  *    interpolation -> cross-fades the two independently blurred scene layers
  *    audioSubBass  -> pulls the focal plane in toward the camera
  *    audioKick     -> snaps the focal plane back out (rack focus)
@@ -43,6 +47,9 @@ uniform sampler2D texDepth1;     ///< Depth buffer of the next 3D scene (the sou
 uniform vec2      depthValid;    ///< 1 where texDepth0 (x) and texDepth1 (y) hold a 3D scene's depth, else 0.
 uniform vec2      nearFar;       ///< Near and far clip distances.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      depthPhoto;    ///< 1 where texDepth0 (x) / texDepth1 (y) hold a photo's depth (a 2D scene), else 0.
+uniform vec2      photoDepthWin; ///< Window depth of the photo's near end (x, depth 1) and far end (y, depth 0).
+uniform vec4      photoSubject;  ///< Depth threshold and confidence of the photo's subject (xy: the current photo).
 
 uniform float audioLevel;   ///< Overall loudness, 0..1.
 uniform float audioBeat;    ///< Beat envelope, 0..1.
@@ -55,6 +62,7 @@ uniform float apertureP; ///< preset: how fast things go soft
 uniform float bokehP;    ///< preset: highlight blooming in the blur
 
 const float Pi = 3.14159265358979; ///< Pi.
+const float PhotoMaxCoc = 0.4;     ///< The largest blur on a photo, relative to a room's (26.11.2026): a hint of focus.
 
 /**  A depth buffer is stored non-linearly — most of its precision sits near the camera.
  *
@@ -78,7 +86,10 @@ float linearise( float d )
  * @param dep    The depth texture. (in)
  * @param uv     Screen coordinate. (in)
  * @param focus  Focus distance. (in)
- * @param valid  1 where the depth buffer is valid, else 0. (in)
+ * @param valid  1 where the depth buffer is valid, else 0; between, the blur fades in (a photo with a map only on
+ *               one side of a photo cross-fade). (in)
+ * @param ap     The aperture: apertureP, or less on a photo. (in)
+ * @param cmax   The largest circle of confusion: 1, or PhotoMaxCoc on a photo. (in)
  *
  * @return
  *   The colour (RGB).
@@ -86,17 +97,17 @@ float linearise( float d )
  * A ring gathers a disc of confusion far more evenly than a box of the same tap count, which is what keeps the bokeh
  * round instead of cross-shaped.
  **/
-vec3 blurAt( sampler2D src, sampler2D dep, vec2 uv, float focus, float valid )
+vec3 blurAt( sampler2D src, sampler2D dep, vec2 uv, float focus, float valid, float ap, float cmax )
 {
     vec3 c = texture( src, uv ).rgb;
-    if ( valid < 0.5 )
+    if ( valid <= 0.0 )
         return c;
 
     float z = linearise( texture( dep, uv ).r );
     // Circle of confusion, signed distance from the focal plane in metres,
     // normalised so that the aperture setting behaves the same at any depth.
     float coc = abs( z - focus ) / max( focus, 1.0 );
-    coc = clamp( coc * ( 0.6 + 3.2 * apertureP ) - 0.04, 0.0, 1.0 );
+    coc = clamp( coc * ( 0.6 + 3.2 * ap ) - 0.04, 0.0, cmax );
 
     // Kept modest on purpose: 12 taps spread over a large disc stop reading as
     // a blur and start reading as twelve copies.  Wider bokeh needs more taps,
@@ -126,7 +137,7 @@ vec3 blurAt( sampler2D src, sampler2D dep, vec2 uv, float focus, float valid )
         // Reject samples that are IN FOCUS and in front: a sharp foreground
         // object must not smear into a blurred background, which is the
         // artefact that gives cheap depth of field its halos.
-        float sc = clamp( abs( sz - focus ) / max( focus, 1.0 ) * ( 0.6 + 3.2 * apertureP ), 0.0, 1.0 );
+        float sc = clamp( abs( sz - focus ) / max( focus, 1.0 ) * ( 0.6 + 3.2 * ap ), 0.0, 1.0 );
         float w = ( sz > z - 0.05 ) ? 1.0 : sc;
 
         // Bright samples weigh more, which is what turns out-of-focus
@@ -136,7 +147,19 @@ vec3 blurAt( sampler2D src, sampler2D dep, vec2 uv, float focus, float valid )
         sum += s * w;
         wsum += w;
     }
-    return sum / wsum;
+    vec3 r = sum / wsum;
+    return valid >= 1.0 ? r : mix( c, r, valid );
+}
+
+/**  The focus distance on a photo: its subject's depth threshold, or the near half without a measured subject.
+ *
+ * @return
+ *   The distance, in the units of linearise().
+ **/
+float photoFocusDist()
+{
+    float d = mix( 0.6, photoSubject.x, smoothstep( 0.45, 0.55, photoSubject.y ) ); // a subject from conf 0.5
+    return linearise( mix( photoDepthWin.y, photoDepthWin.x, d ) );
 }
 
 /** Entry point of this shader stage (the file description says what it draws). */
@@ -149,8 +172,13 @@ void main()
     float focus = focusP * ( 26.0 - 13.0 * audioSubBass + 7.0 * audioKick );
     focus = clamp( focus, nearFar.x + 1.0, nearFar.y * 0.75 );
 
-    vec3 a = blurAt( tex0, texDepth0, uv, focus, depthValid.x );
-    vec3 b = blurAt( tex1, texDepth1, uv, focus, depthValid.y );
+    // A photo is no room: its own focus (the subject), half the aperture, at most PhotoMaxCoc of the blur (its depth
+    // spans 8..80 units, so nearly all of it would lie far from any focus), no rack focus on the music.
+    float pf = photoFocusDist();
+    vec3  a = blurAt( tex0, texDepth0, uv, depthPhoto.x > 0.5 ? pf : focus, depthValid.x,
+                      depthPhoto.x > 0.5 ? 0.5 * apertureP : apertureP, depthPhoto.x > 0.5 ? PhotoMaxCoc : 1.0 );
+    vec3  b = blurAt( tex1, texDepth1, uv, depthPhoto.y > 0.5 ? pf : focus, depthValid.y,
+                      depthPhoto.y > 0.5 ? 0.5 * apertureP : apertureP, depthPhoto.y > 0.5 ? PhotoMaxCoc : 1.0 );
 
     vec3 col = mix( b, a, clamp( interpolation, 0.0, 1.0 ) );
 

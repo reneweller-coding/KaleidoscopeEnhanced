@@ -10,7 +10,9 @@
  *
  *  Rebuilds view-space position and normal per pixel from depth, samples a
  *  dithered hemisphere kernel with a range check that avoids silhouette
- *  haloing, and blends the occlusion of both incoming scene layers.
+ *  haloing, and blends the occlusion of both incoming scene layers.  A 2D
+ *  scene that passes the photo's depth on (26.11.2026, depthPhoto) gets a
+ *  fraction of the occlusion (PhotoAO).
  *    interpolation -> cross-fades the two scene layers and their occlusion terms
  *    audioAmbient  -> raises/lowers the overall occlusion strength (breathing)
  *    audioSubBass  -> adds extra occlusion darkening
@@ -45,6 +47,9 @@ uniform vec2      depthValid;    ///< 1 where texDepth0 (x) and texDepth1 (y) ho
 uniform vec2      nearFar;       ///< Near and far clip distances.
 uniform float     tanHalfFov;    ///< Tangent of half the vertical field of view of the 3D scene.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      depthPhoto;    ///< 1 where texDepth0 (x) / texDepth1 (y) hold a photo's depth (a 2D scene), else 0.
+
+const float PhotoAO = 0.6; ///< The occlusion on a photo, relative to a room (26.11.2026).
 
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioBeat;      ///< Beat envelope, 0..1.
@@ -102,7 +107,7 @@ vec3 viewPos( sampler2D dep, vec2 uv )
  **/
 float occlusion( sampler2D dep, vec2 uv, float valid )
 {
-    if ( valid < 0.5 )
+    if ( valid <= 0.0 )
         return 0.0;
 
     float z = linearise( texture( dep, uv ).r );
@@ -183,6 +188,11 @@ void main()
 
     float oa = occlusionSmooth( texDepth0, uv, depthValid.x );
     float ob = occlusionSmooth( texDepth1, uv, depthValid.y );
+    // A photo: PhotoAO of it, faded in with the share of the photos that have a map.
+    if ( depthPhoto.x > 0.5 )
+        oa *= PhotoAO * min( depthValid.x, 1.0 );
+    if ( depthPhoto.y > 0.5 )
+        ob *= PhotoAO * min( depthValid.y, 1.0 );
     float occ = mix( ob, oa, clamp( interpolation, 0.0, 1.0 ) );
 
     // Breathe with the music, but never all the way off: an occlusion term
