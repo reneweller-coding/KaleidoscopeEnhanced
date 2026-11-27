@@ -46,7 +46,7 @@
  *                                             2D shaders don't render solid
  *                                             black (regression guard)
  *    PresetEditor.exe --features in.wav out.csv [--every N] [--tempo-trace FILE] [--section-trace FILE]
- *                                             [--drum-trace FILE]
+ *                                             [--drum-trace FILE] [--buildup-trace FILE]
  *                                             analyse a WAV at full speed and write what
  *                                             the shaders and the chain walk see, every
  *                                             N-th 10 ms block (default 5): the raw
@@ -58,7 +58,9 @@
  *                                             --section-trace the section detector's per
  *                                             0.1-s frame (AudioAnalyzer::M_SectionTrace),
  *                                             --drum-trace the drum envelopes old and new
- *                                             per block (AudioAnalyzer::M_DrumTrace)
+ *                                             per block (AudioAnalyzer::M_DrumTrace),
+ *                                             --buildup-trace the build-up's inputs, old
+ *                                             and new, per block (M_BuildUpTrace)
  *
  *  @author René Weller
  */
@@ -272,7 +274,19 @@ int main( int argc, char *argv[] )
                 return 1;
             }
         }
+        const int bt = static_cast<int>( args.indexOf( "--buildup-trace" ) );
+        if ( bt > 0 && bt + 1 < args.size() )
+        {
+            AudioAnalyzer::M_BuildUpTrace = fopen( args[bt + 1].toLocal8Bit().constData(), "wb" );
+            if ( !AudioAnalyzer::M_BuildUpTrace )
+            {
+                fprintf( stderr, "features: cannot write %s\n", qPrintable( args[bt + 1] ) );
+                return 1;
+            }
+        }
         const int rc = dumpFeatures( args[1], args[2], every );
+        if ( AudioAnalyzer::M_BuildUpTrace )
+            fclose( AudioAnalyzer::M_BuildUpTrace );
         if ( AudioAnalyzer::M_DrumTrace )
             fclose( AudioAnalyzer::M_DrumTrace );
         if ( AudioAnalyzer::M_TempoTrace )
