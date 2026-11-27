@@ -109,7 +109,26 @@ the ratio keeps every step under 0.019 (8cd3da06).
 *Timing.*  Nine scenes and two sacrificial windows, eight runs: 3.7 min in all, 2.0 s per entry and run (12 s of
 video at 30 fps, about 180 frames a second) plus 20 s for decoding and thumbnails.  A chunk of 24 scenes: about
 7 min, inside one lock hold.  The labs and the 60 most-shown scenes (84) take four chunks, about half an hour; the
-whole catalogue would take 104 chunks, about 12 hours -- not run.
+whole catalogue would take 104 chunks, about 12 hours -- not run.  Measured afterwards: 6.0-6.8 min per chunk of 24.
+
+*The 60 most-shown scenes* came from the scene plans `Tools/check_schedule.py` wrote on 21.11. (12 h of silence and
+6 h of the structure track per genre preset; nothing in the presets, the scheduler or the conditioner has changed
+since): the screen time summed over the ten genre presets, the labs left out.  The four chain labs alone have 40 % of
+it (ChainLab2D 12 %, ChainLabTunnel 11 %, ChainLab3D 10 %, ChainSlice3D 7 %); the next scene, PulsarRidgelineStack,
+0.44 %.
+
+*The base run* (`Tools/scene_voices.tsv`, run `base`; sheets in `kaleido-wt\sheets\voices\base`, per voice the ten
+strongest and the ten weakest: full run | voice muted | difference x4).  "Zero" = no more than the photo alone:
+
+| set | kick | snare | hat | lead | bass | pan | zero in 3+ voices |
+|---|---|---|---|---|---|---|---|
+| labs (24) | 15 | 24 | 23 | 1 | 16 | 24 | 23 |
+| the 60 most shown (59 in the table; HyperWarpTunnel is a control too) | 31 | 57 | 56 | 19 | 40 | 57 | 57 |
+
+The kick reaches about half of the most-shown scenes; snare and hat almost none (as far as this music lets them be
+told apart, see above); a melody line moves two thirds (which says as much about the drift as about the melody);
+the stereo image only the stereo scenes.  The labs answer no single voice -- their music is the walk on
+`sceneAdvance` and the swell -- except the kick through the house finish (`0.9 + 0.2 * audioLevel`).
 
 #### I2 -- the voices' roles
 
@@ -141,7 +160,10 @@ moves the camera, the zoom, a turn or the picture as a whole.
   ChainSlice3D: in the app their last pass is `Engine/ChainPass/Final_<lab>.frag`, written by `make_chainpass.py`
   from the lab's source).  Not FxChain: an overlay on a scene that has the roles would double them.
 - *voiceP 0 against the old picture.*  The four chain labs: snapshots (the app, empty settings on both sides) before
-  and after, 4 of 4 identical at tolerance 0 -- after the fix below, ChainLab3D and ChainSlice3D once more.  The 71
+  and after, 4 of 4 identical at tolerance 0.  After the fix below, ChainLab3D and ChainSlice3D once more: the first
+  render differed (mean 0.68 and 0.25 of 255, up to 20 levels at edges), a repeat was identical to the set before
+  (0.000) -- that first render was one of the app's run-to-run variations (the 3D labs' specialised programs are built
+  in the background); the editor's uber shaders old against new: identical.  The 71
   other regenerated scenes (61 of I2, 10 of I3): the real compile of all 79 changed files passes; snapshots of the
   frags of b87fcc34 against those of HEAD, in one lock hold: 48 identical, 23 differ (mean absolute difference
   0.00..1.61 of 255, Chain3DMandelbox and Chain3DPolarTunnelBoxes the most).  A repeat of the HEAD set against itself:
@@ -164,7 +186,61 @@ moves the camera, the zoom, a turn or the picture as a whole.
   band 11-18 (`kaleido-wt\sheets\voices\stills\roles_stills.jpg`).  A first version added a grey lift to the ring and
   the glitter; in the photo-only labs that is a colour of its own, so every role multiplies now.
 
-<!-- numbers -->
+*I1 again, with the roles* (run `roles`: the same chunks with `--expr voiceP=1`, the same seed, photo and music;
+against the base run without the expr -- see the trap below for why `base0` came later):
+
+| | base (no voiceP) | roles (voiceP 1) |
+|---|---|---|
+| labs: lr with the lead panned left | -0.018 .. +0.007 | **+0.116 .. +0.402, all 24** |
+| labs: kick / snare / hat / lead / bass above twice the floor's hit (sync >= 0.15) | 9 / 0 / 1 / 1 / 8 | 11 / 0 / 3 / 4 / 9 |
+| labs: hit median kick / snare / hat / bass | 0.059 / 0.016 / 0.029 / 0.063 | 0.057 / 0.012 / 0.044 / 0.070 |
+| the 21 most-shown scenes with roles: lr | median +0.000 | **median +0.349, min +0.051** |
+| the 39 most-shown without roles: lr | median 0.000 | median 0.000 (max +0.099) |
+| limiter samples dimmed (full runs), labs / most shown | 0 / 379 | 0 / 231 |
+
+- *The stereo role shows in every scene that has it*, and nowhere else.  The lead panned left leaves the mono sum
+  untouched, so this is the balance alone.
+- *Kick, snare and hat hardly move in the muted-voice measure* -- and cannot: muting the snare leaves `audioSnare`
+  as it was (0.304 / 0.303, above), so the snare's ring lights on the lead's notes in the muted run as much as on the
+  snare in the full run.  What the roles add is light on the hits of whatever drives those envelopes.
+- *A trap: voiceP 0 must be set too.*  The roles run divided by the base run was meant to isolate the roles' light;
+  the two runs did not show the same pictures (struct 0.3-0.85 from the first second on, even in scenes without
+  roles).  The scenes' rolls were the same (the app's SEEDED lines are identical), but a preset with 26 more formulas
+  is another preset: what is drawn at load (the scheduler's first scene before the sweep -- whose activation count
+  then shifts --, the chain labs' walk seeds) differs.  A third run, `base0`, has `<expr name="voiceP" formula="0"/>`
+  in every entry: base0 against roles, struct 0.06-0.19 and amp 1.3-2.2 % in the 24 labs -- the same pictures, apart
+  from the roles' light.  The clips were rendered again that way (the first ones showed two different pictures).
+- *The roles' gain field* (roles run / base0 run of the same variant, 160 x 90, per window; 36 scenes with roles and
+  12 without, in the labs and the first chunk of the most shown):
+
+  | | 36 with roles | 12 without |
+  |---|---|---|
+  | the ring's gain varies (std over the window) | 0.053 (0.027..0.070) | 0.0014 (0..0.003) |
+  | ... and follows the onsets of kick / snare / lead (r) | 0.25 / 0.17 / 0.05 | 0.04 / 0.04 / 0.06 |
+  | the left half's gain minus the right's, lead panned left minus centred | +0.025 (+0.005..+0.031), all 36 | 0.000 |
+  | the melody band sits lower with the lead muted | 31 of 36 (median 0.056 of the height) | 6 of 12 |
+
+  So the light is there, only in the scenes that have the roles; the ring lights on the drum grid (the snare falls on
+  the kick's beats 2 and 4, and `audioSnare` hears more than the snare); the side follows the balance; the band follows
+  the melody's height.  Per voice, kick, snare and hat still cannot be told apart in this music (above).
+- *base0 against roles, per voice* (frame-matched now): the stereo as before (lr -0.004..+0.003 -> +0.116..+0.402);
+  the hit-locked change per muted voice rises a little in most labs (kick in 15 of 24, 2 equal, e.g. EngravingLab
+  0.069 -> 0.092, PartitionLab 0.120 -> 0.144) -- what muting one voice takes away of the roles is small, because the
+  envelopes the roles follow hear the other voices too.
+- *The limiter* fires less, not more: 0 -> 0 in the labs, 379 -> 231 samples in the 60.  The count is a noisy
+  number: scenes without roles, the same code in both runs, moved by up to 120 samples (MirrorBallRoom 0 -> 120,
+  HyperWarpTunnel 77 -> 0) -- the limiter's state carries over from the scene before.
+- *The acceptance as the plan words it* -- in the labs every voice above the level of the null pairs (amp <= 0.46 %,
+  struct <= 0.04) -- holds: every voice reads 7-11 % in every lab.  It held before the roles too (the drift); the
+  number that shows a role is the stereo, and the gain field for the snare's ring.
+- *temporal_budget* (0 errors; the four warnings are old scenes), *shake_scan* (0 new hits), *shadercheck* (the 79
+  changed files compile; static rules 0 errors), *doc_shaders* (0 files would change), *cgvr_format* (the changed
+  files are laid out).
+- *Clips* (`kaleido-wt\sheets\voices\clips\<Lab>.mp4`, 21 s each with sound, voiceP 0 left and 1 right): 24 labs on a
+  track made for them -- four bars of groove leaning left then right (the whole mix panned 1.3 : 0.5, a balance of
+  about 0.74), four bars of build-up with the snare roll, the vacuum and the drop.  Both sides carry the `<expr>`
+  (formula 0 and 1), so they show the same picture apart from the roles -- except ChainLab3D, whose camera can differ
+  between two runs of the app.  The ten scenes of I3 the same way in `clips_i3\`.
 
 #### I3 -- a demonstration round in ten of the most-shown scenes
 
@@ -181,7 +257,25 @@ block, where the voices add their uniforms, and `git merge-file` reported a conf
 hand.  The hand-written scenes among the most shown (HeliosphericCurrentSheet, BismuthLabyrinth, Voyager,
 StargateWormhole, ...) would need the function pasted by hand; not in this round.
 
-<!-- numbers -->
+Measured in the same chunks as I1 (the base run is the before, the roles run the after):
+
+| scene | zero before -> after | hit kick before -> after | lr (lead left) before -> after |
+|---|---|---|---|
+| PulsarRidgelineStack | 4 -> 4 | 0.043 -> 0.042 | -0.002 -> +0.310 |
+| WireframeRidgeScan | 5 -> 4 | 0.004 -> 0.006 | +0.046 -> +0.130 |
+| TextureTelescopeRings | 5 -> 4 | 0.021 -> 0.030 | -0.001 -> +0.505 |
+| VaultShaftUp | 3 -> 2 | 0.163 -> 0.122 | -0.001 -> +0.255 |
+| TruchetFlowWeave | 5 -> 2 | 0.028 -> 0.050 | +0.008 -> +0.241 |
+| TextureIrisShutter | 4 -> 3 | 0.067 -> 0.068 | +0.016 -> +0.449 |
+| TextureCrystalLatticeFlight | 5 -> 3 | 0.023 -> 0.064 | -0.007 -> +0.211 |
+| LaserProjectorLissajous | 5 -> 6 | 0.008 -> 0.009 | +0.001 -> +0.084 |
+| NeonRingTunnel | 4 -> 4 | 0.063 -> 0.052 | -0.003 -> +0.051 |
+| CrystalThroatTunnel | 4 -> 3 | 0.063 -> 0.134 | +0.001 -> +0.424 |
+
+Zero in 4.4 voices on average before, 3.5 after: the stereo leaves the zeros everywhere but in the two dark scenes,
+the kick in three.  LaserProjectorLissajous and NeonRingTunnel are thin bright lines on black: a role that only scales
+the picture's own light has little to scale there.  Before/after clips: `kaleido-wt\sheets\voices\clips_i3\`.  Whether
+the roles go into the presets (an `<expr name="voiceP" formula="1"/>` per entry, or a range) is the user's decision.
 
 #### Tools and traps
 
@@ -189,9 +283,10 @@ StargateWormhole, ...) would need the function pasted by hand; not in this round
   `--report --tag T` (Tools/scene_voices.tsv keeps the rows of every run, `run` column; sheets into
   `kaleido-wt\sheets\voices\<run>`).  `KALEIDO_SETTINGS_SRC` points the private settings copy at another ini (a
   worktree has none of its own); `KALEIDO_SCHEDULE_DIR` the scene plans topN reads.
-- `<expr name="voiceP" formula="1"/>` sets a knob without drawing a random number: `addExpression` draws its three
-  seeds at load time, and `resetParameters` reseeds per scene under `KALEIDO_SEED`, so the rolls of the run without
-  it stay the same.  A `<float>` would add a roll of its own.
+- `<expr name="voiceP" formula="1"/>` sets a knob without a roll of its own (`resetParameters` reseeds per scene
+  under `KALEIDO_SEED`; the SEEDED lines stay the same) -- but `addExpression` draws three seeds at load, and the
+  load-time draws decide the scheduler's first scene and the chain labs' walk seeds: a run with the exprs shows other
+  pictures than one without.  Compare formula 0 with formula 1 (`--expr voiceP=0`, run `base0`).
 - `Tools/scenegen/merge_regen.py`: a gen.py rebuild of a 2D chain scene of 30.09. pulls in 1,067 lines of round-7
   chain classes it never calls.  The tool builds each scene twice with today's gen.py (from the committed source and
   from the changed one) and merges the difference into the committed frag (`git merge-file`): 41 chain scenes got
