@@ -809,6 +809,43 @@ Messen: `python Tools/reactivity.py --voices` (je Stimme stumm gegen voll).
 
 ---
 
+### V15 — Tiefe des Fotos, Licht über Weiß und die Knöpfe dazu (26./27.11.2026)
+
+Drei Kommentarzeilen im Fragment-Quelltext sagen dem Host, was eine Szene kann. Jede steht allein auf ihrer
+Zeile und genau so geschrieben:
+
+- `// @depth` — die 2D-Szene gibt die Tiefe des Fotos weiter (`EffectShader::writesDepth()`): Tiefen-Effekte,
+  2,5D-Parallaxe, Stereo und die Tiefen-Übergänge arbeiten dann mit ihr. In einer Generator-Quelle
+  (`Tools/scenegen/src`) heißt die Zeile `//@depth`; gen.py deklariert dann `photoDepthAmt` und `photoDepthWin`
+  und schreibt `// @depth` in die erzeugte Szene, und die Quelle ruft auf JEDEM Pfad `photoDepthOut()` auf.
+  Ohne Karte (oder mit `KALEIDO_NO_DEPTH=1`) bleibt das Bild wie vorher. Ansehen: `KALEIDO_SHOW_DEPTH=1` zeigt
+  die Tiefe jeder Szene als Graubild (weiß = nah).
+- `// @hdrcap <X>` — Lichtdeckel bei 16-Bit-Zwischenbildern (`EffectShader::hdrCap()`): jeder Farbkanal des
+  fertigen Szenenbilds wird auf X begrenzt. Gedacht für additive Partikelszenen, die ihre Summe nicht selbst
+  begrenzen können (bei 8 Bit hielt das Ziel jede Summe bei 1, bei 16 Bit wird alles darüber zu Glühen). Bei
+  8-Bit-Zielen wird nichts angefasst.
+- `//@light` — nur in Generator-Quellen: der Haus-Abschluss lässt Licht über Weiß stehen (obere Klemme 3 statt
+  1), damit die hellsten Lichter der Szene das Glühen erreichen. Handgeschriebene Szenen setzen dieselbe obere
+  Grenze in ihrer letzten Klemme. Ein 8-Bit-Ziel schneidet weiter bei 1.
+
+Die Knöpfe der beiden Tage. Für alle gilt: **0 ist der alte Codepfad, bitgleich** (jede neue Zeile hinter
+`if ( knopf > 0.0 )`), und ohne Eintrag im Preset ist der Knopf 0.
+
+| Knopf | wo | was | in `Presets/Komplett.xml` |
+|---|---|---|---|
+| `voiceP` | Szenen mit `voiceRoles()` (V14) | feste Rollen der Stimmen | `<expr name="voiceP" formula="1"/>`, 75 Einträge |
+| `depthLook`, `depthVar` | ChainLab2D; `depthLook` auch TimeChainLab, MirrorBilliardLab | die Tiefen-Looks der Labore, siehe docs/kettenlabor-erklaert.md | −1,51..6,49 und 0..99,49; die zwei anderen Labore 2,83..5,49 |
+| `envP` | 3D-Szenen mit Spiegelung (SpectralOrb, SpectralTorus, ChromeForm, …) | das Foto als Umgebungslicht statt der eigenen Umgebung der Szene; der Wert ist die Stärke | 0,5..1, 20 Einträge |
+| `shadowMapP` | sieben Mesh-Szenen auf einem Boden | Schattenkarte der Lampe | 0,6..1, 7 Einträge |
+| `arcP` | die fünf Tiefen-Effekte (`FX/FxDepthFog`, `FxDepthField`, `FxSunShafts`, `FxRimLight`, `FxAmbientOcclusion`) | der Spannungsbogen: im Build-up zieht sich die Tiefe zusammen, der Drop löst sie in einer halben Sekunde | −0,3..1 (unter 0 = aus) |
+| `reliefP` | zehn 3D-Szenen, die das Foto auf einer beleuchteten Fläche zeigen | die Tiefe des Fotos als Relief im Licht der Szene; auch negative Werte sind aus | −0,4..1,2 |
+
+Achtung, gleiche Namen: `arcP` gibt es auch als eigenen Knopf einiger Blitz-Szenen (z. B. `TeslaLightningTree`),
+`reliefP` als eigenen Knopf von `VideoRelief` und im 3D-Labor (dort beult die Helligkeit die Fläche) -- das sind
+andere Knöpfe mit anderen Bereichen. Den Block für `reliefP` schreibt `Tools/scenegen/patch_relief3d.py`, den für
+`envP` `Tools/scenegen/patch_env3d.py` (beide idempotent). Einzelheiten: docs/engine-internals.md, Abschnitte
+(69) bis (71).
+
 ## Probe-Renders: IMMER mit echten Bildern (`--images`)
 
 `PresetEditor --render` bindet ohne Bildverzeichnis eine BUNTE prozedurale

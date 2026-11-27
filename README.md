@@ -59,6 +59,7 @@ lights.*
 
 - [Quick start](#quick-start)
 - [Extra content: photos and 3D models](#extra-content-photos-and-3d-models)
+  - [Depth maps for the photos](#depth-maps-for-the-photos)
 - [Controls](#controls)
 - [Mood detection, and OSC output for VJ tools](#mood-detection-and-osc-output-for-vj-tools)
   - [Score cues: letting a generator say where the bars are](#score-cues-letting-a-generator-say-where-the-bars-are)
@@ -144,27 +145,77 @@ What actually suits this program — format, tone, contrast, composition — is
 written down in **[docs/photo-set-spec.md](docs/photo-set-spec.md)**, with a
 checker that scores any folder against it (`Tools/check_image_set.py`).
 
-**A photo's depth (in the works, November 2026).** Beside a photo folder, a
-folder `.depth` may hold one grey depth map per photo (`<photo name>.png`,
-white = near) and a table `photo_info.tsv`; `Tools/depth_maps.py` makes them.
-The program loads a map with its photo (the walk never takes the maps for
-photos) and hands it to the scenes; without maps everything looks as before.
-For comparisons: `KALEIDO_NO_DEPTH=1` ignores all maps, `KALEIDO_DEPTH_DIR=<folder>`
-takes the maps (and their `photo_info.tsv`) from one flat folder first,
-`KALEIDO_SHOW_DEPTH=1` shows each scene's depth as a grey picture (white = near),
-and `KALEIDO_DEPTH_RANGE=near,far` sets the distances a photo's depth is laid on
-(default 8,80, the units of the 3D scenes). Seven transitions (`Transitions\Depth*.frag`:
-from behind, fog wall, focus pull, layers, worlds merge, dusk, silhouette) move
-through the depth of both scenes, and by brightness where a scene has none;
-between two scenes with depth one fade in four takes one of them
-(`KALEIDO_DEPTH_TRANS=0` leaves the roll alone).
-
 Building the packs yourself, from folders you have filled:
 
 ```powershell
 .\Tools\make_image_pack.ps1
 .\Tools\make_model_pack.ps1
 ```
+
+### Depth maps for the photos
+
+Since 26.11.2026 a photo can bring a **depth map**: a grey picture that says for every point how near it is
+(white = near). Beside a photo folder, a folder `.depth` holds one map per photo (`<photo name>.png`) and a table
+`photo_info.tsv` (per photo: how much relief it has, whether it counts as flat, where its subject sits and how
+sure that is). The program loads a map with its photo (the walk never takes the maps for photos) and hands it to
+the scenes. **Without maps everything works as before**, and a photo the table calls flat -- a pattern, a texture,
+sky -- gets no depth either.
+
+What the depth does in the picture:
+
+- **Depth looks in the labs.** ChainLab2D rolls one of six looks (off in a quarter of its turns): near and far
+  gliding against each other inside the fold, the far layer folded once more, bands of light running from near to
+  far, the fold centred on the photo's subject, the subject kept whole while the kaleidoscope folds around it, and
+  frequency by depth -- the bass brightens the near layer, the mids colour the middle, the hi-hat sets glints into
+  the far one. TimeChainLab and MirrorBilliardLab anchor on the photo's subject.
+- **Depth effects on photo scenes.** The five overlays that work on depth (fog, depth of field, sun shafts, rim
+  light, ambient occlusion), the 2.5D parallax and the stereo output take the photo's depth where a scene passes
+  it on -- ChainLab2D, nine more labs and the Chain scenes do.
+- **The tension arc.** In a build-up those five effects tighten: a haze grows from the back, the aperture opens
+  around the focus, the shafts narrow toward their light, the rim thins, the ambient light withdraws from the
+  back -- and a drop clears it all within half a second.
+- **Transitions through depth.** Seven transitions (`Transitions\Depth*.frag`: from behind, fog wall, focus pull,
+  layers, worlds merge, dusk, silhouette) move through the depth of both scenes, and by brightness where a scene
+  has none; between two scenes with depth one fade in four takes one of them.
+- **Relief in 3D.** Ten 3D scenes that show the photo on a lit surface take its depth as a relief: the scene's
+  own light catches the photo's forms.
+- **The photo choice.** A scene that uses the depth prefers a photo with relief, every other scene a flat one --
+  a bonus beside the fit to the music's mood, not a rule.
+
+**Which photos have maps.** The photo set these features were built on has 1,266 photos, each with a map; 707 of
+them have relief, the other 559 are flat by the table and stay without depth. The pack released as `images-v2`
+(977 photos, the table above) was built before the maps, and `Tools/make_image_pack.ps1` packs the pictures
+only -- for that pack, and for your own photos, make the maps yourself.
+
+**Maps for your own photos:** `Tools/depth_maps.py` makes them, in a Python environment of its own (the exact
+versions and the steps are in `Tools/depth_maps_requirements.txt`; it runs the model on the GPU where torch finds CUDA, else on the CPU):
+
+```powershell
+uv venv depthenv --python 3.12
+uv pip install --python depthenv\Scripts\python.exe torch==2.11.0+cu128 torchvision==0.26.0+cu128 --index-url https://download.pytorch.org/whl/cu128
+uv pip install --python depthenv\Scripts\python.exe -r Tools\depth_maps_requirements.txt
+$env:HF_HOME = "D:\hf-cache"      # where the model is downloaded to, outside the profile and the repository
+depthenv\Scripts\python.exe Tools\depth_maps.py --images <photo folder> --out <photo folder>\.depth --model dav2s
+```
+
+It writes `<photo folder>\.depth\<photo name>.png` (8-bit grey, long side 512) and `photo_info.tsv` there, makes
+only the maps that are missing or older than their photo (so it can be stopped and started again), and takes one
+folder at a time: for subfolders, run it once per folder, each with its own `.depth`. `--model dav2s` is Depth
+Anything V2 Small (`depth-anything/Depth-Anything-V2-Small-hf`, Apache-2.0 -- the larger V2 models are
+CC-BY-NC-4.0 and are not used). `--model da3ml --da3-sky off`, with which the 1,266 maps above were made, is Depth
+Anything 3 Mono Large (`depth-anything/DA3MONO-LARGE`, Apache-2.0) and needs the authors' code installed as the
+requirements file describes. The licences as read, with their sources: docs/engine-internals.md, section (69),
+"Licences, read before any use".
+
+For comparisons: `KALEIDO_NO_DEPTH=1` ignores all maps, `KALEIDO_DEPTH_DIR=<folder>` takes the maps (and their
+`photo_info.tsv`) from one flat folder first, `KALEIDO_SHOW_DEPTH=1` shows each scene's depth as a grey picture
+(white = near), `KALEIDO_DEPTH_RANGE=near,far` sets the distances a photo's depth is laid on (default 8,80, the
+units of the 3D scenes), `KALEIDO_DEPTH_TRANS=0` leaves the transition roll alone, and `KALEIDO_PHOTO_BY_DEPTH=0`
+chooses the photos by mood alone, as before. For people who edit presets: the knobs `depthLook`/`depthVar`,
+`arcP`, `reliefP`, `envP` and `shadowMapP` are explained in
+[docs/kettenlabor-erklaert.md](docs/kettenlabor-erklaert.md) (the labs' depth looks) and in
+[Tools/SHADER_AUTHORING.md](Tools/SHADER_AUTHORING.md), V15 (both in German); in every one of them 0 is the
+picture as it was.
 
 ---
 
@@ -292,8 +343,8 @@ up to you. Each action is one log line (`GUARD photo dark scene=...`), which
 the moment the program hands it to the sound card; Bluetooth headphones play it
 150-250 ms later, a television 50-150 ms. `latencyLead` (keys `;` and `'`, the
 menu, the remote's slider) is one setting with a sign: above zero it leads the
-beat phase as before (default +50 ms, for speakers on a cable), below zero --
-down to -500 ms -- it delays every audio feature: levels, beats, onsets,
+beat phase as before (default +50 ms, for speakers on a cable; up to +250 ms),
+below zero -- down to -500 ms -- it delays every audio feature: levels, beats, onsets,
 tempo, sections and drops all arrive that much later, and so do the score cues
 of a generator and what the scheduler times by the phrase. A video export is
 never delayed (its audio is a file), a recording shifts its sound by the delay,
@@ -611,13 +662,20 @@ comparisons). Where the driver cannot render into 16-bit targets, the program fa
 so in its log (`Intermediate pictures: RGBA16F targets incomplete ... -- 8 bit`). The rewind history stays 8 bit:
 in a rewind, light above white shows as white. Details: docs/engine-internals.md, sections (69) and (70).
 
+### The harmony's colour drift
+
+The final picture is tinted a little with the music's harmony. Since 26.11.2026 that turn of the hue keeps the
+perceived lightness (it runs in OKLab), so a yellow turned towards blue no longer comes out darker.
+`KALEIDO_OLD_HUE=1` brings back the old turn for one run (for comparisons). Details: docs/engine-internals.md,
+section (69), F1.
+
 ### Kick, snare and hi-hat
 
 Since 27.11.2026 the scenes' `audioHat` follows the hi-hat itself: the analysis splits each onset onto drum templates
 (Source/DrumSeparator.h), so a lead melody no longer flashes the hi-hat. `audioKick` and `audioSnare` keep the earlier
 band-group onsets by default -- the separator's kick and snare did better on synthetic music but not on a real drum
 kit. `KALEIDO_OLD_DRUMS` chooses: `1` all three as before, `0` all three from the separator, or the drums named
-(`kick,snare` is the default). Details: docs/engine-internals-70-analyzer.md.
+(`kick,snare` is the default). Details: docs/engine-internals.md, section (70), "The drum separator".
 
 ### Build-up
 
@@ -625,14 +683,14 @@ kit. `KALEIDO_OLD_DRUMS` chooses: `1` all three as before, `0` all three from th
 version since 27.11.2026: the groove's bass taken out while the top of the spectrum rises (filter sweep, noise riser).
 On the score-cued demos it marks the EDM build-ups far better than the old one (it rises toward the drop instead of
 falling, and reads low in the grooves), but not every demo improves, so the old one stays the default.
-`KALEIDO_OLD_BUILDUP=0` publishes the new one, `1` the old one. Details: docs/engine-internals-71-buildup.md.
+`KALEIDO_OLD_BUILDUP=0` publishes the new one, `1` the old one. Details: docs/engine-internals.md, section (71), "A second build-up signal".
 
 ### The held breath at a drop
 
 In a build-up the whole picture holds its breath: it pales, dims a little and darkens toward the edges. Since
 27.11.2026 the drop lets it go a quarter to half a second after the hit, together with the depth effects' tension
 (before, it waited until the build-up had died away, a second or more). `KALEIDO_BREATH_DROP=0` brings back the old
-breath for one run (for comparisons). Details: docs/engine-internals-71-fixes.md.
+breath for one run (for comparisons). Details: docs/engine-internals.md, section (71), "Three fixes".
 
 ---
 

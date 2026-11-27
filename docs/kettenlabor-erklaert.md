@@ -629,6 +629,35 @@ alte; die App gleitet in etwa 4 s dorthin (kürzester Weg, nie ein Sprung).
   nächste Phrasengrenze, und das Ende einer Weltblende ebenfalls – der
   einmalige erste Draw einer neuen Weltfassung fällt so auf den Schlag.
 
+### Tiefen-Looks (`depthLook`, `depthVar`, seit 26.11.)
+
+Hat ein Foto eine Tiefenkarte (`<Fotoordner>\.depth\<Name>.png`, erzeugt von `Tools/depth_maps.py`; siehe README,
+„Depth maps for the photos“), kann ChainLab2D mit ihr arbeiten. `depthLook` wählt den Look, `depthVar` (0..99)
+seine Variante -- die Konstanten des Looks, Variante 0 ist die Mitte jedes Bereichs. Ohne Karte, bei einem laut
+`photo_info.tsv` flachen Foto und bei `depthLook` 0 bleibt das Bild bitgleich wie vorher.
+
+| `depthLook` | Look |
+|---|---|
+| 0 | aus -- das alte Bild |
+| 1 | Parallaxe vor der Faltung: Nah und Fern gleiten im Kaleidoskop langsam gegeneinander (eine Bewegung, im Standbild kaum zu sehen) |
+| 2 | Tiefenschnitt: die ferne Schicht wird noch einmal gefaltet, mit eigener Spiegelzahl und weicher Kante |
+| 3 | Tiefenwelle: Helligkeitsbänder laufen von nah nach fern (nur Licht) |
+| 4 | Motiv-Anker: jedes Foto wird so verschoben, dass die Faltmitte auf seinem Motiv liegt; ohne sicheres Motiv bleibt es die Bildmitte |
+| 5 | Motiv bleibt ganz: innerhalb der weichen Motivmaske steht das Foto ungefaltet, darum faltet die Kette |
+| 6 | Frequenz nach Tiefe (seit 27.11.): der Bass hellt die nahe Schicht auf, die Mitten heben die Farbe der mittleren, Hi-Hat und Höhen setzen feine runde Glanzpunkte in die ferne -- nur Licht und Farbe |
+
+Im Preset wird der Look je Aktivierung gewürfelt: `<float name="depthLook" minValue="-1.51" maxValue="6.49">`,
+der Shader nimmt oberhalb von 0,5 `int( x + 0.5 )` -- Look 0 also in etwa 25 % der Fälle, jeder der sechs Looks in
+12,5 %; `depthVar` 0..99,49. TimeChainLab und MirrorBilliardLab haben nur `depthLook` (2,83..5,49): über 3,5 der
+Motiv-Anker (etwa 75 %), darunter aus; über 5,5 käme dort die Frequenz nach Tiefe dazu, die Presets würfeln das
+nicht. Einen Look festhalten: im Preset-Eintrag `minValue` = `maxValue`, für einen Probelauf
+`--expr depthLook=6 --expr depthVar=0`.
+
+Zum Bild gehören außerdem: die Fotowahl (eine Szene, die die Tiefe nutzt, bekommt bevorzugt ein Foto mit Relief;
+`KALEIDO_PHOTO_BY_DEPTH=0` schaltet das ab) und der Spannungsbogen der Tiefen-Effekte (`arcP`, siehe
+Tools/SHADER_AUTHORING.md, V15). Herleitung und Messungen: docs/engine-internals.md, Abschnitte (69) „T4, M2, M3“
+und (71) „P3“.
+
 ### FxChain – die Kette als Nachbearbeitung
 Dieselbe 2D-Stufenmaschine, aber als **FX-Stufe**: Sie verformt nicht das Foto,
 sondern das *fertige Bild einer beliebigen anderen Szene*. Dafür bekommt das
