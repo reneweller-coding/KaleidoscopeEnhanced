@@ -96,10 +96,12 @@ See the table at the end of this file ("State") -- it is kept current.
 
 | what | state |
 |---|---|
-| Komplett.xml roundtrip, --validate, check_schedule --quick | queued in the lock at 16:29 (p3b_presets.log beside the helpers); NOT read when this was written |
+| PresetEditor --roundtrip Komplett.xml | ran: ok, 2937 entries |
+| PresetEditor --validate | ran: rc 0, "all 12 file(s) complete vs. Komplett.xml" (the genre presets still hold the old range until regenerated) |
+| Tools/check_schedule.py --quick | started 16:31 in the same job; result in kaleido-wt\p3b_presets.log (last lines, `PRESETS_BAD=0` = good); NOT read when this was written |
 | the size, near / far third against the base look, three labs | measured, see "Measured" (commit 0d844bb2) |
 | limiter (flash) counts of the runs with the new size | read: no more than with the old size, see "Measured" |
-| the sheets | ChainLab2D and TimeChainLab looked at (the near layer's light and the glints show in "after - base"); MirrorBilliardLab's not looked at |
+| the sheets | all three looked at: the near layer's light shows clearly in "after - base" on the kick (ChainLab2D, MirrorBilliardLab; weaker in TimeChainLab), the glints as fine points; only at the sheets' small size, only the dark screening photo, no bright photo, no moving picture |
 | looks 0..5 bit for bit by render (p3_ident.py) | NOT run (by the diff only: freqDepth() alone changed) |
 | temporal_budget.py | ran: 0 errors, 4 warnings (as before) |
 | shake_scan.py --summary --baseline | ran: 0 new SHAKE/FRAME/STEP hits, 74 known |
