@@ -87,8 +87,8 @@ doc_shaders.annotate() and cgvr_format.format_text().
   paper's frame divides by `n . ( sx x sy )`, and SandDune's normal is analytic (with the ripples' slope) while its
   120-row grid is coarse, so the determinant came near 0 on facets that the normal does not describe.  With the
   facet's own normal in the frame (`c . c`, never 0 on a visible facet) and the gradient projected into the plane of
-  the shading normal the cracks went (v4).  The edge compression (`g / ( 1 + |g| / 8 )`) came one step before, for the
-  same look elsewhere (the cavern rock's thin glossy squiggles).
+  the shading normal the cracks went (the final block).  The edge compression (`g / ( 1 + |g| / 8 )`) came one step
+  before, for the same look elsewhere (the cavern rock's thin glossy squiggles).
 - *SandDune with `normalize( vNormal )` into the block*: a photo WITHOUT a map changed that scene (the flat-photo set:
   9 of 10 identical) -- the block returns the normal it got, and the old light used the interpolated, unnormalized
   `vNormal`.  Now the normal goes in as it comes.
@@ -106,8 +106,8 @@ the flat achat-amethyst-lk3 (`flat` = 1: no map).
 - *The old picture.*  A before set from the worktree's start state (b9ea6a83) and the same scenes after the patch with
   no knob entry: **20 of 20 frames byte-identical** (photos A and B, the final block).  A photo without a map with
   reliefP = 1 against reliefP = 0: **10 of 10 byte-identical** (the block returns the normal it was given).  The
-  reliefP = 0 sets of the first and of the final block are byte-identical too (the 0 path does not depend on the
-  block's content).  A set with the knob entry at 0 differs from the set without the entry: an added knob takes a roll
+  reliefP = 0 sets of two versions of the block (photo A) are byte-identical too (the 0 path does not depend on
+  the block's content).  A set with the knob entry at 0 differs from the set without the entry: an added knob takes a roll
   and moves the later rolls of the run (the trap of (69), T4 and U2) -- 0 is compared with 1, absent with before.
 - *The look* (reliefP 0 against 1, mean absolute difference of 255; A / B / C):
 
@@ -133,25 +133,27 @@ the flat achat-amethyst-lk3 (`flat` = 1: no map).
   difference x4, five scenes each), `p4_relief_flat_achat-amethyst-lk3.jpg` (no map: no difference),
   `p4_relief_offline_what_the_block_does.jpg` (numpy: photo, map, the block's normal lit from the upper left on a flat
   square, the photo lit flat and lit with the relief).
-- *GPU time* (agent env3d's perfwrap.py on Tools/perf_labs.py: 20 s a scene live at 2880 x 1620, alone on the machine,
-  a photo with a map fixed so the taps run, knob 0 then 1 with the same rolls; median / p90 ms; measured with the
-  two-scale block before the edge compression and the facet frame, which add a few multiplications and no fetch):
+- *GPU time* (agent env3d's perfwrap.py on Tools/perf_labs.py: live at 2880 x 1620, alone on the machine, a photo
+  with a map fixed so the taps run, knob 0 then 1 with the same rolls; median / p90 ms).  Twice: the final block, 15 s
+  a scene, and before that the two-scale block without the edge compression and the facet frame, 20 s a scene:
 
-  | scene | 0 | 1 |
-  |---|---|---|
-  | KaleidocycleFold | 1.58 / 1.96 | 1.53 / 1.68 |
-  | TessellatedLavaLake | 0.81 / 0.84 | 0.83 / 0.88 |
-  | EuropaChaosTerrain | 0.96 / 1.00 | 0.91 / 0.95 |
-  | PermafrostPolygons | 0.97 / 0.99 | 0.92 / 1.07 |
-  | TravertineTerracePools | 0.90 / 0.92 | 0.97 / 1.05 |
-  | SandDuneBarchanMigration | 0.91 / 0.91 | 0.90 / 0.93 |
-  | CrystallineCavernTessellation | 1.15 / 1.24 | 1.20 / 1.31 |
-  | Magnetosphere | 0.89 / 0.93 | 0.84 / 0.87 |
-  | GlacierTessellation | 0.84 / 0.89 | 0.87 / 0.90 |
-  | KelvinHelmholtzCloudWaves | 0.81 / 0.86 | 0.80 / 0.82 |
+  | scene | final: 0 | final: 1 | earlier: 0 | earlier: 1 |
+  |---|---|---|---|---|
+  | KaleidocycleFold | 0.88 / 0.91 | 0.86 / 0.91 | 1.58 / 1.96 | 1.53 / 1.68 |
+  | TessellatedLavaLake | 0.84 / 0.86 | 0.85 / 0.89 | 0.81 / 0.84 | 0.83 / 0.88 |
+  | EuropaChaosTerrain | 0.83 / 0.87 | 0.83 / 0.85 | 0.96 / 1.00 | 0.91 / 0.95 |
+  | PermafrostPolygons | 0.83 / 0.86 | 0.83 / 0.84 | 0.97 / 0.99 | 0.92 / 1.07 |
+  | TravertineTerracePools | 0.92 / 0.95 | 0.98 / 1.02 | 0.90 / 0.92 | 0.97 / 1.05 |
+  | SandDuneBarchanMigration | 0.88 / 0.90 | 0.82 / 0.91 | 0.91 / 0.91 | 0.90 / 0.93 |
+  | CrystallineCavernTessellation | 0.92 / 0.95 | 0.96 / 0.99 | 1.15 / 1.24 | 1.20 / 1.31 |
+  | Magnetosphere | 0.86 / 0.91 | 0.84 / 0.89 | 0.89 / 0.93 | 0.84 / 0.87 |
+  | GlacierTessellation | 0.81 / 0.86 | 0.84 / 0.91 | 0.84 / 0.89 | 0.87 / 0.90 |
+  | KelvinHelmholtzCloudWaves | 0.83 / 0.89 | 0.81 / 0.82 | 0.81 / 0.86 | 0.80 / 0.82 |
 
-  -0.05..+0.07 ms median, the noise of single runs; 120 fps in every run.  16 fetches a pixel of the photo surfaces
-  are cheap next to these scenes' tessellation and lighting.
+  -0.06..+0.06 ms median, the noise of single runs (the same scene moves by more between the two runs); 120 fps
+  in every run but one -- the first app start of the final run (KaleidocycleFold at 0: 86 fps median, GPU 0.88 ms,
+  the warm-up of a fresh start, not the shader).  Travertine is the one scene +0.06 both times.  16 fetches a pixel
+  of the photo surfaces are cheap next to these scenes' tessellation and lighting.
 - *In the presets*: `<float name="reliefP" minValue="-0.4" maxValue="1.2">` at the end of the ten Komplett.xml entries
   (the old picture about a quarter of the activations; a depth 0..1.2 otherwise), genre presets regenerated (22 lines
   added in seven of them, none changed).
@@ -170,7 +172,6 @@ plans, 0 violations.  No C++ changed (no build, no self test needed).
   four rounds of sheets.  The frame for it is there (the same derivatives give the uv shift of a view ray).
 - Moving pictures: every frame above is frozen and silent.  The relief follows the photo cross-fade (both slots,
   `interpolation`) and fades with the footprint, so it should neither jump nor shimmer -- not seen in motion.
-- The GPU time of the final block (only the two-scale block before the last two changes was timed).
 - Stereo and the editor's previews (same shaders; not looked at).
 - Magnetosphere's colour reads tex0 only (an old defect, left); its relief cross-fades both slots, so during a photo
   fade colour and relief can disagree for a moment.
