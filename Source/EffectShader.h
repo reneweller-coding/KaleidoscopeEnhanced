@@ -998,6 +998,22 @@ public:
         return v;
     }
 
+    /**  The current value of one rolled parameter, by name (rays, 27.11.2026: a preset knob the present pass reads).
+     *
+     * @param name  The parameter's name as in the preset. (in)
+     * @param def   The value where this entry has no such parameter. (in)
+     *
+     * @return
+     *   The rolled value, or def.
+     **/
+    float namedParameter( const char *name, float def ) const
+    {
+        for ( const Uniform *u : m_uniforms )
+            if ( u->getName() == name )
+                return u->snapshotValue();
+        return def;
+    }
+
     // ---- Mood tags (config attribute mood="dark,calm,...") ----
     /** Bitmask flags parsed from a preset's mood="..." config attribute. */
     enum MoodFlagsE

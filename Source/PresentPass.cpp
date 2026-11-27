@@ -179,6 +179,7 @@ void PresentPass::setup( int renderW, int renderH,
         m_presentPhParUni = glGetUniformLocation( m_presentProgId, "depthParPhoto" );
         m_presentPhStereoUni = glGetUniformLocation( m_presentProgId, "stereoPhoto" );
         m_presentPhWinUni = glGetUniformLocation( m_presentProgId, "photoDepthWin" );
+        m_presentRaysUni = glGetUniformLocation( m_presentProgId, "raysP" ); // rays (27.11.2026)
         m_presentHdrUni = glGetUniformLocation( m_presentProgId, "hdrBuffers" );
     }
 
@@ -1108,6 +1109,19 @@ void PresentPass::run( const Inputs &in )
             glUniform1f( m_presentPhStereoUni, sp );
         if ( m_presentPhWinUni >= 0 )
             glUniform2f( m_presentPhWinUni, in.photoWin[0], in.photoWin[1] );
+        // ---- rays (27.11.2026): light shafts through the photo's depth -- BEGIN ----
+        {
+            const float rp = ( in.sceneDepthTex != 0 ) ? in.raysP : 0.f;
+            if ( rp > 0.001f ) // the depth texture, also where the parallax and the stereo left unit 6 alone
+            {
+                glActiveTexture( GL_TEXTURE6 );
+                glBindTexture( GL_TEXTURE_2D, in.sceneDepthTex );
+                glActiveTexture( GL_TEXTURE0 );
+            }
+            if ( m_presentRaysUni >= 0 )
+                glUniform1f( m_presentRaysUni, rp );
+        }
+        // ---- rays -- END ----
     }
 
     // 16-bit intermediates: the shoulder after the exposure, the limiter after the shoulder (Present.frag).
