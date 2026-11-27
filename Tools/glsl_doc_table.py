@@ -78,7 +78,7 @@ FUNC_DOCS = {
                                "conf": "The confidence of the measure, 0..1.",
                                "amt": "1 where the photo has a depth map." },
                    "return": "The offset from the picture's centre to the subject." },
-    "depthLookCol": { "params": { "look": "The look, 1..5.", "vi": "Its variant, 0..99.",
+    "depthLookCol": { "params": { "look": "The look, 1..6.", "vi": "Its variant, 0..99.",
                                   "p": "The pixel's centred coordinate.", "c": "The chain's end point in the photo.",
                                   "ph": "The photo's colour there.", "lod": "The mip level of that lookup.",
                                   "pd": "The photo's depth there; the depth the look writes." },

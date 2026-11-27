@@ -28,6 +28,8 @@ against the full mix -- what each voice does in the picture.
     python Tools/reactivity.py --voices --set labs --tag roles --expr voiceP=1   # the same with the voices' roles
     python Tools/reactivity.py --voices --set top60 --chunk 1          # one chunk only (one lock hold)
     python Tools/reactivity.py --voices --report --tag base            # Tools/scene_voices.tsv + contact sheets
+    python Tools/reactivity.py --voices --scenes ChainLab2D --tag l6 --expr depthLook=6 --halves
+                                         # each voice in the near and the far half of the picture (by its depth)
 
 Controls: no scene of the catalogue is free of audio (every scene reacts, by the house rules), so the "still" side
 is made: the photo itself (Engine/ProfileStill.frag as a scene) and null pairs -- reactive scenes rendered silence
@@ -497,6 +499,43 @@ def self_sync(F, onset):
     return round(_corr_lag(_hp(ch), _hp(o)), 4) if len(o) == len(ch) else 0.0
 
 
+# --halves (plan 27.11.2026, P3): where in the photo's depth a voice acts.  The full mix is rendered once more with
+# KALEIDO_SHOW_DEPTH=1 (each scene's depth as grey, white near); per frame its pixels above the frame's median depth
+# are the near half, the rest the far half, and amp, sync and hit are measured in each half on its own.
+HALVES = False
+
+
+def measure_halves(F, V, onset, D):
+    """The numbers of measure_voice_pair() in the near and the far half of the picture.
+
+    @param F      The full run's frames (float 0..1, frames x H x W).
+    @param V      The variant's frames.
+    @param onset  The voice's onset envelope over the same frames (None: no sync, no hit).
+    @param D      The depth view's frames over the same window (float 0..1, white near).
+    @return
+      {"near": {amp, sync, hit}, "far": {...}}; amp in % of full scale, hit in % per frame (as measure_voice_pair()).
+    """
+    n = min(len(F), len(V), len(D))
+    F, V, D = F[:n], V[:n], D[:n]
+    med = np.median(D.reshape(n, -1), axis=1)[:, None, None]
+    out = {}
+    for half, M in (("near", D > med), ("far", D <= med)):
+        M = M.astype(np.float32)
+        cnt = np.maximum(M.sum(axis=(1, 2)), 1.0)
+        d = (np.abs(F - V) * M).sum(axis=(1, 2)) / cnt
+        r = {"amp": round(float(d.mean()) * 100.0, 4), "share": round(float(cnt.mean() / (F.shape[1] * F.shape[2])), 3)}
+        dF = (np.abs(np.diff(F, axis=0)) * M[1:]).sum(axis=(1, 2)) / cnt[1:]
+        dV = (np.abs(np.diff(V, axis=0)) * M[1:]).sum(axis=(1, 2)) / cnt[1:]
+        ch = dF - dV
+        o = onset[1:len(ch) + 1] if onset is not None else None
+        if o is not None and len(o) == len(ch):
+            hc = _hp(ch)
+            r["sync"] = round(_corr_lag(hc, _hp(o)), 4)
+            r["hit"] = round(r["sync"] * float(hc.std()) * 100.0, 5)
+        out[half] = r
+    return out
+
+
 def run_voice_chunk(tag, label, entries, names, plain, cross, null=False):
     """Renders one chunk once per variant (and the full mix a second time for the null pair) and measures it.
 
@@ -532,6 +571,14 @@ def run_voice_chunk(tag, label, entries, names, plain, cross, null=False):
                 raise RuntimeError("no video for %s %s (%s); see %s" % (tag, label, kind, log))
             runs[kind] = (vid, log)
             print("  %s %s: %.0f s" % (label, kind, time.time() - t0), flush=True)
+        if HALVES:   # the full mix once more as the depth view (--halves)
+            log = os.path.join(wdir, "%s_depthview.log" % label)
+            vid = screen.render(cfg, wavs["full"], log, VHOLD, SEED, "scene", 0, dict(extra, KALEIDO_SHOW_DEPTH="1"),
+                                cost=False, tag="voice_%s_%s_depthview" % (tag, label))
+            if not vid:
+                raise RuntimeError("no depth view for %s %s; see %s" % (tag, label, log))
+            runs["depthview"] = (vid, log)
+            print("  %s depthview: %.0f s" % (label, time.time() - t0), flush=True)
     finally:
         if os.path.exists(preset):
             os.remove(preset)
@@ -541,6 +588,15 @@ def run_voice_chunk(tag, label, entries, names, plain, cross, null=False):
             raise RuntimeError("%s walked other scenes than the full run" % kind)
     lim = {k: limiter_counts(log) for k, (_, log) in runs.items()}
     full = decode_gray(runs["full"][0])
+    depth = None
+    if "depthview" in runs:
+        dvid = runs.pop("depthview")[0]
+        depth = decode_gray(dvid)
+        if os.environ.get("KALEIDO_VOICES_KEEP") == "1":
+            os.makedirs(os.path.join(wdir, "videos"), exist_ok=True)
+            os.replace(dvid, os.path.join(wdir, "videos", "%s_depthview.mp4" % label))
+        else:
+            os.remove(dvid)
     rows, shows = {}, {}
     off = screen.EXPORT_OFFSET
     wins = []
@@ -570,6 +626,11 @@ def run_voice_chunk(tag, label, entries, names, plain, cross, null=False):
             if kind.startswith("no_"):
                 r["self_full"] = self_sync(Fw, on)
                 r["self_var"] = self_sync(Vw, on)
+                if depth is not None:
+                    r.update(measure_halves(Fw, Vw, on, depth[a - 1:n].astype(np.float32) / 255.0))
+                    print("  %-20s %-9s near amp %.3f hit %.4f | far amp %.3f hit %.4f" % (
+                        name, kind, r["near"]["amp"], r["near"].get("hit", 0), r["far"]["amp"],
+                        r["far"].get("hit", 0)), flush=True)
             r["lim"] = lim[kind][k] if k < len(lim[kind]) else [0, 0, 0]
             rows[name][kind] = r
             shows.setdefault(kind, {})[name] = a - 1 + show
@@ -657,6 +718,8 @@ def voices_main(a):
         import private_settings
         private_settings.INI = os.environ["KALEIDO_SETTINGS_SRC"]
     screen.EXPORT_FPS = VFPS
+    global HALVES
+    HALVES = a.halves
     os.makedirs(VWORK, exist_ok=True)
     if a.report:
         return voices_report(a)
@@ -863,6 +926,8 @@ def main():
     ap.add_argument("--expr", default="", help="--voices: NAME=FORMULA,... added to every entry as <expr> (draws "
                                                "no random number, so the rolls stay those of the run without)")
     ap.add_argument("--plan", action="store_true", help="--voices: print the set's chunks and stop")
+    ap.add_argument("--halves", action="store_true", help="--voices: measure the near and the far half of the "
+                                                          "picture apart, by the scenes' depth (one render more)")
     ap.add_argument("--sheets", default=VSHEETS, help="--voices --report: the folder for the contact sheets")
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")

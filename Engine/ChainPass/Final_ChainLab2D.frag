@@ -31,8 +31,11 @@ uniform float audioSpread;       ///< Spectral spread, 0..1.
 uniform float audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioMode;         ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioSnare;        ///< Snare envelope, 0..1.
+uniform float audioBass;         ///< Bass band level, 0..1.
+uniform float audioMid;          ///< Mid band level, 0..1.
+uniform float audioHigh;         ///< High band level, 0..1.
 uniform float audioHat;          ///< Hi-hat / cymbal onset envelope, 0..1.
+uniform float audioSnare;        ///< Snare envelope, 0..1.
 uniform float audioMelodyPitch;  ///< Pitch of the melody, 0..1 over the tracked range.
 uniform float audioMelodyConf;   ///< How sure the analysis is that a melody sounds, 0..1 (0 for drums, noise and
                                  ///< silence).
@@ -453,7 +456,7 @@ vec3 chainAfterglow( vec3 col )
     return max( col, prev * ( 0.78 * smoothstep( 0.15, 1.0, glowP ) ) );
 }
 uniform float depthLook; ///< The depth look: 0 off (the old look), 1 parallax before the fold, 2 depth cut, 3 depth
-                         ///< wave, 4 subject anchor, 5 subject stays whole.
+                         ///< wave, 4 subject anchor, 5 subject stays whole, 6 frequency by depth.
 uniform float depthVar;  ///< The depth look's variant 0..99: its constants (variant 0 = the middle of every range).
 uniform vec2 photoMask; ///< How well depth >= threshold outlines the subject of the photo in tex0 (x) / tex1 (y), 0..1.
 /**  A constant of a depth look, set by its variant inside a range (variant 0: the middle).
@@ -473,7 +476,7 @@ float dv( int vi, float j, float lo, float hi )
 }
 /**  A depth look: the colour at the chain's end point as the look shows it, and the depth it writes.
  *
- * @param look  The look, 1..5. (in)
+ * @param look  The look, 1..6. (in)
  * @param vi    Its variant, 0..99. (in)
  * @param p     The pixel's centred coordinate. (in)
  * @param c     The chain's end point in the photo. (in)
@@ -521,6 +524,44 @@ vec3 depthLookCol( int look, int vi, vec2 p, vec2 c, vec3 ph, float lod, inout f
         vec4  r = imgDepthOff( c, s * o0, s * o1, lod );
         pd = r.w;
         return r.rgb;
+    }
+    if ( look == 6 )
+    {
+
+
+
+        float have = interpolation * photoDepthAmt.x + ( 1.0 - interpolation ) * photoDepthAmt.y;
+        float t1 = dv( vi, 12.0, 0.28, 0.40 ), t2 = dv( vi, 13.0, 0.58, 0.70 ), e = dv( vi, 14.0, 0.06, 0.12 );
+        float bass = clamp( audioBass, 0.0, 1.0 );
+
+
+
+        float sz = dv( vi, 15.0, 0.008, 0.025 ) * have * ( 0.8 * sw + 0.2 * bass );
+        vec4  r = imgDepthOff( c, ( 0.5 + o0 - c ) * sz, ( 0.5 + o1 - c ) * sz, lod );
+        float w_s = smoothstep( t2 - e, t2 + e, r.w ) * have;
+        vec3  col = mix( ph, r.rgb, w_s );
+        pd = mix( pd, r.w, w_s );
+        float w_n = smoothstep( t2 - e, t2 + e, pd ) * have;
+        float w_f = ( 1.0 - smoothstep( t1 - e, t1 + e, pd ) ) * have;
+        float w_m = max( have - w_n - w_f, 0.0 );
+
+        col *= 1.0 + dv( vi, 16.0, 0.16, 0.32 ) * clamp( 0.7 * audioKick + 0.3 * bass, 0.0, 1.0 ) * w_n;
+
+        float l = luma( col );
+        col = max( l + ( col - l ) * ( 1.0 + dv( vi, 17.0, 0.5, 1.1 ) * clamp( audioMid, 0.0, 1.0 ) * w_m ), 0.0 );
+
+
+
+        float hi = clamp( 0.65 * audioHat + 0.35 * audioHigh, 0.0, 1.0 );
+        vec2  g = p * dv( vi, 18.0, 110.0, 170.0 ) + vec2( 0.29, 0.13 ) * sceneAdvance;
+        vec2  gc = floor( g );
+        vec2  gf = fract( g ) - 0.5 - 0.4 * ( hash22( gc + 3.0 ) - 0.5 );
+        float gs = 0.6 + 0.4 * hash21( gc + 11.0 );
+        float pt = step( dv( vi, 19.0, 0.76, 0.88 ), hash21( gc + 29.0 ) )
+                   * smoothstep( 0.24 * gs, 0.06 * gs, length( gf ) );
+        float tw = 0.55 + 0.45 * sin( 6.2831853 * hash21( gc + 7.0 ) + 1.1 * sceneAdvance );
+        float gl = dv( vi, 20.0, 1.2, 2.2 ) * hi * pt * tw * w_f;
+        return col * ( 1.0 + gl ) + 0.3 * gl * imgLod( c, 5.0 );
     }
 
 

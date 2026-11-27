@@ -16,12 +16,15 @@
  *
  *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
  *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
+ *   depthLook 6     -> frequency by depth (freqDepth(), plan P3, 27.11.2026): the bass brightens the photo's near
+ *                      layer, the mids raise the colour of its middle layer, the highs set fine round glints into
+ *                      its far layer; light and colour only
  * Knobs: seedP (the walk's seed), sizeP (the room's size), skewP (how far from a perfect room), hueP.
 //@params seedP sizeP skewP
 //@audio audioSwell audioHarmAdvance
 //@depth
 //@body
-uniform float depthLook;   // 4: the subject anchor (plan M2) -- each photo folds around its own subject; 0: the old look
+uniform float depthLook;   // 4: the subject anchor (plan M2) -- each photo folds around its own subject; 6: the anchor and frequency by depth (plan P3); 0: the old look
 float gPhD = 0.0;   // the photo's depth at the look's photo lookup, 0 far .. 1 near (photoDepthLod)
 /**  One mirror wall of a room as a half plane, dot(q, n) <= c.
  *
@@ -134,7 +137,11 @@ void main()
             ws += gLabW[i];
         }
     }
-    photoDepthOut(dsum / max(ws, 1e-3));
-    finish(voiceRoles(max(col / max(ws, 1e-3), 0.0), screenP()));
+    float d = dsum / max(ws, 1e-3);
+    photoDepthOut(d);
+    col = max(col / max(ws, 1e-3), 0.0);
+    if (depthLook > 5.5)   // look 6: the subject anchor and frequency by depth (plan P3, 27.11.2026; variant 0)
+        col = freqDepth(col, d, p, imgLod(p * 0.5 + 0.5, 6.0), 0);
+    finish(voiceRoles(col, screenP()));
 
 }

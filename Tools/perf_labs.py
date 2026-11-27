@@ -34,7 +34,7 @@ DEFAULT = ["ChainLab2D", "ChainLabTunnel", "ChainLab3D", "ChainSlice3D",
            "ChainP4mSpiralKaleidoWarp", "ChainWaveDrosteHex"]
 
 
-def preset(scene, still):
+def preset(scene, still, pins=()):
     src = io.open(os.path.join(ROOT, "Presets", "Komplett.xml"), encoding="utf-8").read()
     fx = re.search(r"[ \t]*<CombineShader\b[^>]*[\\/]FxPlain\.frag\"[^>]*>.*?</CombineShader>", src, re.S).group(0)
     m = re.search(r"[ \t]*<TextureShader\b[^>]*[\\/]" + scene + r"\.frag\"[^>]*>.*?</TextureShader>", src, re.S)
@@ -43,6 +43,9 @@ def preset(scene, still):
     blk = m.group(0)
     if not still:
         blk = re.sub(r'(<float name="morphP") minValue="[^"]*" maxValue="[^"]*"', r'\1 minValue="0.8" maxValue="0.8"', blk)
+    for k, v in pins:   # --pin: a knob of the entry at one value (an <expr>: wins over the entry's roll of it)
+        i = blk.rfind("</TextureShader>")
+        blk = blk[:i] + '  <expr name="%s" formula="%s"/>\n  ' % (k, v) + blk[i:]
     head, rest = blk.split(">", 1)
     head = re.sub(r'\s(probability|minTimeSolo|maxTimeSolo)="[^"]*"', "", head)
     blk = head + ' probability="1.0" minTimeSolo="1000" maxTimeSolo="1200">' + rest
@@ -55,10 +58,11 @@ PS = None  # the private settings of this run (main())
 
 
 WAV = None
+PINS = []   # --pin NAME=VALUE
 
 
 def run(scene, secs, skip, still):
-    io.open(os.path.join(ROOT, "Presets", "_perf.xml"), "w", encoding="utf-8").write(preset(scene, still))
+    io.open(os.path.join(ROOT, "Presets", "_perf.xml"), "w", encoding="utf-8").write(preset(scene, still, PINS))
     env = PS.env(dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(secs), KALEIDO_NO_ACTIVATE="1", KALEIDO_FPS_LOG="1",
                       KALEIDO_GPU_TIMING="1", KALEIDO_FRAME_LOG="25", KALEIDO_SPEC_LOG="1", KALEIDO_SEED=str(SEED)))
     if GLDEBUG:
@@ -94,10 +98,13 @@ def main():
     ap.add_argument("--tsv", help="also write the table here")
     ap.add_argument("--seed", type=int, default=1, help="KALEIDO_SEED: the same rolls in every run (default 1)")
     ap.add_argument("--wav", help="analyse this WAV instead of the live input (silent, real time): music for the walk")
+    ap.add_argument("--pin", action="append", default=[], metavar="NAME=VALUE",
+                    help="set a knob of every scene's entry (an <expr>), e.g. --pin depthLook=6")
     ap.add_argument("--gldebug", action="store_true", help="KHR_debug on (a debug context: slower, the GL column counts)")
     a = ap.parse_args()
     global SEED, GLDEBUG, WAV, PS
     SEED, GLDEBUG, WAV = a.seed, a.gldebug, a.wav
+    PINS[:] = [tuple(x.split("=", 1)) for x in a.pin]
     sys.stdout.reconfigure(encoding="utf-8")
     PS = PrivateSettings("perf")
     rows = []

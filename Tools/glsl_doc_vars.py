@@ -291,7 +291,7 @@ VAR_DOCS = {
     "photoFocus": "Subject centre of the photo in tex0 (xy) and tex1 (zw), texture coordinates.",
     "photoSubject": "Depth threshold (subject = depth >= it) and confidence of the photo in tex0 (xy), tex1 (zw).",
     "photoMask": "How well depth >= threshold outlines the subject of the photo in tex0 (x) / tex1 (y), 0..1.",
-    "depthLook": "The depth look: 0 off (the old look), 1 parallax before the fold, 2 depth cut, 3 depth wave, 4 subject anchor, 5 subject stays whole.",
+    "depthLook": "The depth look: 0 off (the old look), 1 parallax before the fold, 2 depth cut, 3 depth wave, 4 subject anchor, 5 subject stays whole, 6 frequency by depth.",
     "depthVar": "The depth look's variant 0..99: its constants (variant 0 = the middle of every range).",
     "texSSM": "Self-similarity matrix of the recent music (how alike two moments are).",
     "ssmHead": "Write position of the self-similarity ring texSSM, 0..1.",
