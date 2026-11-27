@@ -24,6 +24,12 @@ The body defines `vec4 trans( vec2 p, float d )` with the progress d = 0 (old sc
 library of the template: tA/tB/tAm/tBm (the two scenes), trThresh (a soft threshold wipe), trMid, trClock, trBlurA/trBlurB,
 hueRot, hash21/hash22, noise2, fbm2, trVeil (a veil colour that never outshines the two scenes) and the knob values gKA, gKB and gSpd.  Exactly the old scene at d = 0 and exactly the new
 scene at d = 1 is guaranteed by main().
+
+A body that calls trOrderA/trOrderB (27.11.2026, plan P5: transitions through the depth) gets the depth library: the
+two scenes' depth buffers (texDepth0/texDepth1, depthValid, depthPhoto, photoDepthWin, nearFar -- what the combine
+stage gives every transition) and trOrderA(p)/trOrderB(p), each scene's depth order at a place, 0 nearest .. 1
+farthest, equalised over the picture; where a scene has no depth, the order comes from its brightness (bright = near).
+trOrderBoth(oA, oB) is the joint order "far in both scenes".
 """
 import io, os, re, subprocess, sys, textwrap
 
@@ -382,6 +388,141 @@ vec3 trVeil( vec3 tint )
 """
 
 
+DEPTH_UNIFORMS = """
+uniform sampler2D texDepth0;     ///< Depth buffer of the outgoing scene (window depth; 1 where nothing was drawn).
+uniform sampler2D texDepth1;     ///< Depth buffer of the incoming scene.
+uniform vec2      depthValid;    ///< How real each depth is (x old, y new scene): 1 3D or photo with a map, 0 none.
+uniform vec2      depthPhoto;    ///< 1 where the depth is a photo's (a 2D scene with // @depth), 0 a 3D scene's.
+uniform vec2      photoDepthWin; ///< Window depth of a photo's near end (x, depth 1) and far end (y, depth 0).
+uniform vec2      nearFar;       ///< Near and far clip distances of the shared 3D projection."""
+
+DEPTH_LIB = r"""
+/**  How far a window depth lies, 0 (near) .. 1 (far): a photo's depth between its two ends, a 3D scene's distance on a
+ *  log scale up to 60 units (the scale of Engine/DepthView.frag); the far plane is 1.
+ *
+ * @param z      The window depth, 0..1. (in)
+ * @param photo  1 where the depth is a photo's, 0 a 3D scene's. (in)
+ *
+ * @return
+ *   The farness, 0..1.
+ **/
+float trFar( float z, float photo )
+{
+    float n = max( nearFar.x, 1e-3 );
+    float f = max( nearFar.y, n + 1.0 );
+    float lin = ( 2.0 * n * f ) / max( f + n - ( z * 2.0 - 1.0 ) * ( f - n ), 1e-4 );
+    float g3 = clamp( log( max( lin, n ) / n ) / log( 60.0 / n ), 0.0, 1.0 );
+    float gp = clamp( ( z - photoDepthWin.x ) / max( photoDepthWin.y - photoDepthWin.x, 1e-6 ), 0.0, 1.0 );
+    return mix( g3, gp, clamp( photo, 0.0, 1.0 ) );
+}
+
+/**  The brightness of a scene around a place, averaged over a ring of a fortieth of the picture's height: the calm
+ *  stand-in for a depth (no texture grain, no single pixel decides).
+ *
+ * @param t  The scene. (in)
+ * @param p  The place, 0..1. (in)
+ *
+ * @return
+ *   The luminance, 0..1.
+ **/
+float trLumaSoft( sampler2D t, vec2 p )
+{
+    vec2  r = vec2( resolution.y / resolution.x, 1.0 ) * 0.025;
+    float s = 0.2 * trLuma( texture( t, p ).rgb );
+    for ( int i = 0; i < 8; ++i )
+    {
+        float a = float( i ) * 0.785398;
+        s += 0.1 * trLuma( texture( t, clamp( p + r * vec2( cos( a ), sin( a ) ), 0.0, 1.0 ) ).rgb );
+    }
+    return s;
+}
+
+/**  The depth order of one scene at a place: 0 nearest .. 1 farthest, as the share of the picture that lies nearer
+ *  (equalised, so a front swept over the order covers the picture evenly whatever the scene's depths are -- a soft
+ *  empirical distribution over a 5 x 5 grid of the same frame).  From the real depth as far as the scene has one
+ *  (`valid`); where it has none (a 2D scene, a photo without a map), or where its depth is flat (a 3D scene drawn on
+ *  one plane), from the brightness instead: bright counts as near.  The depth itself is read over five taps 1.5 pixels
+ *  apart, so a silhouette is a soft edge and not a stair of single pixels.
+ *
+ * @param col    The scene's colour. (in)
+ * @param dep    The scene's depth buffer. (in)
+ * @param p      The place, 0..1. (in)
+ * @param valid  How real the depth is, 0..1 (depthValid). (in)
+ * @param photo  1 where the depth is a photo's (depthPhoto). (in)
+ *
+ * @return
+ *   The order, 0..1.
+ **/
+float trOrder( sampler2D col, sampler2D dep, vec2 p, float valid, float photo )
+{
+    vec2  px = 1.5 / resolution;
+    float fz = 0.2 * ( trFar( texture( dep, p ).r, photo ) + trFar( texture( dep, p + vec2( px.x, 0.0 ) ).r, photo )
+                       + trFar( texture( dep, p - vec2( px.x, 0.0 ) ).r, photo )
+                       + trFar( texture( dep, p + vec2( 0.0, px.y ) ).r, photo )
+                       + trFar( texture( dep, p - vec2( 0.0, px.y ) ).r, photo ) );
+    float fl = 1.0 - trLumaSoft( col, p );
+    float rz = 0.0;
+    float rl = 0.0;
+    float m = 0.0;
+    float mm = 0.0;
+    for ( int j = 0; j < 5; ++j )
+        for ( int i = 0; i < 5; ++i )
+        {
+            vec2  q = ( vec2( float( i ), float( j ) ) + 0.5 ) / 5.0;
+            float gz = trFar( texture( dep, q ).r, photo );
+            float gl = 1.0 - trLuma( texture( col, q ).rgb );
+            rz += smoothstep( gz - 0.05, gz + 0.05, fz );
+            rl += smoothstep( gl - 0.1, gl + 0.1, fl );
+            m += gz;
+            mm += gz * gz;
+        }
+    m /= 25.0;
+    float sd = sqrt( max( mm / 25.0 - m * m, 0.0 ) );
+    float v = clamp( valid, 0.0, 1.0 ) * smoothstep( 0.02, 0.06, sd );
+    return mix( rl, rz, v ) / 25.0;
+}
+
+/**  The depth order of the outgoing scene at a place (see trOrder()).
+ *
+ * @param p  The place, 0..1. (in)
+ *
+ * @return
+ *   The order, 0 nearest .. 1 farthest.
+ **/
+float trOrderA( vec2 p )
+{
+    return trOrder( tex0, texDepth0, p, depthValid.x, depthPhoto.x );
+}
+
+/**  The depth order of the incoming scene at a place (see trOrder()).
+ *
+ * @param p  The place, 0..1. (in)
+ *
+ * @return
+ *   The order, 0 nearest .. 1 farthest.
+ **/
+float trOrderB( vec2 p )
+{
+    return trOrder( tex1, texDepth1, p, depthValid.y, depthPhoto.y );
+}
+
+/**  Where both scenes are far, as one order: a near thing in either scene keeps the place near, so it is the nearer
+ *  of the two orders, made even again -- the minimum of two even orders lies near 0 more often, and 1 - (1 - min)^2
+ *  spreads it back over 0..1 (exactly for two independent orders).
+ *
+ * @param oA  The outgoing scene's order. (in)
+ * @param oB  The incoming scene's order. (in)
+ *
+ * @return
+ *   The joint order, 0 (near in either scene) .. 1 (far in both).
+ **/
+float trOrderBoth( float oA, float oB )
+{
+    float m = 1.0 - min( oA, oB );
+    return 1.0 - m * m;
+}"""
+
+
 def build_one(meta):
     name = meta["name"]
     knobs = []
@@ -414,10 +555,15 @@ def build_one(meta):
         out.append("uniform float %s;  ///< %s (%s..%s)." % (n, what[:1].upper() + what[1:].rstrip("."), lo, hi))
     out.append("uniform float speedP; ///< Speed knob: clock multiplier (0.5..2.0).")
     out.append("uniform float hueP;   ///< Hue knob (radians): turns the colours a little in the middle of the fade.")
-    out.append(TEMPLATE_LIB.rstrip("\n"))
     body = meta["body"]
-    if "trVeil(" in body:
+    depth = "trOrderA(" in body or "trOrderB(" in body
+    if depth:
+        out.append(DEPTH_UNIFORMS.rstrip("\n"))
+    out.append(TEMPLATE_LIB.rstrip("\n"))
+    if "trVeil(" in body or "trMeanLumaB(" in body:
         out.append(VEIL_LIB.rstrip("\n"))
+    if depth:
+        out.append(DEPTH_LIB.rstrip("\n"))
     out.append("")
     # a doc comment for trans() when the body gives none
     m = re.search(r"(?m)^vec4 trans\(", body)
