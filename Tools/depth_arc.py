@@ -221,35 +221,49 @@ def read_tsv(path):
     return {k: np.array([float(r[k]) for r in rows]) for k in rows[0]}
 
 
+def smooth(x, n=12):
+    """A moving average over n frames (0.2 s at 60 fps), the ends held."""
+    k = np.ones(n) / float(n)
+    return np.convolve(np.pad(x, (n // 2, n - 1 - n // 2), mode="edge"), k, mode="valid")
+
+
 def numbers(demo, scene, fx, col="far"):
-    """The arc in numbers: how the effect's change (arcP 1 against 0) follows the build-up, and the jump at the drop."""
+    """The arc in numbers, from the effect's relative change (arcP 1 against 0, smoothed over 0.2 s):
+
+      corr    its correlation with the build-up over the 30 s before the drop's hit
+      peak    its extreme over the 6 s before the hit (the build-up's tension)
+      before  its mean over the 0.5 s before the hit
+      after   its mean from 0.5 to 1.5 s after the hit
+      hit     the analyser's hit (drop pulse above 0.5) against the cue drop, s
+      half    when, after the hit, it has gone half the way from `before` to `after`, s
+    """
     d = read_tsv(os.path.join(WORK, "%s_%s_%s.tsv" % (demo, scene, fx)))
     drop = cues(demo)[0][0]
-    t, diff = d["t"], d[col + "1"] - d[col + "0"]
-    pre = (t > drop - 30) & (t < drop)
-    corr = float(np.corrcoef(diff[pre], d["buildUp"][pre])[0, 1]) if diff[pre].std() > 1e-9 else 0.0
-    before = diff[(t > drop - 2.0) & (t < drop)].mean()
-    after = diff[(t > drop + 0.6) & (t < drop + 2.5)].mean()
-    base = d[col + "0"][(t > drop - 2.0) & (t < drop + 2.5)].mean()
-    # how fast the change goes: the time from 10 to 90 % of the way from `before` to `after`, after the drop
-    w = (t >= drop - 0.2) & (t <= drop + 2.5)
-    tw, dw = t[w], diff[w]
-    span = after - before
-    t10 = t90 = float("nan")
-    if abs(span) > 1e-6:
-        frac = (dw - before) / span
-        i10 = np.argmax(frac >= 0.1) if (frac >= 0.1).any() else None
-        i90 = np.argmax(frac >= 0.9) if (frac >= 0.9).any() else None
-        t10 = tw[i10] - drop if i10 is not None else float("nan")
-        t90 = tw[i90] - drop if i90 is not None else float("nan")
-    return dict(corr=corr, before=before, after=after, base=base, t10=t10, t90=t90)
+    t = d["t"]
+    base = smooth(d[col + "0"])
+    rel = smooth(d[col + "1"] - d[col + "0"]) / np.maximum(base, 1e-6)
+    hit = t[np.argmax(d["dropPulse"] > 0.5)] if (d["dropPulse"] > 0.5).any() else drop
+    pre = (t > hit - 30) & (t < hit - 0.05)
+    corr = float(np.corrcoef(rel[pre], d["buildUp"][pre])[0, 1]) if rel[pre].std() > 1e-9 else 0.0
+    six = rel[(t > hit - 6) & (t < hit - 0.05)]
+    peak = six[np.argmax(np.abs(six))]
+    before = rel[(t > hit - 0.5) & (t < hit - 0.05)].mean()
+    after = rel[(t > hit + 0.5) & (t < hit + 1.5)].mean()
+    w = (t >= hit) & (t <= hit + 2.5)
+    half = float("nan")
+    if abs(after - before) > 1e-4:
+        crossed = (rel[w] - before) / (after - before) >= 0.5
+        if crossed.any():
+            half = t[w][np.argmax(crossed)] - hit
+    return dict(corr=corr, peak=peak, before=before, after=after, hit=hit - drop, half=half)
 
 
 def plot(panels, out, col="far", title=""):
-    """A sheet: one panel per (demo, scene, fx) -- the far half's luminance with arcP 0 (grey) and 1 (colour), the
-    build-up (blue, 0..1) and the drop pulse (red) the app saw, the cue drop as a white line; 40 s before to 8 s after."""
+    """A sheet: one panel per (demo, scene, fx), 40 s before to 8 s after the cue drop (white line).  Upper part: the
+    measure with arcP 0 (grey) and 1 (gold), smoothed over 0.2 s.  Lower part: the relative change arcP 1 against 0
+    (green, its scale printed), the build-up (blue, 0..1) and the drop pulse (red, 0..1) the app saw."""
     from PIL import Image, ImageDraw
-    pw, ph, lm = 900, 230, 60
+    pw, ph, lm = 1000, 300, 70
     img = Image.new("RGB", (pw + lm + 20, ph * len(panels) + 40), (24, 24, 24))
     dr = ImageDraw.Draw(img)
     dr.text((10, 10), title, fill=(230, 230, 230))
@@ -259,34 +273,42 @@ def plot(panels, out, col="far", title=""):
         y0 = 40 + k * ph
         t = d["t"] - drop
         sel = (t >= -40) & (t <= 8)
-        a0, a1 = d[col + "0"][sel], d[col + "1"][sel]
-        lo, hi = min(a0.min(), a1.min()), max(a0.max(), a1.max())
-        hi = hi + 0.05 * (hi - lo + 1e-6)
-        lo = lo - 0.05 * (hi - lo + 1e-6)
         ts = t[sel]
+        a0, a1 = smooth(d[col + "0"])[sel], smooth(d[col + "1"])[sel]
+        rel = (smooth(d[col + "1"] - d[col + "0"]) / np.maximum(smooth(d[col + "0"]), 1e-6))[sel]
+        lo, hi = min(a0.min(), a1.min()), max(a0.max(), a1.max())
+        r = max(abs(rel).max(), 0.02)
+        top = (y0 + 22, y0 + 150)
+        bot = (y0 + 160, y0 + ph - 28)
 
-        def xy(tt, v, vlo, vhi):
-            return [(lm + (x + 40) / 48.0 * pw, y0 + ph - 25 - (y - vlo) / (vhi - vlo + 1e-9) * (ph - 45))
+        def xy(tt, v, vlo, vhi, box):
+            return [(lm + (x + 40) / 48.0 * pw, box[1] - (y - vlo) / (vhi - vlo + 1e-9) * (box[1] - box[0]))
                     for x, y in zip(tt, v)]
-        dr.rectangle([lm, y0 + 20, lm + pw, y0 + ph - 25], outline=(80, 80, 80))
+        for box in (top, bot):
+            dr.rectangle([lm, box[0], lm + pw, box[1]], outline=(80, 80, 80))
         for s in range(-40, 9, 5):
             x = lm + (s + 40) / 48.0 * pw
-            dr.line([(x, y0 + ph - 25), (x, y0 + ph - 21)], fill=(120, 120, 120))
-            dr.text((x - 8, y0 + ph - 18), "%+d" % s if s else "drop", fill=(150, 150, 150))
-        dr.line(xy(ts, d["buildUp"][sel], 0, 1), fill=(70, 110, 220), width=1)
-        dr.line(xy(ts, d["dropPulse"][sel], 0, 1), fill=(200, 60, 60), width=1)
-        dr.line(xy(ts, a0, lo, hi), fill=(150, 150, 150), width=2)
-        dr.line(xy(ts, a1, lo, hi), fill=(250, 190, 60), width=2)
+            dr.line([(x, bot[1]), (x, bot[1] + 4)], fill=(120, 120, 120))
+            dr.text((x - 8, bot[1] + 6), "%+d" % s if s else "drop", fill=(150, 150, 150))
+        dr.line(xy(ts, a0, lo, hi, top), fill=(150, 150, 150), width=1)
+        dr.line(xy(ts, a1, lo, hi, top), fill=(250, 190, 60), width=1)
+        dr.line(xy(ts, d["buildUp"][sel], 0, 1, bot), fill=(70, 110, 220), width=2)
+        dr.line(xy(ts, d["dropPulse"][sel], 0, 1, bot), fill=(200, 60, 60), width=1)
+        zero = xy([0], [0], -r, r, bot)[0][1]
+        dr.line([(lm, zero), (lm + pw, zero)], fill=(70, 70, 70))
+        dr.line(xy(ts, rel, -r, r, bot), fill=(90, 220, 120), width=2)
         x = lm + 40 / 48.0 * pw
-        dr.line([(x, y0 + 20), (x, y0 + ph - 25)], fill=(255, 255, 255))
+        dr.line([(x, top[0]), (x, bot[1])], fill=(255, 255, 255))
         n = numbers(demo, scene, fx, col)
-        dr.text((lm + 4, y0 + 2), "%s  %s  %s   %s %.4f..%.4f   corr(change, build-up) %.2f   change before drop %+.4f, "
-                "after %+.4f, 10-90 %% at %.2f..%.2f s" % (demo, scene, fx, col, lo, hi, n["corr"], n["before"],
-                                                            n["after"], n["t10"], n["t90"]), fill=(220, 220, 220))
-        dr.text((4, y0 + 30), "grey arc0", fill=(150, 150, 150))
-        dr.text((4, y0 + 44), "gold arc1", fill=(250, 190, 60))
-        dr.text((4, y0 + 58), "blue bld", fill=(70, 110, 220))
-        dr.text((4, y0 + 72), "red drop", fill=(200, 60, 60))
+        dr.text((lm + 4, y0 + 4), "%s  %s  %s  (%s %.4f..%.4f)   change: corr with build-up %.2f, extreme in the 6 s "
+                "before %+.1f %%, before the hit %+.1f %%, after %+.1f %%, half-way %.2f s after the hit (hit %+.2f s "
+                "from the cue)" % (demo, scene, fx, col, lo, hi, n["corr"], 100 * n["peak"], 100 * n["before"],
+                                   100 * n["after"], n["half"], n["hit"]), fill=(220, 220, 220))
+        dr.text((4, top[0] + 4), "grey arc0", fill=(150, 150, 150))
+        dr.text((4, top[0] + 18), "gold arc1", fill=(250, 190, 60))
+        dr.text((4, bot[0] + 4), "green\nchange\n+-%.0f %%" % (100 * r), fill=(90, 220, 120))
+        dr.text((4, bot[0] + 50), "blue\nbuild-up", fill=(70, 110, 220))
+        dr.text((4, bot[0] + 82), "red drop", fill=(200, 60, 60))
     img.save(out, quality=90)
     return out
 
