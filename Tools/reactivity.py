@@ -717,11 +717,14 @@ def load_voice_rows(tag, setname=None):
 
 def voice_score(rows, v):
     """Per scene: how strongly voice v shows, 0..1, the rank among the scenes of the table (kick, snare, hat, bass:
-    the mean rank of amp and sync; lead: of amp and struct; pan: |lr|)."""
+    the rank of hit -- amp is mostly drift --, of the mean rank of amp and sync where hit was not measured; lead: the
+    mean rank of amp and struct; pan: |lr|)."""
     names = sorted(rows)
     rank = lambda x: np.argsort(np.argsort(x)) / max(len(x) - 1, 1)
     if v == "pan":
         s = rank(np.array([abs(rows[n]["pan_lead"].get("lr", 0)) for n in names]))
+    elif v != "lead" and all("hit" in rows[n]["no_" + v] for n in names):
+        s = rank(np.array([rows[n]["no_" + v]["hit"] for n in names]))
     else:
         k = "no_" + v
         amp = np.array([rows[n][k]["amp"] for n in names])
@@ -830,7 +833,8 @@ def voice_sheet(path, tag, table, names, kind, title):
     for i, n in enumerate(names):
         y = 28 + i * (th + 4)
         r = table[n][kind]
-        txt = "%s\namp %.2f  struct %.3f\nsync %.2f" % (n, r["amp"], r["struct"], r.get("sync", 0))
+        txt = "%s\namp %.2f  struct %.3f\nsync %.2f  hit %.3f" % (n, r["amp"], r["struct"], r.get("sync", 0),
+                                                                r.get("hit", 0))
         if "lr" in r:
             txt += "\nlr %+.2f" % r["lr"]
         dr.text((8, y + 8), txt, fill=(230, 230, 230))
