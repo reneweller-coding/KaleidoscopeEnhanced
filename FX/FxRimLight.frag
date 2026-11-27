@@ -276,6 +276,8 @@ const float HaloLift = 0.6;                     ///< How far the frame's colour 
 const float HaloNear = 0.35;                    ///< The thin rim on the near side of the edge, relative to the halo.
 const float HaloGain = 0.8;                     ///< The halo's light at haloP 1 and a full swell (screen-blended).
 const float HaloPhoto = 0.8;                    ///< The halo on a photo's depth, relative to a room's.
+const float HaloGlowReach = 4.0; ///< The glow's outer ring reaches this many HaloRadius (6 % of the height).
+const float HaloGlow = 0.9;                     ///< The glow's share of the halo against the line at the edge.
 
 /**  How much a pixel lies behind (x) or in front of (y) a depth edge within HaloRadius.
  *
@@ -319,7 +321,25 @@ vec2 haloAt( sampler2D dep, vec2 uv, float valid, float photo )
         sum += w * vec2( smoothstep( ramp.x, ramp.y, e ), smoothstep( ramp.x, ramp.y, -e ) );
         norm += w;
     }
-    return sum / norm * ( photo > 0.5 ? HaloPhoto * min( valid, 1.0 ) : 1.0 );
+    // The glow (27.11.2026 evening, the user asked for a soft glow instead of a line): eight more pairs on a ring
+    // from 1.5 to HaloGlowReach radii, far side only, their weight falling outward -- the light spreads off the edge
+    // into the background.  The same second difference, so planes stay dark.
+    float glow = 0.0, gnorm = 0.0;
+    for ( int i = 0; i < 8; i++ )
+    {
+        float r = ( float( i ) + 0.5 ) / 8.0;
+        float a = rot + 1.3 + 2.3999632 * float( i );
+        vec2  o = vec2( cos( a ), sin( a ) ) * mix( 1.5, HaloGlowReach, r ) * rad;
+        float wa = 1.0 / linearise( textureLod( dep, uv + o, 0.0 ).r );
+        float wb = 1.0 / linearise( textureLod( dep, uv - o, 0.0 ).r );
+        float e = ( wa + wb - 2.0 * wc ) / max( max( wa, wb ), wc );
+        float w = ( 1.0 - r ) * ( 1.0 - r );
+        glow += w * smoothstep( ramp.x, ramp.y, e );
+        gnorm += w;
+    }
+    vec2 res = sum / norm;                                            // x: the line at the edge, y: the near rim
+    res.x = clamp( 0.5 * res.x + HaloGlow * glow / gnorm, 0.0, 1.0 ); // half the line, and the glow around it
+    return res * ( photo > 0.5 ? HaloPhoto * min( valid, 1.0 ) : 1.0 );
 }
 // ---- end of the halo's block ----------------------------------------------------------------------------------------
 
