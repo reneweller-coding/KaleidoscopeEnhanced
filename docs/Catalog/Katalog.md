@@ -1,6 +1,6 @@
 # Kaleidoscope Enhanced — Szenen-Katalog
 
-_2475 Szenen, 30 FX-Overlays, 210 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
+_2475 Szenen, 30 FX-Overlays, 217 Übergänge. Generiert von `Tools/make_catalog.py`; Beschreibungen stammen aus den Shader-Header-Kommentaren. Szenen-Bilder aus dem Metrik-Scan-Harness (je: audio-still t=8, audio-still t=16, audio-heiß t=8; 480×300 → 320×200). FX-/Übergangs-Bilder zeigen den Effekt audio-heiß über zwei festen Referenzszenen (TunnelPlain für 2D, AuroraBorealisOverFjord für 3D)._
 
 
 ---
@@ -22337,7 +22337,7 @@ _Overlays über der laufenden Szene, keine eigenen Szenen — angewendet über T
 
 `FX/FxAmbientOcclusion.frag` · mood=calm,dark · probability=0.005
 
-FX AMBIENT OCCLUSION: screen-space ambient occlusion reconstructed from the scene's real depth buffer, darkening and cooling creases where nearby geometry blocks the ambient light. Rebuilds view-space position and normal per pixel from depth, samples a dithered hemisphere kernel with a range check that avoids silhouette haloing, and blends the occlusion of both incoming scene layers. interpolation -> cross-fades the …
+FX AMBIENT OCCLUSION: screen-space ambient occlusion reconstructed from the scene's real depth buffer, darkening and cooling creases where nearby geometry blocks the ambient light. Rebuilds view-space position and normal per pixel from depth, samples a dithered hemisphere kernel with a range check that avoids silhouette haloing, and blends the occlusion of both incoming scene layers. A 2D scene that passes the photo'…
 
 ![FxAmbientOcclusion über TunnelPlain (2D)](img/FxAmbientOcclusion_2D.jpg) ![FxAmbientOcclusion über AuroraBorealisOverFjord (3D)](img/FxAmbientOcclusion_3D.jpg)
 
@@ -22371,7 +22371,7 @@ Polar radial-flow warp (Inigo Quilez, iq/2013): unwraps the scene into polar coo
 
 `FX/FxDepthField.frag` · mood=calm,dreamy · probability=0.005
 
-FX DEPTH FIELD: physically based depth-of-field blur driven by the scene's real depth buffer, with a 12-tap bokeh kernel and a focal plane that racks with the music. Layers without valid depth (2D scenes) pass through unblurred. A foreground-stays-sharp occlusion test keeps in-focus objects from smearing into the blurred background behind them. interpolation -> cross-fades the two independently blurred scene layers a…
+FX DEPTH FIELD: physically based depth-of-field blur driven by the scene's real depth buffer, with a 12-tap bokeh kernel and a focal plane that racks with the music. Layers without valid depth (2D scenes) pass through unblurred. A foreground-stays-sharp occlusion test keeps in-focus objects from smearing into the blurred background behind them. A 2D scene that passes the photo's depth on (26.11.2026, depthPhoto) is b…
 
 ![FxDepthField über TunnelPlain (2D)](img/FxDepthField_2D.jpg) ![FxDepthField über AuroraBorealisOverFjord (3D)](img/FxDepthField_3D.jpg)
 
@@ -22380,7 +22380,7 @@ FX DEPTH FIELD: physically based depth-of-field blur driven by the scene's real 
 
 `FX/FxDepthFog.frag` · mood=dark,calm,dreamy · probability=0.006
 
-FX DEPTH FOG: physically modelled atmospheric haze that separates light absorbed by the fog from light scattered into the ray from a wandering sun (Henyey-Greenstein phase function), read against the scene's real depth buffer. Height falloff gives the fog a layer with a surface rather than a uniform fill; the sun's direction and colour drift with dayPhase and the harmonic hue. interpolation -> cross-fades the two fog…
+FX DEPTH FOG: physically modelled atmospheric haze that separates light absorbed by the fog from light scattered into the ray from a wandering sun (Henyey-Greenstein phase function), read against the scene's real depth buffer. Height falloff gives the fog a layer with a surface rather than a uniform fill; the sun's direction and colour drift with dayPhase and the harmonic hue. A 2D scene that passes the photo's depth…
 
 ![FxDepthFog über TunnelPlain (2D)](img/FxDepthFog_2D.jpg) ![FxDepthFog über AuroraBorealisOverFjord (3D)](img/FxDepthFog_3D.jpg)
 
@@ -22560,7 +22560,7 @@ FX SPHERE: circular lens region that tiles the scene into concentric repeated co
 
 `FX/FxSunShafts.frag` · mood=bright,dreamy · probability=0.005
 
-FX SUN SHAFTS: volumetric light shafts (godrays) that march toward a wandering light source and are occluded by the scene's real depth buffer, so shafts fall behind objects and cut off at their silhouettes. Falls back to no shafts where depth isn't valid (2D layers); shaft intensity fades with distance from the light source, and a separate unoccluded bloom marks the source itself. interpolation -> cross-fades the two…
+FX SUN SHAFTS: volumetric light shafts (godrays) that march toward a wandering light source and are occluded by the scene's real depth buffer, so shafts fall behind objects and cut off at their silhouettes. Falls back to no shafts where depth isn't valid (2D layers); shaft intensity fades with distance from the light source, and a separate unoccluded bloom marks the source itself. A 2D scene that passes the photo's d…
 
 ![FxSunShafts über TunnelPlain (2D)](img/FxSunShafts_2D.jpg) ![FxSunShafts über AuroraBorealisOverFjord (3D)](img/FxSunShafts_3D.jpg)
 
@@ -22930,6 +22930,55 @@ TRANSITION CYMATIC NODE LINE ARRIVAL: the new scene arrives along the nodal line
 Datamosh glitch: RGB-split, stuttering block-shifted 'corrupted P-frame' look, most intense mid-fade. Scene TRANSITION shader (Transitions/): blends the outgoing scene (tex0) into the incoming one (tex1) over one cross-fade. interpolation: 1 = old scene fully visible .. 0 = new scene. Extracted from the former FxPlain.frag 28-style library.
 
 ![Datamosh über TunnelPlain (2D)](img/Datamosh_2D.jpg) ![Datamosh über AuroraBorealisOverFjord (3D)](img/Datamosh_3D.jpg)
+
+
+### DepthDusk
+
+`Transitions/DepthDusk.frag` · mood=dark,calm,cinematic · probability=0.07
+
+TRANSITION DEPTH DUSK: the light leaves the old scene from the back, the scenes swap in the dusk, and the light returns to the new one from the front. Dusk through the depth: the old scene's far places dim first and turn a little blue, the near ones last; in the dim middle (never dark: at most about half the light goes) the scenes swap, and the new scene is lit again from its near things to its far ones. Without a de…
+
+
+### DepthFocusPull
+
+`Transitions/DepthFocusPull.frag` · mood=cinematic,dreamy,calm · probability=0.07
+
+TRANSITION DEPTH FOCUS PULL: the old scene loses its focus from the back, the new one gains it from the front. A focus pull through the depth of the scenes: the blur of the old scene starts at its far places and reaches its near ones last; in the middle, with everything soft, the scenes swap, and the new scene comes into focus with its near things first and its background last. The blur is a disc of thirteen taps who…
+
+
+### DepthFogWall
+
+`Transitions/DepthFogWall.frag` · mood=calm,dreamy,cinematic · probability=0.07
+
+TRANSITION DEPTH FOG WALL: fog fills the picture from the back, the scene changes inside it, and the fog clears from the front. The fog's front runs through the old scene's depth from far to near until the whole picture is veiled (never fully: the scenes stay faintly visible inside it); there the scenes swap, and the fog leaves the new scene from its near things to its far ones. The fog has the light of the two scene…
+
+
+### DepthFromBehind
+
+`Transitions/DepthFromBehind.frag` · mood=dreamy,cinematic,calm · probability=0.07
+
+TRANSITION DEPTH FROM BEHIND: the new scene appears first in the far part of the picture and comes forward until it stands in front. The order of the change is the depth of both scenes (plan P5, 27.11.2026): a place changes early where it lies far in the old scene and in the new one, late where either scene has something near -- the old scene's near things leave last, the new scene's near things arrive last. The new …
+
+
+### DepthLayers
+
+`Transitions/DepthLayers.frag` · mood=cinematic,dreamy · probability=0.07
+
+TRANSITION DEPTH LAYERS: the picture parts into three depth layers, far, middle and near, which change one after the other. The layers are thirds of the picture by depth, where a place counts as far only if it is far in both scenes; the far layer changes first, the middle one overlapping it, the near one last, each with soft borders, and a layer dims a little while it changes so the three read as layers. Without a de…
+
+
+### DepthSilhouette
+
+`Transitions/DepthSilhouette.frag` · mood=dark,cinematic,dreamy · probability=0.07
+
+TRANSITION DEPTH SILHOUETTE: the new scene appears behind the old scene's near things, which darken into silhouettes against it and then dissolve. Like a stage lit from behind: the new scene takes the old scene's far places first (the old scene's own depth), the old scene's near things that remain lose their light and stand as dark shapes in front of the new picture, and in the last part these shapes dissolve into it…
+
+
+### DepthWorldsMerge
+
+`Transitions/DepthWorldsMerge.frag` · mood=psychedelic,dreamy · probability=0.07
+
+TRANSITION DEPTH WORLDS MERGE: the new scene's world is pushed through the old one from behind; where it lies nearer, it shows, until it stands in front everywhere. The two depth orders are compared like a depth test: the new world starts behind the whole old one and moves forward through it, so in the middle the two scenes interleave -- the near things of each stand in front of the far things of the other -- and a f…
 
 
 ### DetailLayerSwapFirst
