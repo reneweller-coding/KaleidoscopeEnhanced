@@ -81,10 +81,14 @@ Verified:
 - Presets (separate commit): `shaftP` 0.4..0.6 for MeshZoetrope, 0.25..0.4 for MeshMetronomes; MeshDominoWave left
   out because of the wash.  These ranges are LOWER than the ones looked at.
 
+- The committed preset ranges, frozen frames (`wt-shafts3d-final` against `wt-shafts3d-p0`, sheet
+  `C:/Users/Rene/Desktop/kaleido-wt/sheets/shafts3d/shaft_p0_final_diff8.jpg`): MeshZoetrope 15.4 -> 19.2
+  (difference mean 3.9, max 27), MeshMetronomes 18.4 -> 24.2 (5.7, max 23): a faint warm veil, the zoetrope's shadow
+  shaft visible in the difference.
+
 NOT verified:
 
-- The committed preset ranges as a picture (a render `wt-shafts3d-final` was started; see the report whether it
-  came back), anything in motion or with music, the grain of the 12 steps at the panel's resolution, transitions.
+- Anything in motion or with music, the grain of the 12 steps at the panel's resolution, transitions.
 - MeshTuningForks, MeshSeismograph, MeshFoundryPour, MeshPendulumWave were compiled but not rendered at all, neither
   with the knob at 0 (identity follows from the same `if`, not shown by a snapshot) nor above 0.
 - GPU cost with the knob on (12 shadow lookups per pixel of the whole screen).
