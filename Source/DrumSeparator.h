@@ -11,7 +11,7 @@
  *  separation), its onset spectrum (the rise of every band over the previous block), and that rise decomposed onto
  *  fixed drum templates and two absorbers for what is no drum (NMF with fixed bases).  Replaces the onsets of three
  *  band groups (27.11.2026); Tools/drum_lab.py replays the same steps in Python and scores them against drums whose
- *  onsets are known (docs/engine-internals-70-analyzer.md).
+ *  onsets are known (docs/engine-internals.md (70)).
  *
  *  @author René Weller
  */

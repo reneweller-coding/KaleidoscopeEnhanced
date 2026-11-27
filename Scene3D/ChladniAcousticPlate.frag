@@ -20,7 +20,7 @@
  *  @author René Weller
  */
 // @hdrcap 2  (27.11.2026: with 16-bit intermediates the host keeps this frame at most 2 -- the sum
-//   of its additive sprites/light turned the glow into a white card; docs/engine-internals-70-defaults.md)
+//   of its additive sprites/light turned the glow into a white card; docs/engine-internals.md (70))
 in vec3  vPos;         ///< Position (from the vertex stage).
 in float vNodalDist;   ///< Nodal dist (from the vertex stage).
 in float vPlateEnergy; ///< Plate energy (from the vertex stage).

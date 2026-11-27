@@ -186,7 +186,7 @@ AudioAnalyzer::AudioAnalyzer( QObject *parent )
     m_tapClock.start(); // tap-tempo clock (read from both threads, set once)
     {
         // Which drums keep the band groups' envelope.  Unset: kick and snare (on a real kit the separator's snare
-        // found fewer snares and its kick answered the piano more -- docs/engine-internals-70-analyzer.md), the hat
+        // found fewer snares and its kick answered the piano more -- docs/engine-internals.md (70)), the hat
         // from the separator.  KALEIDO_OLD_DRUMS=1 (or all): all three as before 27.11.2026; 0 (or none): all three
         // from the separator; otherwise the drums named (kick, snare, hat, any order) keep the old one.
         const char        *old_drums = getenv( "KALEIDO_OLD_DRUMS" );
@@ -199,7 +199,7 @@ AudioAnalyzer::AudioAnalyzer( QObject *parent )
             m_oldDrum[d] = !old_drums ? Default[d] : all || ( !none && v.find( Names[d] ) != std::string::npos );
         m_oldDrums = m_oldDrum[0] && m_oldDrum[1] && m_oldDrum[2];
     }
-    // Which build-up is published (docs/engine-internals-71-buildup.md): KALEIDO_OLD_BUILDUP=1 the one of before
+    // Which build-up is published (docs/engine-internals.md (71)): KALEIDO_OLD_BUILDUP=1 the one of before
     // 27.11.2026, 0 the new one; unset the old one -- the new one is far better on the EDM builds of the score-cued
     // demos but not on every demo (the Cinematic and Ritual crescendos, two breakdowns), so it waits for the user.
     {
@@ -3487,7 +3487,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             for ( int i = 0; i < DropSlots; ++i )
                 groove = std::max( groove, m_dropSlots[i] );
 
-            // ---- The build-up, new (27.11.2026; docs/engine-internals-71-buildup.md, Tools/buildup_lab.py) ----
+            // ---- The build-up, new (27.11.2026; docs/engine-internals.md (71), Tools/buildup_lab.py) ----
             // Measured against the 43 demos' score cues, the signal above read 0.53 AUC between the builds and the
             // grooves (chance) and FELL inside the builds (corr. with time -0.09): its fast-over-slow rises fire
             // where something new comes in and fade while the build goes on.  What separates a build in the demos

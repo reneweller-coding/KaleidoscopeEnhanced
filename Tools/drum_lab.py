@@ -15,7 +15,7 @@ block, computed here exactly as the C++ does -- and scores them against ground t
   cues       the 43 generator demos (.screen/cuebench PCM copies): level statistics and the share of kick hits on
              the /phos/beat grid.
 
-Measures per instrument (README of the method: docs/engine-internals-70-analyzer.md):
+Measures per instrument (README of the method: docs/engine-internals.md (70)):
   F      onset F-measure of the envelope's triggers against the true onsets (+-30 ms after the latency offset);
   leak   the envelope's onset-locked energy (its maximum 0..120 ms after each true onset) with that instrument
          muted, over the same with it playing -- 0 = the envelope needs the instrument;
@@ -59,7 +59,7 @@ HALF = N // 2 + 1
 BLOCK = 480
 DRUMS = ("kick", "snare", "hat")
 # The templates' shape constants (DrumSeparator.cpp has the same).  The DL_* environment variables change them for a
-# run of the lab -- how the variants of "tried and dropped" (docs/engine-internals-70-analyzer.md) were measured.
+# run of the lab -- how the variants of "tried and dropped" (docs/engine-internals.md (70)) were measured.
 ABS_RHO = tuple(float(v) for v in os.environ.get("DL_RHO", "0.5").split(","))
 KICK_TOP = 200.0
 HARM_LO = 250.0

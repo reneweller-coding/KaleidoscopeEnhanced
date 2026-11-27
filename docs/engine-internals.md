@@ -12789,3 +12789,911 @@ All in the lab (`--param`; the experimental knobs stay in Tools/buildup_lab.py, 
 - A slow loudness ramp for the crescendos (`w_lvl` 0.5 / 0.8, 4-s over 20-s / 40-s level): long builds' aucX at best
   0.65 (old 0.63), but groove time above 0.45 9.5-28 % and EDM AUC 0.41-0.68 -- every intro and every new layer is a
   ramp.  The old signal's 0.63 on the crescendos is not a level effect alone.
+
+## 27.11.2026 (72): the evening sprint -- eight small packages in half an hour
+
+The weekly limit reset at 17:00 and the user asked at 16:17 for whatever could still be built with agents until
+then.  Nine agents started at 16:23, each in a worktree from cdab7da3 with a copy of that build; three minutes later
+the limit stood at 89 % (all models) and 93 % (the session's model), so four were stopped and three of those resumed
+when the first ones had finished.  Seven delivered; the particles of P7 stayed a draft (branch `wt-simpart`, one WIP
+commit, unbuilt).  The lead merged, built and checked alone after 16:50.  Every new knob is 0 in the code and then the
+old path.
+
+| package | state | in the presets |
+|---|---|---|
+| the build-up signal per preset, the bars at the drop (lead) | measured | Club, Electronic, Psytrance, Psychedelic |
+| look 6 larger; rolled in TimeChainLab and MirrorBilliardLab | measured: near 2.0-2.6x, far 2.2-3.4x | yes |
+| the depth looks 4 and 6 in StripLab | look 0 identical, look 4 seen | look 4 |
+| parallax in the relief (`reliefParP`), two scenes | compiles; no picture looked at | yes |
+| in-scattered light through the shadow map (`shaftP`), seven scenes | a warm haze rather than beams | two scenes, weak |
+| light shafts through the photo's depth (`raysP`) | builds, knob 0 identical, too faint as set | no (`KALEIDO_RAYS`) |
+| a backlight at depth edges (`haloP`, FxRimLight) | a thin warm line, no glow yet | no |
+| the fluid in the photo's relief (`fluidDepthP`) | knob 0 identical; 0.4 usable, 1.0 too much | no (`KALEIDO_FLUID_DEPTH`) |
+| the user documentation (README, SHADER_AUTHORING V15, kettenlabor-erklaert) | done | -- |
+
+### The build-up signal per preset, the bars at the drop, the photo pack with its maps
+
+Three decisions of the user from the afternoon of 27.11.2026, built by the lead without an agent.
+
+#### The build-up signal per preset
+
+The second build-up signal ((71), "A second build-up signal") separates the builds from the grooves far better on EDM
+(AUC 0.92 against 0.53 on the 17 builds of the score-cued demos) and worse on crescendos (Cinematic, Ritual), so the
+user decided: the new signal in the EDM presets, the old one everywhere else.
+
+- A preset's root element may carry `buildUp="new"` (`Source/Configuration.cpp`, `Configuration::newBuildUp()`).
+  `Tools/make_genre_configs.py` writes it for the presets in `BUILD_UP_NEW`: Club, Electronic, Psytrance,
+  Psychedelic.  The preset editor keeps root attributes it does not know (`extraAttrs`), so a round trip keeps it.
+- `AudioAnalyzer::setPresetBuildUpNew()` holds the active preset's choice for the process (an atomic); the GLwidget
+  sets it in `initializeGL()` -- before the early return of an export -- and at every preset change.  Only analysers
+  that called `followPresetBuildUp()` read it: the live one and the export's.  The offline analyses (the self test,
+  `analyzer_regress`, `PresetEditor --features`) keep the default, so their baselines do not move.
+- `KALEIDO_OLD_BUILDUP` (1 the old signal, 0 the new one) still overrides the preset.
+- A preset change does not step the feature: `processBlock()` cross-fades the two signals with 0.01 a block (a block
+  is 10 ms, so one second).  At the ends exactly one signal is published, bit for bit; an analyser starts at its
+  target without a fade.
+
+Measured with `kaleido-wt\lead_letter_check.py` (four exports of the ostgut stretch of `Tools/depth_arc.py`, 4,320
+frames each, `KALEIDO_FEATURE_LOG`; `DEPTH_ARC_ROOT` is new and adds root attributes to that tool's test preset):
+
+| the published build-up, compared over the stretch | mean abs difference | largest |
+|---|---|---|
+| default against the preset attribute | 0.275 | 0.529 |
+| the preset attribute against `KALEIDO_OLD_BUILDUP=0` | 0.0000 | 0.0000 |
+
+The first run of this measurement read 0.0000 in the first row: the attribute was handed over after the place where
+`initializeGL()` returns for an export, so the export kept the old signal.  Moved, built, measured again.
+
+Not verified: the cross-fade at a live preset change (by the code only; no run changed the preset while music
+played).  The scheduler's plans for the four presets were not compared before and after -- `check_schedule.py` plays
+its plans through the offline analysis, which keeps the default.
+
+#### The CinemaScope bars at the drop
+
+The comment at the bars said they tear open at the drop; they did not.  Their target was the build-up alone, and the
+build-up is still high at the hit, so the bars stood for the one to two seconds it takes to fall.  Now the target is
+multiplied with the same envelope that releases the held breath ((71), "Three fixes"): 1 at the hit, 0 between the
+drop pulse's 0.45 and 0.03, 1 again when the pulse is gone; the fast rate (12/s) holds while the envelope is below 1.
+With `calmMotion` the bars still only creep (2/s).  `KALEIDO_LETTER_DROP=0`: the target as before.  The bars' amount
+is the new last column `letter` of `KALEIDO_FEATURE_LOG`.
+
+A forced drop 43 s into the ostgut stretch (the build-up at 0.77 and staying high, which is harder than a real drop):
+
+| seconds after the hit | drop pulse | breath | bars before | bars now |
+|---|---|---|---|---|
+| -0.05 | 0.000 | 0.595 | 0.595 | 0.595 |
+| +0.10 | 0.792 | 0.592 | 0.593 | 0.592 |
+| +0.25 | 0.587 | 0.261 | 0.594 | 0.317 |
+| +0.50 | 0.356 | 0.000 | 0.574 | 0.000 |
+| +1.00 | 0.131 | 0.000 | 0.501 | 0.000 |
+| +2.00 | 0.018 | 0.162 | 0.430 | 0.162 |
+| +3.00 | 0.002 | 0.427 | 0.432 | 0.427 |
+
+The largest step of the bars from one frame to the next is 0.033 at 60 frames a second.  The bars come back after two
+seconds here because the forced drop sits in a build-up that goes on; after a real drop the build-up has fallen by
+then.  Not verified: a flash count (the bars change the picture's area, not its brightness), and the look.
+
+#### The photo pack carries the depth maps
+
+The documentation agent found that `Tools/make_image_pack.ps1` packed the pictures only, so a downloaded pack would
+have been flat for every depth look.  The script now adds `.depth/<photo name>.png` for every packed photo and
+`.depth/photo_info.tsv`, entry by entry with forward slashes (Compress-Archive of Windows PowerShell 5.1 writes
+backslashes, which unpack as file names on Linux); `-NoDepth` leaves them out; the archive check allows that one
+nested folder and compares the number of maps.  Not run: the pack is built at a release.
+
+#### Checks on the merged state
+
+- Self test 186 passed, 0 failed.
+- Frozen snapshots of 89 scenes (every 45th of the catalogue and the scenes the sprint touched) before (cdab7da3)
+  and after: 5 changed, exactly the scenes whose preset entries got a new line (SandDuneBarchanMigration,
+  KelvinHelmholtzCloudWaves, MeshZoetrope, MeshMetronomes, StripLab); a new line shifts a scene's other rolls.
+- `release_check --skip snapshots`: the first run on the merged state was red in three steps.  Layout: the
+  formatter had not run over seven C++ files of the sprint.  Doxygen: ten warnings in shaders -- three functions of
+  the look library without a text in the chain pass, and the depth transitions' uniform comment whose tag Doxygen
+  read as a command; both from the afternoon, first seen now because no release check had run through since the
+  morning.  Chain: 9 of 12 combinations "differed" -- a cold shader cache after the change of the lab's text: the
+  specialised copies compiled past the tool's wait.  Four combinations were identical before the sprint and, with a
+  wait of 40 s, after it; `Tools/chain_regress.py` now shows a failing combination a second time with a longer wait.
+  The second run is green in all twelve steps (chain 0 of 12; perf: ChainLab2D 0.82 ms GPU p90 against 0.67 in the
+  first run of the same code an hour earlier -- the spread of a machine in use).
+- Presets: `PresetEditor --roundtrip` 2,937 entries, `--validate` all 12 files complete, `check_schedule --quick`
+  20 plans without a violation.
+
+### Look 6 larger, and rolled in TimeChainLab and MirrorBilliardLab
+
+27.11.2026, 16:23-16:53, agent "look6labs", branch `wt-look6labs` (from phos-cues cdab7da3).  Finishes P3 of
+docs/PLAN_2026-11-27.md (section (71), "P3 -- frequency by depth": "direction right, size small").
+
+#### 1. The roll (commit c4151641, Presets/Komplett.xml only)
+
+TimeChainLab and MirrorBilliardLab: `depthLook` 2.83..5.49 -> **2.70..5.90**.  The labs read `> 3.5` as the subject
+anchor and `> 5.5` as look 6 (the anchor plus frequency by depth), so the outcomes are: off 25 % (0.80 of 3.20, as
+before: 0.67 of 2.66 = 25 %), the anchor 62.5 % (was 75 %), look 6 12.5 % -- the share one look has in ChainLab2D
+(-1.51..6.49).  The genre presets are NOT regenerated (the lead runs Tools/make_genre_configs.py after merging).
+
+#### 2. The size (Tools/scenegen/gen.py FREQ_LIB, freqDepth() only)
+
+| constant (variant 0 = the middle) | before | after |
+|---|---|---|
+| near layer: lift at a full kick | 16..32 % | 45..75 % |
+| near layer: share of the photo's own colour (full brightness) in the lift | 0.25 | 0.4 |
+| far layer: glint cells, of the height | 1/110..1/170 | 1/64..1/100 |
+| far layer: cells lit | 20..34 % | 40..56 % |
+| far layer: glint gain | 1.2..2.2 | 2.4..3.6 |
+| far layer: share of the own colour in a glint | 0.5 | 0.8 |
+
+Unchanged: the layers (fdLayers()), the mids' chroma, the jitter (+-0.2) and the radius (<= 0.24 of the cell: every
+point stays round and inside its cell, rule V8e), the twinkle, the drift on sceneAdvance, ChainLab2D's size of the
+near layer (0.8..2.5 %, the swell and a fifth of the bass -- a spatial scale, deliberately not raised).  Why these
+and not a layer's light on the hat: the kick's envelope stays below the 3 Hz of the temporal budget and lights a part
+of the picture; the hat runs at 8 Hz and more, so the far layer gets more, larger and brighter *points* (fine local
+detail), never a light of the whole layer.
+
+Knob: `depthLook` 6 itself (the code sits behind `depthLook > 5.5`; freqDepth() has no other caller).  Looks 0..5 and
+every lab variant with them are textually unchanged: the diff of the four generated files touches only the body and
+the comment of freqDepth() (`git diff c4151641..HEAD -- Scene2D Engine`).  Look 6's own picture changes for every
+depthVar -- that is the package.  Generated with `python Tools/scenegen/gen.py ChainLab2D TimeChainLab
+MirrorBilliardLab` (ChainLab2D.frag, TimeChainLab.frag, MirrorBilliardLab.frag, Engine/ChainPass/Final_ChainLab2D.frag;
+the other chain passes came out unchanged).
+
+#### Measured (commit 0d844bb2 against the old shaders, both rendered with the build of cdab7da3)
+
+The screening music's full mix (Tools/reactivity.py's voices music, 128 BPM), kristallhoehle-indigo-fuchsia-2, seed 7,
+`depthVar` 0, 291 frames at 30 fps per lab.  What look 6 adds against the base look with the same rolls (ChainLab2D:
+look 0; the labs: look 4), mean per frame in the nearest and the farthest third of the pixels by the depth view (of
+255), as p3_cmp2.py; in brackets the largest frame:
+
+| lab | near third, before -> after | far third, before -> after |
+|---|---|---|
+| ChainLab2D | +2.82 (17.3) -> **+7.21** (32.0), 2.6x | +0.39 (2.0) -> **+0.86** (3.9), 2.2x |
+| TimeChainLab | +1.45 (4.5) -> **+2.93** (9.1), 2.0x | +0.24 (0.8) -> **+0.82** (2.8), 3.4x |
+| MirrorBilliardLab | +2.25 (8.7) -> **+5.75** (22.9), 2.6x | +0.34 (0.8) -> **+1.09** (2.9), 3.2x |
+
+So: two to two and a half times in the near layer, two to three and a half times in the far one -- below the "three
+to four times" aimed at for the near layer.  The picture is brighter than (71) assumed (mean 28..36 of 255 with the
+build of cdab7da3), so the near layer's gain counts more than its own-colour share, and the gain went 0.24 -> 0.60
+(2.5x).  A further step (0.60..0.90, own colour 0.55) would reach three times; it was not taken without a look at a
+bright photo (a full kick would lift a bright near layer by 75 %).
+
+Correlation with the voices' onsets (best Pearson over lags 0..6 frames), after: ChainLab2D near kick 0.18 / bass
+0.20 / hat 0.12, far kick 0.24 / bass 0.27 / hat 0.22; TimeChainLab near 0.25 / 0.37 / 0.12, far 0.36 / 0.40 / 0.34;
+MirrorBilliardLab near 0.27 / 0.40 / 0.13, far 0.39 / 0.46 / 0.35 -- as before within 0.01..0.08: the near layer
+follows the bass and not the hat; the far layer follows the hat better than the near one does, but the kick and the
+bass as much (the reasons of (71) hold: fine interleaving at 160 x 90, bloom, exposure).  The size grew, the
+separation did not.
+
+No flash: the limiter's samples dimmed / flash-on in the lab's own window -- ChainLab2D 1 / 0 of 120 before and
+after; TimeChainLab 66 / 0 (look 4: 65 / 0, old look 6: 66 / 0); MirrorBilliardLab 0 / 0.  The frame mean's largest
+step from one frame to the next (of 255): ChainLab2D 18.4 (look 0: 20.0 -- the lab's own), TimeChainLab 3.3 (look 4:
+2.0, old look 6: 2.5), MirrorBilliardLab 3.6 (1.4, 2.1).
+
+Sheets (kaleido-wt\sheets\look6labs\): `look6labs_<lab>_before_after.jpg` -- base look | look 6 before | look 6
+after | before - base x4 | after - base x4 | depth view, on a kick and on a hat between the kicks.
+
+#### Verified / not verified
+
+See the table at the end of this file ("State") -- it is kept current.
+
+#### How to verify (the helpers are in C:\Users\Rene\Desktop\kaleido-wt\, outside the repository)
+
+    rem the presets (no make_genre_configs): roundtrip of Komplett.xml, --validate, check_schedule --quick
+    python C:\Users\Rene\Desktop\kaleido-wt\heavy.py "lead: presets" -- python C:\Users\Rene\Desktop\kaleido-wt\p3b_presets_check.py
+    rem the size: the screening music's full mix once per run (13 s each), then near/far third as p3_cmp2.py
+    python C:\Users\Rene\Desktop\kaleido-wt\heavy.py "lead: look 6" -- cmd /c C:\Users\Rene\Desktop\kaleido-wt\p3b_after.cmd
+    rem   p3b_full.py TAG SCENES EXPRS KINDS   one export per kind (full, depthview), videos in .screen\reactivity\voices\TAG
+    rem   p3b_cmp.py RUN BASE DEPTHRUN         what RUN adds against BASE in the near and the far third, per voice
+    rem   p3b_sheet.py BASE OLD NEW OUTDIR     base | look 6 before | after | differences x4 | depth view
+    rem the before runs (old shaders, c4151641) are kept: tags l6b_cl_l0, l6b_cl_old, l6b_labs_l4, l6b_labs_old
+    rem looks 0..5 bit for bit: python C:\Users\Rene\Desktop\kaleido-wt\p3_ident.py (old shaders against new, 40-s waits)
+
+#### For the user
+
+- The share of look 6 in the two labs: 12.5 % (as one look in ChainLab2D), taken from the anchor's 75 %.  A larger
+  share is the upper end of the range: 2.51..6.49 gives off 25 %, anchor 50 %, look 6 25 %.
+- The size: if the near layer's lift on the kick is too much on bright photos, the first constant (0.45..0.75) is
+  the one to lower; the glints' are the last four.
+
+#### State
+
+| what | state |
+|---|---|
+| PresetEditor --roundtrip Komplett.xml | ran: ok, 2937 entries |
+| PresetEditor --validate | ran: rc 0, "all 12 file(s) complete vs. Komplett.xml" (the genre presets still hold the old range until regenerated) |
+| Tools/check_schedule.py --quick | ran (16:32): rc 0, "schedule: 20 plan(s), 0 with violations" (kaleido-wt/p3b_presets.log, `PRESETS_BAD=0`) -- with the genre presets as they are in the branch, i.e. not regenerated |
+| the size, near / far third against the base look, three labs | measured, see "Measured" (commit 0d844bb2) |
+| limiter (flash) counts of the runs with the new size | read: no more than with the old size, see "Measured" |
+| the sheets | all three looked at: the near layer's light shows clearly in "after - base" on the kick (ChainLab2D, MirrorBilliardLab; weaker in TimeChainLab), the glints as fine points; only at the sheets' small size, only the dark screening photo, no bright photo, no moving picture |
+| looks 0..5 bit for bit by render (p3_ident.py) | NOT run (by the diff only: freqDepth() alone changed) |
+| temporal_budget.py | ran: 0 errors, 4 warnings (as before) |
+| shake_scan.py --summary --baseline | ran: 0 new SHAKE/FRAME/STEP hits, 74 known |
+| doc_shaders.py --check, cgvr_format.py --check (the four files) | ran: would change 0; 4 of 4 same |
+| shadercheck.py | NOT run (the app compiled and rendered all three labs with look 6 in the runs above) |
+| chain_regress with look 6 pinned (runner against uber shader) | NOT run (both are generated from the one source) |
+| cost (perf_labs) | NOT run (more lit cells cost nothing: the same hashes per pixel) |
+
+### The depth looks in StripLab
+
+27.11.2026, agent "depthlabs", branch `wt-depthlabs` (worktree kaleido-wt\defaults, from phos-cues cdab7da3).  A sprint
+of 30 minutes, cut by the lead to ONE lab: **StripLab** takes `depthLook` / `depthVar` the way TimeChainLab has
+`depthLook`; six more labs are prepared (one command each) and not applied.
+
+#### What
+
+- `depthLook` in StripLab (a uniform, default 0): **4** the subject anchor (plan M2 -- each photo is sampled shifted by
+  its own subject's offset, `anchorOff(photoFocus, photoSubject, photoDepthAmt)`, zero without a map or a sure
+  subject), **6** the anchor and frequency by depth (`freqDepth()`, plan P3), **0** (and everything <= 3.5) the old
+  statements.  Thresholds as in TimeChainLab: `> 3.5`, `> 5.5`.
+- `depthVar` (0..99, default 0): the variant of look 6 (`freqDepth()`'s last argument).  New against TimeChainLab and
+  MirrorBilliardLab, which always pass variant 0; without the knob in a preset it is 0, the same constants.
+- No second copy of the look code: the source calls `imgDepthOff(`, `anchorOff(` and `freqDepth(`, and gen.py's
+  assemble() appends ANCHOR_LIB, FREQ_LIB and their uniforms for sources that do.  gen.py itself is unchanged, so
+  look6labs' change of FREQ_LIB merges without a conflict here -- but Scene2D/StripLab.frag carries the FREQ_LIB text
+  of cdab7da3: **after merging look6labs rebuild it** (`python Tools/scenegen/gen.py StripLab`).
+
+#### Where
+
+- `Tools/scenegen/patch_depthlabs.py` (new): patches a lab's source in Tools/scenegen/src (idempotent, asserts that
+  every pattern matches exactly once) and rebuilds exactly the labs named.  Three edits: the two uniforms after
+  `//@body`; the anchor at the one photo lookup (`gPhD = photoDepthLod(puv, plod); return|vec3 col = imgLod(puv,
+  plod);`); in main the walk's depth in a variable, the colour in `col`, `freqDepth()` under `depthLook > 5.5`.
+- `Tools/scenegen/src/StripLab.glsl`, `Scene2D/StripLab.frag` (generated by gen.py through the patch script).
+- `Presets/Komplett.xml` (separate commit): StripLab's entry ends with
+  `<float name="depthLook" minValue="2.83" maxValue="5.49"></float>` -- the line TimeChainLab and MirrorBilliardLab
+  have: look 0 25 %, the anchor 75 %, look 6 never rolled (only by pin).  The knob is the entry's last line, so it
+  moves no other roll of the entry.
+
+#### The candidates (step 1 of the brief)
+
+All twenty walking photo labs have probability 0.45 in Komplett.xml: none is shown more than another.  By how the
+photo is sampled (Tools/scenegen/src/*.glsl):
+
+| labs | photo lookups | depth plumbing (`//@depth`, gPhD, photoDepthOut) | takes the looks |
+|---|---|---|---|
+| StripLab, FoldLab, GlassLab, SequenceLab, DefectLab, MeterLab, PartitionLab | 1 (`imgLod(puv, plod)`) | there | mechanically -- patch_depthlabs.py knows all seven |
+| AtlasLab, BandLab, DiffractionLab, ExposureLab, FlowPaintLab, MicroscopeLab, SeparationLab | 2 | none | by hand: the depth plumbing first |
+| EngravingLab, PerceptionLab, TwinPhotoLab (also the second photo, imgB) | 3 | none | by hand |
+| LayerCutLab | 6 | none | last |
+
+The seven were patched and built once in this sprint (commit 3a831536: the patterns match in all seven and gen.py
+builds them); six were taken back when the scope was cut (48c4798a) and were never compiled by the driver or looked
+at.  `python Tools/scenegen/patch_depthlabs.py FoldLab` (or without a name: all seven) applies the same patch again.
+Looks 1, 2, 3 and 5 live in ChainLab2D's own depthLookCol(), not in a shared library: bringing them to the labs
+means moving them into gen.py first (not done).
+
+#### Verified
+
+- gen.py is free of drift for StripLab and FoldLab (rebuilt unpatched: no diff) before the patch.
+- `python Tools/shadercheck.py --new cdab7da3` (through the lock): 1 file, 0 errors, 0 warnings (with the driver's
+  compile).  The app compiled and showed the shader (three starts, below).
+- Look 4 changes the picture: frozen frame, seed 7, photo drahtknaeuel-veilchen-indigo-2 (subject at 0.20/0.87,
+  confidence 0.88), look 0 against look 4 mean 41.9 of 255 apart.  Sheet (looked at):
+  `C:\Users\Rene\Desktop\kaleido-wt\sheets\depthlabs\StripLab_look0_look4.jpg` -- the same strips, the photo shifted to
+  its subject; with a subject this near the photo's edge the edge's mirror repeat comes into the middle of the screen
+  (see the open decisions).
+- Look 0, the old shader (cdab7da3) against the new one, same preset text with `depthLook=0` pinned:
+  three app starts in a row (depthlabs_control.py, wait 40 s): old | new | new again.  Old (start 1) against new
+  (start 3): **0 pixels differ**.  New (start 2) against new (start 3), the same shader file: 7975 pixels 1 of 255
+  apart (mean 0.0006) -- and old (start 1) against new (start 2) the same 7975.  So the difference lies between
+  the starts, not between the shaders: the second of three starts differs from the first and the third, whatever
+  shader they run (the first run, wait 25 s, old | new | look 4, showed the same 7975 between its starts 1 and 2).
+  The cause of that start-to-start difference was not looked for (one photo, one seed, one frame).
+- `PresetEditor.exe --roundtrip Presets/Komplett.xml`: ok, 2937 entries, the knob survives.
+  `PresetEditor.exe --validate`: 6 missing parameters -- exactly StripLab's `depthLook` in the generated presets that
+  hold StripLab; they go when the lead runs make_genre_configs.py.
+- `python Tools/temporal_budget.py` 0 errors (4 warnings as before), `shake_scan.py --summary --baseline` 0 new,
+  `doc_shaders.py --check` would change 0 files, `cgvr_format.py --check` 3525 of 3525 the same.
+
+#### Not verified
+
+- Look 6 in StripLab was never rendered with music (a silent frozen frame shows look 6 = look 4); its code is the two
+  lines TimeChainLab has, plus `depthVar` as the variant.  `depthVar` > 0: not rendered.
+- A photo cross-fade under look 4 (each photo keeps its own offset, as in TimeChainLab: continuous by construction).
+- `Tools/check_schedule.py --quick` was not run: it plays the genre presets, which this branch does not regenerate.
+- No snapshot comparison against 2026-11-26-base, no perf_labs (look 4: the same two texture reads; look 6:
+  freqDepth()'s reads, 0.83 -> 0.85 ms in ChainLab2D).
+- The six other labs: see above.
+
+#### How to verify
+
+    python C:\Users\Rene\Desktop\kaleido-wt\heavy.py "lead: StripLab look 0 old/new" -- python C:\Users\Rene\Desktop\kaleido-wt\depthlabs_control.py StripLab --wait 40
+    python C:\Users\Rene\Desktop\kaleido-wt\heavy.py "lead: StripLab sheet" -- python C:\Users\Rene\Desktop\kaleido-wt\depthlabs_check.py StripLab --photo <photo.jpg>
+    python Tools/shadercheck.py --new cdab7da3
+    python Tools/reactivity.py --voices --scenes StripLab --tag l6 --expr depthLook=6 --halves     # look 6 with music
+
+Both helper scripts work in kaleido-wt\defaults (WT at their top), swap Scene2D/StripLab.frag for `git show
+cdab7da3:...` during a shot and put the new file back; depthlabs_control.py renders old, new, new again (the third is
+the run-to-run control).
+
+#### Open decisions for the user
+
+1. **The anchor in a lab that does not fold.**  TimeChainLab and MirrorBilliardLab mirror the photo anyway; StripLab
+   shows it nearly whole (`q * 0.8 + 0.5`).  A subject near the photo's edge (the sheet's photo: y 0.87) brings the
+   edge's mirror seam to the screen's middle.  Options: keep; limit the offset (e.g. to 0.25); roll the anchor less
+   often than 75 %.
+2. **Look 6 in the roll.**  Not rolled here (the roll is the one the two older labs have at cdab7da3).  look6labs
+   rolls it in TimeChainLab and MirrorBilliardLab on its branch: `minValue="2.70" maxValue="5.90"` (look 0 25 %,
+   the anchor 62.5 %, look 6 12.5 %); freqDepth()'s signature is unchanged there, so StripLab's call fits.  The
+   same line in StripLab's entry rolls look 6 here too (and a `depthVar` line 0..99.49 its variants) -- once look
+   6 has been seen in StripLab with music.
+3. **The other six one-lookup labs** (FoldLab, GlassLab, SequenceLab, DefectLab, MeterLab, PartitionLab): one command,
+   then a sheet each.
+
+### P4, second stage -- parallax in the relief
+
+Sprint of 27.11.2026, 16:23-16:53.  Status at the end of this file: **what was verified and what was not** -- read
+that first.
+
+#### What
+
+Stage 1 (section (71), "P4 -- the photo as relief in 3D") tilts the normal by the photo's depth map.  Stage 2 shifts
+the photo's *coordinate* along the view ray by the same map (steep parallax mapping with a refinement), so near parts
+of the photo slide over far parts when the view onto the surface changes -- the photo has depth inside the surface.
+
+New knob `uniform float reliefParP`: 0 (the code default; no preset entry) = stage 1 only, the old code path;
+1 = a height field 4 % of the photo's width deep.  Without a depth map (`photoDepthAmt` 0 for the slot) there is no
+shift.  No C++ change (a preset float reaches any uniform of its name; `photoDepthAmt` is uploaded already).
+
+#### Where
+
+- `Tools/scenegen/patch_relief3d.py`: `BLOCK2` (appended to the marker block only in the scenes of `SITES2`, so the
+  other eight relief scenes are byte-identical -- a full run of the script reports them "unchanged") and `SITES2` (the
+  call sites, placed once; a re-run detects `reliefParallax(` outside the block).  Idempotent: second run "unchanged".
+- Regenerated by it: `Scene3D/SandDuneBarchanMigration.frag`, `Scene3D/KelvinHelmholtzCloudWaves.frag`.  Both: a fixed
+  camera, one untiled photo over the whole surface, no `shadowMapP` (agent shafts3d works on those).  The eye is the
+  vertex stage's camera written out as a constant in the fragment stage (dunes: `( 0, 1.5 - 7 sin(-0.62),
+  -7 cos(-0.62) )` in the frame of `vWorldPos`; clouds: `( 0, 4.5, -16 )`).  GlacierTessellation was the third
+  candidate and is left out: its eye moves (swing, ride height) and is not known in the fragment stage -- it would
+  need a varying from the .tese (like `vReliefPos`).
+
+#### How (the block)
+
+- `reliefParallax( n, v, f, uv, amt, tile )` returns the offset to add to the photo coordinate.
+  - Tangent frame without vertex tangents, from the derivatives stage 1 already takes (`reliefFrame()`, called at the
+    site behind `if ( reliefParP > 0.0 )` -- a uniform -- and nowhere inside a pixel-dependent branch): the surface
+    gradients `grad u = ( ux.x ( sy x c ) + uy.x ( c x sx ) ) / ( c . c )`, `c = sx x sy`, `grad v` likewise.
+  - The ray below the surface moves by `-z vt / ( n . v )` along the surface at depth z (`vt`: the view direction's
+    part in the surface, `n` the scene's shading normal, either side); the coordinate moves by
+    `( grad u . dp, grad v . dp )`.  `|n . v|` is limited to 0.35 (a grazing view would smear the photo).
+  - Height 0.5 lies on the surface (a flat map shifts nothing; the photo keeps its place on average).  The march
+    starts where the ray enters the top layer: 1 sample there, at most 9 more at layers 0.1 .. 0.9 (10 linear
+    samples), until the ray is below the map; then 3 secant steps between the last two samples.
+  - The height comes from mip level 2 or coarser (`log2( footprint ) + 1`, up to 6, as stage 1's slope): the filter
+    smooths the 8-bit map's terraces.  Both photo slots mixed with `interpolation` (a slot without a map counts as
+    0.5), so a photo change cross-fades the shift; a slot with weight 0 is not fetched (a branch on uniforms).
+  - Fades out with stage 1's footprint fade (24..64 texels per pixel) and, for an untiled photo (`tile` 0), within
+    8 % of the photo's border (nothing lies beyond it); the result is clamped to 0..1 at the site.
+- `reliefPhoto( uv, f )` reads the colour at the shifted coordinate with `textureGrad()` and the *unshifted*
+  derivatives -- the shift jumps at the map's depth edges, the implicit derivatives of the shifted coordinate would
+  pick a blurred mip there (a line).
+- At the sites `par_uv` starts as the old coordinate; with the knob at 0 the old fetch runs (`img( vTexCoord )` /
+  the old `texture()` pair, in the `else` branch) and stage 1's `reliefNormal()` gets `par_uv` = the old coordinate.
+
+#### Cost per pixel (expected, NOT measured)
+
+With `reliefParP > 0` and a map: 5 to 13 height samples (expected about 9: the hit lies around layer 0.5), each one
+`textureLod()` of mip >= 2 per active slot -- one slot between photo changes if `interpolation` rests at exactly 0 or
+1 (not checked), two during a cross-fade: about 9 fetches typical, 26 worst case, on top of stage 1's 16.  The colour
+fetch changes from 2 `texture()` to 2 `textureGrad()`.  Stage 1's 16 taps were within the noise of the GPU timer on
+the scenes measured (section (71), table "GPU time": 0.84 -> 0.85 ms median on TessellatedLavaLake at 2880 x 1620);
+a similar number of fetches of small mips is expected to cost the same order, but that is a guess: no timing run was
+made (it needs the lock exclusively; no time in the sprint).  With the knob at 0: one uniform compare.
+
+#### Verified
+
+- `python Tools/scenegen/patch_relief3d.py` (all ten): only the two scenes change; a second run: all "unchanged".
+- `python Tools/shadercheck.py --new HEAD` through the lock (static rules + the real driver compile by PresetEditor
+  --compile): 2 files, 0 errors, 0 warnings.
+- `python Tools/doc_shaders.py --check`: would change 0 files; `python Tools/cgvr_format.py --check`: 3525 same.
+
+#### NOT verified
+
+- **No picture was looked at.**  Neither the look with the knob on nor the bit-identity with the knob at 0 was
+  rendered (identity is by construction: the old statements run in the `else` branch and `par_uv` equals the old
+  coordinate).  The sign of the shift (near parts must move *with* the eye) follows from the derivation, not from a
+  render.
+- The depth scale (4 % of the photo's width at 1) and the 0.35 limit are first guesses.
+- Faceting: `grad u`, `grad v` are constant per triangle; the dunes' facets are coarse (stage 1 met that as cracks).
+  The shift may show the grid at a high knob -- look for it.
+- Stereo: the eye constant ignores `eyeOff` (both eyes get the same shift, so the parallax adds no stereo depth).
+- temporal_budget, shake_scan: not run (no motion or flash was added: the shift depends on the surface and the view
+  only, no audio term).
+
+#### How to verify
+
+    (worktree at cdab7da3)   python Tools/scene_snapshots.py render wt-relief2-before --only SandDuneBarchanMigration KelvinHelmholtzCloudWaves
+    (worktree at 50472a9e)   python Tools/scene_snapshots.py render wt-relief2-off    --only SandDuneBarchanMigration KelvinHelmholtzCloudWaves
+    python Tools/scene_snapshots.py compare wt-relief2-before wt-relief2-off --tol 0     (knob 0: expect identical)
+
+  50472a9e = the code without the preset entries (commit 2eadc52d adds `reliefParP` -0.3..0.6 to the two entries of
+  Presets/Komplett.xml, at the end of each entry so the other knobs roll as before; with it the frozen frame may show
+  the parallax, depending on the roll).  The common baseline `2026-11-26-base` is older than stage 1 and does not
+  serve here.  Each through `python C:\Users\Rene\Desktop\kaleido-wt\heavy.py "<label>" -- ...`.  For the look: the wrapper of
+  stage 1 (section (71), "Snapshots ... appends a knob at the END of an entry") with `reliefParP` 0 | 0.5 | 1 and
+  `reliefP` 1, photo basaltstufen-tuerkis (map relief 5.59) and a flat one (achat-amethyst-lk3: must be identical).
+
+#### Open, for the user
+
+- Whether the look is wanted at all, and the range in Presets/Komplett.xml (see the preset commit's message).
+- GlacierTessellation and the tiled scenes (TessellatedLavaLake, EuropaChaosTerrain, PermafrostPolygons: `tile` 1 is
+  implemented in the block but no site uses it) as the next candidates.
+
+### In-scattered light through the shadow map (shaftP)
+
+Branch `wt-shafts3d` from phos-cues cdab7da3.  Shader and patch-script work only: no C++, no build.
+
+#### What
+
+The seven mesh scenes on a floor got a shadow map of their own lamp in U2 (section (69), `patch_shadow3d.py`:
+`smClip()`, `texShadow`, `SmLamp`, `SmCentre`, `SmBox`, the knob `shadowMapP`).  The map told only the SURFACES
+whether the lamp sees them.  With the map in the fragment stage the same question can be asked for points in the air,
+so the lamp's light becomes visible as a volume: `smShafts()` walks the view ray from the eye (the origin in these
+scenes; `vPos` is the world position) to the surface point, asks the shadow map at every step, and adds the light a
+thin haze would scatter toward the eye -- a soft glow of the lamp over the floor with the objects' shadows cut into
+it as dark beams.
+
+#### Where
+
+- `Tools/scenegen/patch_shaft3d.py` (new, in the style of `patch_shadow3d.py`): a block between the markers
+  `// ---- light shafts of the scene's lamp (Tools/scenegen/patch_shaft3d.py) ----` and `// ---- end of the light
+  shafts ----`, right behind the shadow block's end marker, and two call sites in `main()` (three in MeshSeismograph: the paper on the drum has its own exit) -- after the sky shell's
+  `fragColor = vec4( renderSky( ... ) )` and after the objects' last `fragColor = vec4( clamp( cat_tone ... ) )`.
+  Idempotent (a second run: 7 x "unchanged").  It must run AFTER `patch_shadow3d.py`; when `patch_shadow3d.py` runs
+  again later it puts its block inside this one (it inserts before the first function) -- the next run of
+  `patch_shaft3d.py` moves it out in front again (tried on MeshZoetrope: shadow patch, shaft patch -> the files'
+  md5 as before).
+- Regenerated by it (the `.frag` only, +76 lines each; no `.vert` changes): `Scene3D/MeshTuningForks.frag`,
+  `MeshDominoWave.frag`, `MeshMetronomes.frag`, `MeshSeismograph.frag`, `MeshZoetrope.frag`, `MeshFoundryPour.frag`,
+  `MeshPendulumWave.frag`.
+- The old seven shadow scenes (BloomSculpt, Detonation, MetaSculpt, Origami, PillarHall, ShadowForest, SmokeHall) are
+  NOT touched: they project with the host's turning sun (`lightM`), have no `smClip()`, and each has its own
+  structure -- a different patch, not done in the sprint.
+
+#### The march
+
+- The segment: the part of the ray inside a sphere of 1.6 `SmBox` around `SmCentre`, cut at the surface (objects:
+  `length( vPos )`; sky shell below the horizon: the floor at `SmCentre.y / dir.y`; above it: the far side of the
+  sphere).  So the 12 steps are spent where the map is.
+- 12 steps; the start offset jittered per pixel with a static interleaved-gradient noise of `gl_FragCoord` (no time
+  in it): the stepping's bands become a fixed fine grain, nothing flickers.
+- Per step `smLit( q )`: one `textureLod( texShadow, ..., 0.0 )` (the hardware's 2 x 2 comparison; explicit level, so
+  no implicit derivatives inside the loop), bias 0.0015, 1 outside the map.
+- The haze's density: `exp( -height / ( 0.45 SmBox ) )` above the floor, times a fade from 0.8 to 1.6 `SmBox` from
+  the centre -- the volume has no visible border.
+- A Henyey-Greenstein lobe (g = 0.45) toward the lamp, the lamp's colour as the scene's lamp term writes it
+  (`ShaftCol`), strength `0.6 shaftP` times 0.75 .. 1 with `audioSwell` (the slow envelope every one of the seven
+  already has; no kick, no beat, nothing on the camera).
+- Added after the scene's tone mapping as a screen blend `col + ( 1 - col ) ( 1 - exp( -s ) )`: stays in 0..1.
+
+#### The knob
+
+`uniform float shaftP` (fragment stage), a scene knob like any other (`<float name="shaftP" minValue= maxValue=>` in
+the scene's preset entry; no C++ plumbing needed).  0 -- also with no preset entry -- is the old code: both call
+sites are `if ( shaftP > 0.0 && shadowMapP > 0.0 )`.  It acts only where `shadowMapP` is above 0, because only then
+the host renders the depth pass (`EffectShader::usesShadow()`).  Cost when on: 12 shadow lookups per pixel of the
+whole screen (the sky shell covers it) -- NOT timed in the sprint.
+
+#### Verified / not verified
+
+Verified:
+
+- The patch is idempotent (second run: 7 x "unchanged"); `patch_shadow3d.py` then `patch_shaft3d.py` on MeshZoetrope
+  gives the same files again (md5).
+- `Tools/shadercheck.py --new HEAD` through the lock, WITH the real GLSL compile: 7 files, 0 errors, 0 warnings (run
+  before MeshSeismograph got its third call site; after that only the static rules ran again: 0/0 -- see below
+  whether the compile was repeated).  `cgvr_format.py --check` on the seven: 0 would change; `doc_shaders.py --check`:
+  0 errors; `temporal_budget.py`: 0 errors (4 old warnings); `shake_scan.py`: 0 new hits.
+- Knob absent = the old picture: frozen snapshots of MeshZoetrope, MeshDominoWave, MeshMetronomes with the old files
+  (`wt-shafts3d-before`) and with the patched files and no `shaftP` entry (`wt-shafts3d-off`), both with the presets'
+  `shadowMapP` 0.6..1 (so the depth pass and the shadow lookup run): the three JPGs are byte-identical (md5), the
+  tool's compare says 0 changed.
+
+- The real GLSL compile was repeated after MeshSeismograph's third call site (the paper on the drum, its own exit of
+  `main()`): `shadercheck.py --new cdab7da3`, 7 files, 0 errors, 0 warnings.
+- The picture, frozen frames, same rolls (`wt-shafts3d-p0`: preset entry `shaftP` 0..0, against `wt-shafts3d-on`:
+  0.45..0.7; sheet `C:/Users/Rene/Desktop/kaleido-wt/sheets/shafts3d/shaft_p0_on_diff8.jpg`: off, on, 8 x the
+  difference), mean of 255 off -> on: MeshZoetrope 15.4 -> 19.8 (difference mean 4.5, max 34), MeshDominoWave
+  10.3 -> 21.5 (11.2, max 38), MeshMetronomes 18.4 -> 28.8 (10.3, max 33).  No black frame, no error in the logs.
+  What the sheet shows: in MeshZoetrope a warm glow over the table with the zoetrope's shadow cut into it as a dark
+  shaft (clear in the difference, faint in the picture); in MeshDominoWave and MeshMetronomes mostly an even veil,
+  brightest in a band at the horizon, that doubles the mean of a dark scene -- a wash, not beams: the lamps stand
+  behind the camera, so the shadow volumes run away from the eye and the rays cross them only briefly.
+- Presets (separate commit): `shaftP` 0.4..0.6 for MeshZoetrope, 0.25..0.4 for MeshMetronomes; MeshDominoWave left
+  out because of the wash.  These ranges are LOWER than the ones looked at.
+
+- The committed preset ranges, frozen frames (`wt-shafts3d-final` against `wt-shafts3d-p0`, sheet
+  `C:/Users/Rene/Desktop/kaleido-wt/sheets/shafts3d/shaft_p0_final_diff8.jpg`): MeshZoetrope 15.4 -> 19.2
+  (difference mean 3.9, max 27), MeshMetronomes 18.4 -> 24.2 (5.7, max 23): a faint warm veil, the zoetrope's shadow
+  shaft visible in the difference.
+
+NOT verified:
+
+- Anything in motion or with music, the grain of the 12 steps at the panel's resolution, transitions.
+- MeshTuningForks, MeshSeismograph, MeshFoundryPour, MeshPendulumWave were compiled but not rendered at all, neither
+  with the knob at 0 (identity follows from the same `if`, not shown by a snapshot) nor above 0.
+- GPU cost with the knob on (12 shadow lookups per pixel of the whole screen).
+
+#### How to verify (from the worktree, Qt bin first in PATH, KALEIDO_NO_ACTIVATE=1)
+
+    python Tools/scenegen/patch_shaft3d.py                      # 7 x "unchanged"
+    python C:\Users\Rene\Desktop\kaleido-wt\heavy.py "lead: shadercheck" -- python Tools/shadercheck.py --new cdab7da3
+    python C:\Users\Rene\Desktop\kaleido-wt\heavy.py "lead: snaps" -- python Tools/scene_snapshots.py render lead-shafts --only MeshZoetrope MeshDominoWave MeshMetronomes --jobs 1
+    python Tools/scene_snapshots.py compare wt-shafts3d-on lead-shafts        # the set with the committed presets
+    python Tools/scene_snapshots.py compare wt-shafts3d-before wt-shafts3d-off  # knob absent against the old files
+
+The snapshot sets of the sprint (in `%LOCALAPPDATA%\KaleidoscopeVisualizer\snapshots`): `wt-shafts3d-before` (old
+files, cdab7da3), `wt-shafts3d-off` (patched files, no preset entry), `wt-shafts3d-p0` (preset entry `shaftP` 0..0),
+`wt-shafts3d-on` (the committed preset entries).  An appended knob changes the scene's rolls in the snapshot tool
+(section (69), U2): compare `p0` with `on` for the effect, `before` with `off` for the identity.
+
+#### Open, for the user
+
+- The strength (0.6 at `shaftP` 1) and the preset range are a first guess, looked at in frozen frames only -- not in
+  motion, not with music.
+- The grain of the 12 jittered steps is static per pixel; whether it shows at the panel's resolution under the bloom
+  was not judged in motion.
+- With the lamp behind the camera the effect is a veil more than beams (see above).  Beams would need a lamp to the
+  side of or facing the camera, or a spot light with a cone; whether the veil is worth 12 lookups a pixel is the
+  user's call.  The constant 0.6 in `smShafts()` is the place to turn it down for all seven.
+- The old seven shadow scenes (PillarHall, ShadowForest ...) would be the more spectacular place for shafts (a
+  turning sun through pillars and trees); they need their own block on `lightM`.
+
+### Light shafts through the photo's depth (raysP)
+
+Sprint of 27.11.2026 (16:23-16:53), agent "rays", branch `wt-rays` from cdab7da3.  An idea of the lead the user
+approved: light seems to come from the far, bright part of the picture toward the viewer and is cut by everything
+nearer (crepuscular rays) -- one more depth effect, but in the present pass, so that it is there whatever combine the
+scheduler drew.  Knob `raysP`; 0 = the old code path behind an `if`.  **Not in any preset**: the user decides after
+seeing it.
+
+**State (16:35): built (one build, rc 0), knob 0 compared on two scenes, one sheet with the knob on looked at -- the
+effect works but is FAINT at these constants (see "Verified"); the constants were not tuned.**
+
+#### What it does
+
+- *Engine/Present.frag*, three marked blocks (`// ---- rays (27.11.2026) ... BEGIN/END`): the uniform `raysP`, the
+  function `raysLight()` after `photoDepthAt()`, the call after the CAS sharpening and before the NaN bound and the
+  grade (so the mood grade, the lamps and the limiter work on the lit picture as on any other).
+- *The march.*  From each pixel `RaysTaps` = 16 samples toward the light point, at most `RaysReach` = 0.6 frame
+  heights.  A sample counts where the photo is far (`1 - depth`, smoothstep 0.5 .. 0.85) and the frame is bright
+  (luminance, smoothstep 0.35 .. 0.8); a near sample counts nothing, so a shaft ends at a silhouette.  Each sample
+  weighs 0.93 of the one before it.  The sum is normalised, takes two thirds of its own colour (light, not a copy of
+  the picture), fades to 20 % far from the light point (distance 0.25 .. 1.2 heights) and is added as a screen blend
+  written for light above 1 too (`c += L * ( 1 - min( c, 1 ) )`, as the time echo does with 16-bit intermediates).
+- *No bands, no flicker.*  The start of the march is jittered per pixel with an interleaved gradient noise of
+  gl_FragCoord only -- no time in it, the pattern stands still.  Both textures are read with `textureLod( .., 0 )`: no
+  implicit derivatives of a jittered coordinate.
+- *The light point* rests in the upper middle and drifts on two slow sines of `time` (0.5 +- 0.16 at 0.041 rad/s, 0.80
+  +- 0.07 at 0.029 rad/s: periods 2.6 and 3.6 minutes).  It never jumps, also not on a photo change -- the frame and
+  the depth cross-fade under it (the scene does that with `interpolation`), the point does not know the photo.
+  The brightness-weighted centre of the far region was the first idea of the brief; it needs a memory (a smoothed
+  position on the host, from a read-back or a low mip level) and was not attempted in 30 minutes.
+- *The music.*  Strength x ( 0.65 + 0.35 x `audioSwell` ) -- the slow loudness build (fast average 1.5 s minus slow
+  average 8 s, AudioConditioner.cpp), never a beat, a kick or the drop pulse.  No motion of the camera.
+- *The host* (Source/RenderPipeline.cpp, the block before `m_present.run( pin )`): `pin.raysP` = the ACTIVE scene's
+  rolled preset knob `raysP` (0 where its entry has none; `EffectShader::namedParameter()`, new) times "a photo's depth
+  is up" (`M_DepthPhoto[0] x M_DepthValid[0]`, 0 on the full-source path), slewed at 1.2/s (`m_raysUp`).  So a scene
+  without `// @depth`, a 3D scene, or a photo without a map gets 0, and neither a scene change nor a photo change
+  makes the light jump.  Source/PresentPass.cpp binds the depth texture to unit 6 also where only the rays need it
+  and sets the uniform (0 where there is no depth texture).
+- *Knob 0.*  `m_raysUp` stays exactly 0, the uniform is 0, the shader skips the block (`if ( raysP > 0.001 )`), unit
+  6 is not touched: the old picture by construction.  To be shown with snapshots (below).
+- `KALEIDO_RAYS=<x>` forces the knob for every scene (still times the photo-depth presence) -- for looking at it
+  while no preset sets it.  Not yet in the README's list of switches.
+
+#### Which preset line switches it on
+
+Inside the `<TextureShader ...>` entry of a scene that passes the photo's depth on (`// @depth`, e.g.
+`Scene2D\ChainLab2D.frag`) in Presets/Komplett.xml:
+
+    <float name="raysP" minValue="0.5" maxValue="1.0"></float>
+
+(or `minValue="-0.3"` to leave it off in part of the activations, as `arcP` does; values <= 0 are off).  The scene's
+own shader does not declare `raysP`: EffectShader::addUniform keeps the rolled value whatever the program declares,
+and the present pass reads it by name.  NOT checked: whether a preset validator (release_check, the PresetEditor)
+objects to a knob the scene's shader does not declare.
+
+#### Verified
+
+- Light checks after the change: `Tools/cgvr_format.py --check Engine/Present.frag` (formatted), `Tools/doc_shaders.py
+  --check` (0), `Tools/temporal_budget.py` (0 errors, 4 warnings as before), `Tools/shake_scan.py --summary --baseline
+  Tools/shake_baseline.tsv` (0 new hits).
+- *Build*: `build.cmd ... p2 app`, rc 0 (4.9 min, a full rebuild: EffectShader.h and RenderPipeline.h changed).  The
+  frozen shots ran without error lines in the app's log (Present.frag compiles on the driver).
+- *Knob 0* (Tools/scene_snapshots.py, frozen frames of ChainLab2D and ChainDrosteKaleido, both `// @depth`; sets
+  `wt-rays-before`, `-beforeb` = the old exe (kept as Release\Kaleidoscope_before.exe) with cdab7da3's Present.frag;
+  `wt-rays-knob0`, `-knob0b` = the new exe and shader; `wt-rays-new-oldfrag`, `wt-rays-old-newfrag` = the two crossed).
+  **Each scene's frozen frame has TWO states from run to run, whatever the code** (they differ in ~4 % of the pixels,
+  mean 0.04..0.05 of 255, max 15..17 after JPEG): ChainLab2D gave A A B B A B over before, knob0, knob0b, beforeb,
+  new-oldfrag, old-newfrag -- the old pair differs from itself (before A, beforeb B) and so does the new pair; in
+  each state old and new are identical in every pixel (before = knob0, beforeb = knob0b).  ChainDrosteKaleido gave
+  A A for the two old runs and B for the four others -- including old exe + new shader AND new exe + old shader, so
+  neither the shader nor the C++ alone explains B; with the two-state behaviour seen directly on ChainLab2D I read it
+  as the same run-to-run pair, but an old+old run in state B was not seen for this scene.  So: knob 0 identical on
+  ChainLab2D (twice, max difference 0); on ChainDrosteKaleido not shown, not refuted.  The two states themselves are
+  not from this change (the old exe with the old shader shows them) and were not looked into.
+- *Knob on* (`KALEIDO_RAYS=1`, set `wt-rays-on`, sheet C:\Users\Rene\Desktop\kaleido-wt\sheets\rays\rays_knob0_on_diff.jpg:
+  knob 0 | on | difference x4): the light is there and radiates from the light point in the upper middle, cut into
+  thin streaks -- but faint: mean change +0.39 of 255 (ChainLab2D, max 89) and +0.20 (ChainDrosteKaleido, max 22) on
+  frames of mean brightness 35 and 44.  In the sheet the two pictures are hard to tell apart.  Both frames are dark
+  kaleidoscope pictures with little that is far AND brighter than 0.35; a bright photo scene was not rendered.
+
+#### NOT verified
+
+- The look on a bright photo, the right strength (`RaysGain`, `RaysLum`, `RaysFar` were set once and not tuned),
+  whether the jitter shows as grain, the look in motion (only frozen frames).
+- Knob 0 on ChainDrosteKaleido beyond the reading above; the cause of the two run-to-run states.
+- The GPU time: 16 x 2 texture reads per output pixel while on (the depth read is the unfiltered full-size depth
+  texture, the colour read is level 0 of the frame); nothing while off.
+- Stereo modes: the march runs in the eye's frame coordinates after the stereo shift; not looked at.
+- A combine that warps the picture: the depth is the active SCENE's, the frame is the combined one -- the same limit
+  the photo parallax and the photo stereo have (T3 in (69)).
+- The self test (`Release\Kaleidoscope.exe -q`), shadercheck's driver compile.
+
+#### How to verify (worktree C:\Users\Rene\Desktop\kaleido-wt\p2; every line through heavy.py)
+
+    cmd /c C:\Users\Rene\Desktop\kaleido-wt\build.cmd C:\Users\Rene\Desktop\kaleido-wt\p2 app
+    rem the old exe (cdab7da3) was kept as Release\Kaleidoscope_before.exe; it does not know raysP (uniform 0)
+    set KALEIDO_EXE=Kaleidoscope_before.exe
+    python Tools\scene_snapshots.py render wt-rays-before --only ChainLab2D
+    set KALEIDO_EXE=
+    python Tools\scene_snapshots.py render wt-rays-knob0 --only ChainLab2D
+    python Tools\scene_snapshots.py compare wt-rays-before wt-rays-knob0
+    set KALEIDO_RAYS=1
+    python Tools\scene_snapshots.py render wt-rays-on --only ChainLab2D
+    python Tools\scene_snapshots.py compare wt-rays-knob0 wt-rays-on
+
+(a stricter "before": the same render with the old exe AND `git show cdab7da3:Engine/Present.frag` in place.)  The
+frozen shot runs 600 fixed steps first, so the 1.2/s slew has long reached the knob.  GPU time: the per-pass timer of
+P6 in (71) (`KALEIDO_GPU_PASSES`), the present pass with `KALEIDO_RAYS` unset against `KALEIDO_RAYS=1` on a `// @depth`
+scene.
+
+#### Open decisions (for the user)
+
+- Whether the effect is wanted at all, and how strong (`RaysGain` 1.5 at knob 1; the thresholds `RaysFar`, `RaysLum`).
+- The light point: the slow drift in the upper middle (now) or the far region's bright centre (needs a smoothed
+  position on the host).
+- A scene's knob (now) or one global setting; and whether 3D scenes should get it too (now: a photo's depth only --
+  FxSunShafts already serves rooms).
+- Whether the build-up should narrow it and the drop open it, as `arcP` does in the five depth effects (now: the
+  swell only).
+
+### A backlight at depth edges (haloP)
+
+#### What and where
+
+The brief asked for a back light as one more depth effect: where something near stands in front of something far, the
+far side of that depth edge glows softly, and the near side gets a thin, weaker rim.  The depth effects are the five
+post effects in FX/ (section (69) T3), not blocks of Engine/Present.frag, and one of them already is the rim light:
+**FX/FxRimLight.frag**.  As the brief says for that case, the halo extends that file -- shader only, no C++, no build,
+nothing shared with the agent "rays" (Engine/Present.frag, Source/PresentPass.*).  The knob the brief named, `rimP`,
+is taken there (the rim's strength, 0.5 .. 1.5 in the presets), so the new knob is **`haloP`**.
+
+- `haloP` 0 (or no `haloP` line in the preset entry: an unset uniform is 0) = the old code: the halo is one
+  `if ( haloP > 0.0 )` block in `main()`, plus one marked block of declarations and the function `haloAt()` before it.
+- The old rim (`lit()`, `litPhoto()`) lights the near surface where its normal turns away.  The halo is the other half
+  of a back light: the light that spills past the subject onto what is behind it.
+
+#### The design
+
+- *Eight taps*: four opposite pairs on a disc of 1.5 % of the picture height (`HaloRadius`, relative to the height;
+  radii sqrt-spaced, golden-angle directions), rotated per pixel by a fixed dither (interleaved gradient noise of the
+  pixel position, no time in it), so the fall-off with the distance is smooth instead of four ghost outlines.
+- *Per pair the second difference of the reciprocal depth*, ( 1/za + 1/zb - 2/zc ) / max of the three.  1/z is linear
+  in screen space on a plane, so a floor running to the horizon or a slanted wall gives 0 -- a plain depth difference
+  lit every horizon.  Positive = the centre is the far side of a step (halo), negative = the near side (rim).
+- *Smooth, above the terraces*: smoothstep( 0.04, 0.45 ) for a 3D scene's depth, ( 0.12, 0.60 ) for a photo's depth
+  (`depthPhoto`): two 8-bit levels at a photo's near end give about 0.07, below the ramp's start.  No threshold line.
+  The depth textures have no mip chain, so the brief's "coarser mip" was not available; the average over the pairs and
+  the ramp's start do that work.  No derivatives at all (`textureLod`), no branch on the pixel.
+- *The halo's weight* falls with the tap's radius ( 1 - 0.6 r ); *the rim* counts ( 1 - r )^2, the innermost taps only
+  (about a third of the disc), at `HaloNear` 0.35 of the halo.
+- *Colour*: the frame's own colour at the pixel lifted 0.6 toward a warm white ( 1, 0.92, 0.80 ), screen-blended
+  ( + light x amount x ( 1 - colour ) ): what is added shrinks with what is there, a channel at 1 gets nothing, so
+  nothing clips to a flat white; then the effect's old soft compression ( c / ( 1 + 0.16 c ) ) as before.
+- *Music*: the strength is haloP x 0.8 x ( 0.3 + 0.7 x `audioSwell` ) -- the seconds envelope, never the kick or the
+  beat.  No camera, no motion of its own.  (The effect's old lines still breathe the whole frame with the beat by 12 %.)
+- *Layers*: both layers' halos are cross-faded with `interpolation`, like the rim; a layer without depth
+  (`depthValid` 0) gets none; a photo's halo is `HaloPhoto` 0.8 of a room's and fades in with the share of mapped photos.
+
+#### Verified (27.11.2026, 16:35 .. 16:46)
+
+- `Tools/shadercheck.py --new cdab7da3` (the driver compiles FX/FxRimLight.frag): 1 file, 0 errors, 0 warnings
+  (before the formatter's two line wraps; whitespace only).  `cgvr_format.py --check`: clean; `doc_shaders.py --check`:
+  0 files would change; `temporal_budget.py`: 0 errors, 4 warnings (as before); `shake_scan.py --summary --baseline`:
+  0 new hits, 74 known.
+- *Knob 0 against the old shader* (`Tools/depth_arc.py frozen halo0 --scenes PillarHall FoldLab --fx FxRimLight`: the
+  old file from .screen/fxold against the new one, the preset entry without `haloP`; frozen shots, 640 x 360, JPG):
+  **FoldLab (a photo's depth): identical, max 0.  PillarHall (a 3D scene): NOT identical -- max 6 of 255, mean 0.022,
+  5,324 of 230,400 pixels differ, 226 by more than 2, spread over the whole frame (most on the floor).**
+  Repeated: the same numbers.  **That difference is not the halo's -- any change of the file's text gives it:**
+  - the new shader against itself: identical (max 0) -- the frames are reproducible;
+  - control C, the OLD text plus one comment line against the old text: max 6, mean 0.0217 -- the same difference;
+  - the new shader (no `haloP`) against control C's frame: **identical, 0 of 230,400 pixels differ**;
+  - the new shader against itself with the halo's block dead (`if ( false )`): identical; without the `audioSwell`
+    uniform, and with a reciprocal-depth function of its own instead of `linearise()`: the same max 6 against the old
+    text (both dropped again).
+  So knob 0 is the old code path in both scenes; what PillarHall shows is a difference between an untouched and a
+  changed FxRimLight.frag as such (FoldLab does not show it).  Its cause was not looked for (a guess: a cached program
+  of the unchanged text against a fresh compile, and `lit()`'s tie-breaks on planes flipping on the last bit).  It
+  concerns every old-against-new comparison of a changed FX file with this tool, not this change.
+- *Knob on* (`Tools/halo_shot.py`, haloP 0 / 1 / 2 with the same rolls, silent): PillarHall -- haloP 1: max 30 of 255,
+  mean +0.32, 6.9 % of the pixels changed by more than 2; haloP 2: max 56, mean +0.75, 8.8 %.  FoldLab -- haloP 1:
+  max 41, mean +1.87, 41.7 %; haloP 2: max 67, mean +1.26, 84.8 % (JPG blocks: the lines run through most 8 x 8
+  blocks; the mean at 2 below the mean at 1 was not explained).  The brightest pixel stays 255 -> 255 in all four.
+- Looked at (C:/Users/Rene/Desktop/kaleido-wt/sheets/halo/PillarHall_sheet.jpg, FoldLab_sheet.jpg, crops_x4.jpg): in
+  PillarHall a thin warm line on the sky's side of every pillar edge and nothing on the floor toward the horizon; in
+  FoldLab a soft grey-warm line on the far side of the folds' depth edges.  At 360 lines the halo is a line, not a glow.
+
+#### Not verified
+
+- Why a changed FxRimLight.frag (even by one comment line) renders PillarHall differently from the untouched file
+  (max 6 of 255 on a JPG, above).  The frames are JPGs: a lossless comparison was not made.
+- No video, no music: the frames are silent shots (audioSwell 0, the halo at 0.3 of its full strength).  How the halo
+  breathes with the swell, and whether the per-pixel dither is visible as grain in motion or at 4K, was not looked at.
+- The terraces of a photo's 8-bit depth: no ramp sheet was rendered; FoldLab's lines follow the folds' depth edges,
+  but a gentle slope across a whole photo was not looked at.
+- Only two scenes (PillarHall, FoldLab), only 800 x 360 shots; no flash count, no GPU timing (18 depth taps per pixel
+  when the knob is on, none when it is off).
+- Transparent 3D layers (OIT), scenes with a shadow pass, stereo modes: not rendered.
+
+#### How to verify
+
+    set PATH=C:/Qt/6.11.1/msvc2022_64/bin;%PATH%
+    python C:/Users/Rene/Desktop/kaleido-wt/heavy.py "halo shots" -- python Tools/halo_shot.py C:/Users/Rene/Desktop/kaleido-wt/sheets/halo2 --scenes PillarHall FoldLab --halo 0 1 2
+    python C:/Users/Rene/Desktop/kaleido-wt/heavy.py "halo knob 0" -- python Tools/depth_arc.py frozen halo0 --scenes PillarHall FoldLab --fx FxRimLight
+
+The second needs the old shader as `.screen/fxold/FxRimLight.frag` (`git show cdab7da3:FX/FxRimLight.frag`); it swaps
+FX/FxRimLight.frag while it runs, so never run both at once.  Tools/halo_shot.py writes `<scene>_halo<value>.jpg` and
+`<scene>_sheet.jpg` (the frames side by side, then |difference to haloP 0| x 4) and prints the differences.
+
+#### For the user
+
+- The effect is in no preset.  To switch it on, add to the FxRimLight entry of Presets/Komplett.xml (and regenerate
+  the genre presets):  `<float name="haloP"  minValue="-0.3" maxValue="1.2"></float>`  (off in a fifth of the
+  activations, like `arcP`; a fixed look: minValue = maxValue = 1).
+- FxRimLight is a rare effect (probability 0.004).  A halo on every scene with depth would be a block of the present
+  pass (C++ plumbing in Source/PresentPass.*, a build); `haloAt()` could move there as it is.  Not done in the sprint.
+- Radius (1.5 % of the height) and strength (`HaloGain` 0.8) are first guesses: at 360 lines the halo is a 5-pixel
+  line.  Wider reads more as a glow, and needs more taps or a blur pass.
+
+### P7, first stage -- the fluid in the photo's relief (fluidDepthP)
+# (72) simfluid -- the fluid in the photo's relief (plan 27.11. P7, first stage)
+
+Sprint of 27.11.2026, 16:25-16:50, branch `wt-simfluid`. Read the section "Verified / not verified" before merging:
+the code is built, the picture was **not** looked at.
+
+## Which fluid reaches the screen
+
+Two fluids exist. Only one is ever drawn:
+
+| path | sampler | scenes that declare it | state |
+|---|---|---|---|
+| `GpuSims::stepFluid` + `Engine/FluidSim.frag` (curl-noise dye advection, 512 x 512, RGBA16F) | `texFluid`, unit 8 | `Scene2D/Fluid.frag`, `Scene2D/FluidInkMandala.frag`, `Scene2D/Schlieren.frag` -- one entry each in `Presets/Komplett.xml` (probability 0.5, 0.45, 0.35) | **this one got the depth** |
+| `ComputeFX::stepNSFluid` (Navier-Stokes with a pressure solve) | `texNSFluid`, unit 25 | none: `grep -l texNSFluid Scene2D Scene3D FX Engine Transitions` is empty, so `cfxMask()` never has its bit and it is never stepped | untouched |
+
+So the work went into the GpuSims path; `Source/ComputeFX.cpp` is not touched at all (no conflict with "simpart").
+The other "fluid" names in Komplett.xml (FluidInkMarble, NeonFluidDynamics, FluidPhotoMarblingEbru, Ferrofluid...,
+Superfluid..., SPHFluidSplash) are analytic or have their own state pass; they do not sample `texFluid`.
+
+## What changed
+
+**The knob.** `fluidDepthP`, a scene parameter (0..1; 0 = the old step). Its way:
+
+1. `Presets/Komplett.xml`: `<float name="fluidDepthP" minValue=".." maxValue="..">` in the scene's entry. **Not
+   registered on this branch**: commit 46c00428 registered it at 0..0 for the three scenes and 5100bb45 reverted it,
+   because one more rolled parameter shifts the scene's other rolls (measured, see below). Without the entry the knob
+   is 0 and the picture the old one. The diff of 46c00428 shows where the lines go.
+2. The three scenes declare `uniform float fluidDepthP;` (they do not use it; the declaration documents the knob;
+   `Tools/audit_params.py` lists it under "missing" until it is registered, as it does for 5,157 other uniforms).
+3. `RenderPipeline::stepSimulations()` (only while `need.fluid`): reads the rolled value by name
+   (`EffectShader::namedParameters()`) from the scene that samples the fluid -- the incoming one during a scene
+   cross-fade as soon as it uses the fluid, else the active one; a scene without the knob gives 0 -- and the two
+   slots' `PhotoDepth::Info::map` (`m_actDepth`, `m_nextDepth`; both 0 with a live input) into `GpuSims::Frame`
+   (`fluidDepth`, `depthAmtA`, `depthAmtB`).
+   `KALEIDO_FLUID_DEPTH=<0..1>` forces the knob for comparisons (read once at the first fluid frame; not yet in the
+   README's list of switches).
+4. `GpuSims::run()` slews it linearly at 1 per second of the sim's own time (`m_fluidDepthNow`): two fluid scenes
+   with different knobs cross-fade the flow, and a linear slew arrives exactly, so 0 stays 0.
+5. `GpuSims::stepFluid()` sets `fluidDepth` and `photoDepthAmt` on `Engine/FluidSim.frag`.
+
+**The shader** (`Engine/FluidSim.frag`). `relief(uv)` = `interpolation * photoDepthAmt.x * tex0.a
++ (1 - interpolation) * photoDepthAmt.y * tex1.a`, read at mip level 3 (the map is 8 bit and 512 wide; the photo
+textures have mipmaps). It is the nearness (1 = near) weighted per slot, so
+
+- a photo without a map adds nothing (its alpha is 255 = "everything near", which the weight 0 removes);
+- a photo change fades the landscape with the same `interpolation` as the colour -- nothing switches, and at the slot
+  swap (tex1 becomes tex0, interpolation 0 -> 1) the product is the same on both sides, as for the colour;
+- with `mapW = interpolation * amt.x + (1 - interpolation) * amt.y == 0` (no map in either slot, a live input) or
+  `fluidDepth == 0` the whole block is skipped (`land` false).
+
+Inside `if ( land )`, with `grad` the relief's gradient (central differences at 4 and 9 sim texels, averaged),
+`up = grad / |grad|`, `wall = smoothstep(0.25, 3.0, |grad|)`:
+
+| term | code | meaning |
+|---|---|---|
+| deflection | `vel -= fluidDepth * wall * max(dot(vel, up), 0) * up` | the uphill part of the flow (into the near thing) is taken out; the flow follows the contour lines; downhill passes |
+| soft obstacle | `vel *= 1 - 0.7 * fluidDepth * smoothstep(0.45, 0.95, nearW)` | the flow slows in the near, never to a stop |
+| downhill drift | `vel -= 1.2 * fluidDepth * wall * up` | a slope carries dye towards the far (the old cap `min(|vel|, 3)` still holds) |
+| collecting | fade `pow(mix(0.996, 0.9988, fluidDepth * farW), stepScale)`; injection `* clamp(1 + fluidDepth * (1.5 * nearW - 0.6 * farW), 0, 3)` | the far keeps its old ink longer and is refreshed less by the photo; the near is refreshed faster and stays the picture |
+
+Fade and injection stay convex mixes of the old dye and the photo, so nothing can grow (no new brightness, no
+flash: the temporal budget cannot be touched by this). The flow's strength keeps its old audio coupling (`impulse`
+scales the displacement, as before); no new audio input, no camera, no `time * audio`.
+
+**Knob 0 = the old code, by construction:** `land` is false, `vel` is not touched, and the old fade/injection lines
+stand verbatim in the `else` branch (not rewritten with a variable base, so the compiler sees the same expressions);
+the uniform's default is 0; the slew adds exactly 0. The branch depends on uniforms only (no derivative trouble).
+
+## Verified / not verified
+
+Verified (27.11., 16:40-16:43; frozen snapshots of Fluid, FluidInkMandala, Schlieren with `Tools/scene_snapshots.py`'s
+`render()`, photo kristallhoehle-indigo-fuchsia-2.jpg (has a map), seed 7, 640 x 360 JPG, mean absolute difference
+of 255):
+- the app builds (one build, 3.8 min, rc 0, no errors); the 15 app runs logged no "FAILED", no GL error, no
+  expression error -- `Engine/FluidSim.frag` compiles on the driver;
+- **knob 0 = the old code**: set `wt-simfluid-old` (the exe of cdab7da3 + the shader of cdab7da3) against
+  `wt-simfluid-k0` (new exe, new shader, no knob), same Komplett.xml: **0.000 / 0.000 / 0.000**;
+- the knob acts: `wt-simfluid-k0` against `wt-simfluid-k04` (`KALEIDO_FLUID_DEPTH=0.4`) 12.2 / 6.9 / 13.6, against
+  `wt-simfluid-k1` (`=1`) 22.5 / 17.2 / 16.6;
+- **registering the knob shifts the rolls**: the same code with the Komplett.xml of cdab7da3
+  (`wt-simfluid-k0-oldxml`) against the one with the three 0..0 entries (`wt-simfluid-k0`): 7.9 / 6.9 / 13.7 --
+  hence the revert. `wt-simfluid-k0-oldxml` against `2026-11-26-base`: 0.62 / 0.52 / 0.75 (below the tool's
+  tolerance of 1.0; the base is from b87fcc34, before the merges of 26./27.11.);
+- `python Tools/doc_shaders.py --check`, `python Tools/cgvr_format.py --check`: clean for the four shaders;
+  `python Tools/temporal_budget.py`: 0 errors, 4 warnings (not looked at whether they are the old ones);
+  `python Tools/shake_scan.py --summary --baseline Tools/shake_baseline.tsv`: 0 new hits.
+
+What the pictures show (sheets, left knob 0, right the knob; `C:\Users\Rene\Desktop\kaleido-wt\sheets\simfluid\`:
+`<scene>_k0_k04.jpg`, `<scene>_k0_k1.jpg`) -- one photo, one frozen frame each, looked at once:
+- 0.4: the swirls stay, the relief shows -- the flow bends along the cave's facets, the near facets stay sharper
+  and brighter, seams form in the far. A usable look.
+- 1.0: too much. The swirl is nearly gone; the dye freezes into a mosaic of cells along the relief's edges (the
+  drift and the stronger refresh win over the curl flow), the photo's highlights stand as hard light patches.
+
+NOT verified:
+- the look in motion (no clip; only frozen frames), with other photos, and a photo change while the knob is on
+  (the cross-fade of the landscape is only argued from the formula);
+- a photo without a map with the knob on (must equal knob 0; `land` is false there -- argued, not rendered);
+- the knob read from a preset entry (`namedParameters()`); all renders forced it with `KALEIDO_FLUID_DEPTH`;
+- GPU time (expected small: 18 more texture reads per texel of a 512 x 512 pass, only at knob > 0);
+- `Tools/shadercheck.py`, the self test `Kaleidoscope.exe -q`;
+- the constants: a first guess, not tuned.
+
+## How to verify (lead)
+
+`Release\Kaleidoscope_old.exe` in the worktree is a copy of the build of cdab7da3 (gitignored). The snapshot photo of
+`2026-11-26-base` (kristallhoehle-indigo-fuchsia-2.jpg) has a map.
+
+The sets of the sprint (in `%LOCALAPPDATA%\KaleidoscopeVisualizer\snapshots`): `wt-simfluid-k0`, `-k1`, `-old` were
+rendered WITH the three 0..0 entries in Komplett.xml (since reverted); `wt-simfluid-k0-oldxml` and `wt-simfluid-k04`
+with the file as it is on the branch now (`-k04` forced to 0.4). New labels for a repeat:
+
+    cd C:\Users\Rene\Desktop\kaleido-wt\p5
+    rem knob 0 (the branch as it is) and the knob forced:
+    python ..\heavy.py "lead: simfluid k0" -- python Tools\scene_snapshots.py render lead-simfluid-k0 --only Fluid Schlieren
+    set KALEIDO_FLUID_DEPTH=0.4
+    python ..\heavy.py "lead: simfluid k04" -- python Tools\scene_snapshots.py render lead-simfluid-k04 --only Fluid Schlieren
+    set KALEIDO_FLUID_DEPTH=
+    python Tools\scene_snapshots.py compare lead-simfluid-k0 lead-simfluid-k04
+    rem identity against the old code: the same --only in the main checkout at phos-cues, then
+    python Tools\scene_snapshots.py compare <old set> lead-simfluid-k0   (Fluid, FluidInkMandala, Schlieren: 0.00)
+
+(`--only Fluid` also renders the six other scenes with "Fluid" in the name; they must not change in any set. The
+sprint's sets hold only the three scenes: the two scripts that made them filtered by exact name and are not in the
+repository.)
+A photo without a map: `--photo <a photo that photo_info.tsv marks flat>` -- knob 0 and knob 0.4 must be equal.
+Photo change: run the app with a preset of the three scenes and `KALEIDO_FLUID_DEPTH=0.4`, watch a photo cross-fade.
+
+## Still missing of the plan's P7
+
+- the look itself judged on three photos (clip before/after), the constants tuned, GPU time measured;
+- the second stage, occlusion: the simulation layer behind everything nearer than `photoSubject`, only at
+  `photoMask > 0.6` -- belongs into the three scenes' compositing (they would then use `fluidDepthP` or a second knob);
+- `ComputeFX::stepNSFluid` (no scene shows it) and the other simulations (particles: agent "simpart").
+
+## For the user
+
+- Whether and with which range `fluidDepthP` goes into Komplett.xml (now not registered = off). From the two frozen
+  frames: about 0.2..0.5; 1.0 kills the swirl. Registering it changes the three scenes' rolls for a given seed
+  (their snapshots against the baseline change once, by 7-14 of 255, whatever the range).
+- Whether the near should stay "the picture" (stronger refresh, as built) or only be an obstacle.

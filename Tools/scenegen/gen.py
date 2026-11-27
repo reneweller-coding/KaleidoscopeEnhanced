@@ -292,7 +292,7 @@ vec2 anchorOff(vec2 f, float conf, float amt)
 }
 """
 
-# Frequency by depth (27.11.2026, plan P3; docs/engine-internals-71-p3.md): the music spread over the photo's depth --
+# Frequency by depth (27.11.2026, plan P3; docs/engine-internals.md (71)): the music spread over the photo's depth --
 # the bass in the near layer, the mids in the middle one, the highs in the far one.  Light and colour only, on the
 # photo's own colours.  Appended for sources that call freqDepth( (with DEPTH_LIB, which they need); the uniforms it
 # reads are declared by assemble() (FREQ_AUDIO).  ChainLab2D's depth look 6 adds a slight size of the near layer at

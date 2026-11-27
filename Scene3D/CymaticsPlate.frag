@@ -16,7 +16,7 @@
  *  @author René Weller
  */
 // @hdrcap 1.5  (27.11.2026: with 16-bit intermediates the host keeps this frame at most 1.5 -- the sum
-//   of its additive sprites/light turned the glow into a white card; docs/engine-internals-70-defaults.md)
+//   of its additive sprites/light turned the glow into a white card; docs/engine-internals.md (70))
 out vec4 fragColor; ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).

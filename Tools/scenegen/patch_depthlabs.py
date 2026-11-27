@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The depth looks in more photo labs (27.11.2026, wave 4, agent "depthlabs"; docs/engine-internals-72-depthlabs.md).
+"""The depth looks in more photo labs (27.11.2026, wave 4, agent "depthlabs"; docs/engine-internals.md (72)).
 
 TimeChainLab and MirrorBilliardLab take `depthLook` 4 (the subject anchor, plan M2) and 6 (the anchor and frequency
 by depth, plan P3) at their one photo lookup.  The labs below are built the same way -- one look function that ends

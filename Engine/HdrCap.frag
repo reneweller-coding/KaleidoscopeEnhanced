@@ -5,7 +5,7 @@
 /*! @file
  *
  *  @brief
- *  The light cap of a scene marked `// @hdrcap <X>` (27.11.2026, docs/engine-internals-70-defaults.md): drawn over
+ *  The light cap of a scene marked `// @hdrcap <X>` (27.11.2026, docs/engine-internals.md (70)): drawn over
  *  the scene's finished 16-bit frame with the blend equation GL_MIN, so every pixel keeps min( its colour, X ).
  *
  *  Additive particle scenes sum hundreds of sprites on one pixel; an 8-bit target held each sum at 1, a 16-bit one
