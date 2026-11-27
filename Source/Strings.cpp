@@ -112,7 +112,7 @@ const char *kDE[S_COUNT] = {
     /* S_SETUP_GROUP_PACKS */ "Zusatzinhalte herunterladen",
     /* S_SETUP_PACKS_HINT */
     "Bilder und 3D-Modelle sind nicht im Installer enthalten. Hier werden sie geladen und direkt in die richtigen Ordner entpackt.",
-    /* S_SETUP_PACK_IMAGES */ "Bilder (977 Texturen)",
+    /* S_SETUP_PACK_IMAGES */ "Bilder (1.266 Texturen mit Tiefenkarten)",
     /* S_SETUP_PACK_SHIPS */ "3D: Raumschiffe (77)",
     /* S_SETUP_PACK_STATIONS */ "3D: Stationen (30)",
     /* S_SETUP_PACK_OBJECTS */ "3D: Objekte (62)",
@@ -509,7 +509,7 @@ const char *kEN[S_COUNT] = {
     /* S_SETUP_GROUP_PACKS */ "Download extra content",
     /* S_SETUP_PACKS_HINT */
     "The images and 3D models are not in the installer. This fetches them and unpacks them straight into the right folders.",
-    /* S_SETUP_PACK_IMAGES */ "Photos (977 textures)",
+    /* S_SETUP_PACK_IMAGES */ "Photos (1,266 textures with depth maps)",
     /* S_SETUP_PACK_SHIPS */ "3D: ships (77)",
     /* S_SETUP_PACK_STATIONS */ "3D: stations (30)",
     /* S_SETUP_PACK_OBJECTS */ "3D: objects (62)",

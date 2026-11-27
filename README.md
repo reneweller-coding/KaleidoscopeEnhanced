@@ -119,7 +119,7 @@ hand: unpack into the program's `Images` and `Models` folders and restart
 
 | Pack | | Contains |
 |---|---|---|
-| [Photos](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v2) | 977 images, 593 MB | agate, rust, pigment, soap film, sediment, aurora, craquelure, woven fibre |
+| [Photos](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v3) | 1,266 images with depth maps, 826 MB | agate, rust, pigment, soap film, sediment, aurora, craquelure, woven fibre |
 | [Models: ships](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v3) | 77 models, 699 MB | capital ships, freighters, couriers, drones |
 | [Models: stations](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v3) | 30 models, 259 MB | space stations — the six station families |
 | [Models: objects](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/models-v3) | 62 models, 517 MB | sculptures, hi-fi gear, sea creatures, eroded rock, gongs, pierced lattices, and the real-object scenes: rocket and pad, peacock, organ, aqueduct, bells, candles, gears, pendulums, metronomes, seismograph, foundry |
@@ -182,11 +182,9 @@ What the depth does in the picture:
 - **The photo choice.** A scene that uses the depth prefers a photo with relief, every other scene a flat one --
   a bonus beside the fit to the music's mood, not a rule.
 
-**Which photos have maps.** The photo set these features were built on has 1,266 photos, each with a map; 707 of
-them have relief, the other 559 are flat by the table and stay without depth. The pack released as `images-v2`
-(977 photos, the table above) was built before the maps; from the next pack on `Tools/make_image_pack.ps1` puts
-the maps and their table into the archive (folder `.depth`). For the `images-v2` pack, and for your own photos,
-make the maps yourself.
+**Which photos have maps.** The photo pack `images-v3` (the table above) has 1,266 photos, each with a map in its
+folder `.depth`; 707 of them have relief, the other 559 are flat by the table and stay without depth. The older
+pack `images-v2` (977 photos) has no maps -- for it, and for your own photos, make the maps yourself.
 
 **Maps for your own photos:** `Tools/depth_maps.py` makes them, in a Python environment of its own (the exact
 versions and the steps are in `Tools/depth_maps_requirements.txt`; it runs the model on the GPU where torch finds CUDA, else on the CPU):

@@ -24,7 +24,7 @@
 #define MyAppName "Kaleidoscope Enhanced"
 #define MyAppExeName "Kaleidoscope.exe"
 #define MyAppPublisher "Rene Weller"
-#define MyAppVersion "1.20.0"
+#define MyAppVersion "1.21.0"
 ; Staged package produced by deploy.ps1:
 #define SrcDir "dist\KaleidoscopeVisualizer"
 
@@ -60,19 +60,19 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 ; Release tags the extra content hangs off. A GitHub asset's download URL is
 ; deterministic (…/releases/download/<tag>/<file>), so no API call is needed --
 ; but it also means a pack re-published under a NEW tag has to be updated here.
-#define ImagesTag "images-v2"
+#define ImagesTag "images-v3"
 #define ModelsTag "models-v3"
 #define RelUrl "https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/download"
 
 [CustomMessages]
 german.PacksGroup=Zusatzinhalte (werden aus dem Internet geladen)
-german.PackImages=Bilder: 977 lizenzfreie Texturen (593 MB)
+german.PackImages=Bilder: 1.266 lizenzfreie Texturen mit Tiefenkarten (826 MB)
 german.PackShips=3D-Modelle: Raumschiffe, 77 Stück (733 MB)
 german.PackStations=3D-Modelle: Stationen, 30 Stück (272 MB)
 german.PackObjects=3D-Modelle: Objekte, 62 Stück (542 MB)
 german.PackFailed=Der Download der Zusatzinhalte ist fehlgeschlagen:%n%n%1%n%nDie Installation wird ohne sie fortgesetzt. Sie lassen sich jederzeit im Kaleidoscope-Setup nachladen.
 english.PacksGroup=Extra content (downloaded from the internet)
-english.PackImages=Photos: 977 licence-free textures (593 MB)
+english.PackImages=Photos: 1,266 licence-free textures with depth maps (826 MB)
 english.PackShips=3D models: ships, 77 of them (733 MB)
 english.PackStations=3D models: stations, 30 of them (272 MB)
 english.PackObjects=3D models: objects, 62 of them (542 MB)

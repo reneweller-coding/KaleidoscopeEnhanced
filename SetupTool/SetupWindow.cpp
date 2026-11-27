@@ -80,11 +80,13 @@ struct PackDef
  * then the three 3D-model packs (ships, stations, objects), which all unpack into the Models folder.
  **/
 const PackDef Packs[4] = {
-    { S_SETUP_PACK_IMAGES, "images-v2", "KaleidoscopeImages.zip", "Images", ".jpg", 593LL * 1024 * 1024 },
-    // The real archive sizes (16.10.2026: the counts and sizes still named an older cut of the packs).
-    { S_SETUP_PACK_SHIPS, "models-v2", "KaleidoscopeModels-ships.zip", "Models", ".glb", 733073310LL },
-    { S_SETUP_PACK_STATIONS, "models-v2", "KaleidoscopeModels-stations.zip", "Models", ".glb", 271629879LL },
-    { S_SETUP_PACK_OBJECTS, "models-v2", "KaleidoscopeModels-objects.zip", "Models", ".glb", 542120951LL },
+    { S_SETUP_PACK_IMAGES, "images-v3", "KaleidoscopeImages.zip", "Images", ".jpg", 866162527LL },
+    // The real archive sizes (16.10.2026: the counts and sizes still named an older cut of the packs).  The tag was
+    // models-v2 until 27.11.2026 -- the sizes were v3's, the download v2's (objects 402 MB instead of 542; the
+    // installer took v3 since 04.09.).
+    { S_SETUP_PACK_SHIPS, "models-v3", "KaleidoscopeModels-ships.zip", "Models", ".glb", 733073310LL },
+    { S_SETUP_PACK_STATIONS, "models-v3", "KaleidoscopeModels-stations.zip", "Models", ".glb", 271629879LL },
+    { S_SETUP_PACK_OBJECTS, "models-v3", "KaleidoscopeModels-objects.zip", "Models", ".glb", 542120951LL },
 };
 
 /**  Release-asset download URL of a pack.

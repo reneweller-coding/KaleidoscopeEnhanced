@@ -127,6 +127,21 @@ if (-not $NoDepth -and (Test-Path $depthDir)) {
                 $zu, $d.FullName, ".depth/" + $d.Name, [System.IO.Compression.CompressionLevel]::Fastest)
             if ($isMap) { $nDepth++ }
         }
+        # The maps are a model's output: name the model and its licence (Apache 2.0, docs/engine-internals.md (69),
+        # "Licences") beside them, as the licence asks of a redistribution.
+        $notice = @"
+Depth maps of the photos in this folder (one grey PNG per photo, white = near) and their table photo_info.tsv.
+
+Made with Depth Anything 3 Mono Large (depth-anything/DA3MONO-LARGE, https://huggingface.co/depth-anything/DA3MONO-LARGE),
+Copyright 2025 The Depth Anything 3 Team, licensed under the Apache License, Version 2.0:
+https://www.apache.org/licenses/LICENSE-2.0
+Code: https://github.com/ByteDance-Seed/Depth-Anything-3
+
+Kaleidoscope Enhanced reads them through Source/PhotoDepth.h; Tools/depth_maps.py makes them for your own photos.
+"@
+        $ne = $zu.CreateEntry(".depth/NOTICE.txt", [System.IO.Compression.CompressionLevel]::Optimal)
+        $sw = New-Object System.IO.StreamWriter($ne.Open(), (New-Object System.Text.UTF8Encoding($false)))
+        try { $sw.Write($notice.Replace("`r`n", "`n")) } finally { $sw.Dispose() }
     } finally { $zu.Dispose() }
     Write-Host ("[imagepack] {0} depth map(s) and photo_info.tsv added under .depth/" -f $nDepth)
 }

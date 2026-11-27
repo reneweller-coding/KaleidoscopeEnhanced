@@ -13,8 +13,12 @@ detail figures depend on the scale they are measured at — the same set looks
 flatter measured at 256 than at 1024 — so the scale is fixed and every
 threshold below refers to it.
 
-The shipped [Photo Pack v2](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v2)
-meets **all 33** criteria. Its predecessor, [v1](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v1),
+The shipped [Photo Pack v3](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v3)
+(27.11.2026: v2 plus 289 photos chosen for their depth, 1,266 in all, each with a depth map) meets **28 of 33**
+criteria.  What the depth photos cost: soft or out of focus 11.7 % (target <= 5 %: shallow depth of field is what
+gives them depth), images with more than 2 % clipped pixels 13.9 % (<= 2 %), low-key images with a real highlight
+62.5 % (>= 70 %), and the low-key and high-key shares 19.7 % each, just under their 20 %.  The pack before it,
+[v2](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v2), met **all 33**. Its predecessor, [v1](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/tag/images-v1),
 met 15 of them; the *v1* column below is kept because a requirement is easier to
 understand next to the thing it was written against.
 
