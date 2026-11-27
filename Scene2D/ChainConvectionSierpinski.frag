@@ -52,6 +52,11 @@ uniform float styleP;  ///< Look knob, 0..1.
 uniform float speedP;  ///< Speed knob, 0..1.
 uniform float detailP; ///< Detail knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+// @depth
+uniform vec2 photoDepthAmt; ///< 1 where the photo in tex0 (x) / tex1 (y) carries a depth map in its alpha channel, else
+                            ///< 0.
+uniform vec2 photoDepthWin; ///< Window depth of the photo's near end (x, depth 1) and far end (y, depth 0), from the
+                            ///< host.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -506,6 +511,39 @@ void finish( vec3 col )
     vec3 t = max( col, 0.0 );
     t /= 1.0 + 0.35 * max( t.r, max( t.g, t.b ) );
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
+}
+
+
+// ---- the photo's depth ----
+/**  The photos' depth at a point and mip level: the alpha channel of tex0 and tex1 (the app's photo loader puts the
+ * depth map there), each weighted with the cross-fade and with whether its photo has a map at all.
+ *
+ * @param uv   The point (mirrored at the edges, as imgLod()). (in)
+ * @param lod  The mip level: the colour's, so depth and colour share one footprint. (in)
+ *
+ * @return
+ *   The depth, 0 far .. 1 near; 0 where neither photo has a map.
+ **/
+float photoDepthLod( vec2 uv, float lod )
+{
+    uv = mirrorUV( uv );
+    float w0 = interpolation * photoDepthAmt.x, w1 = ( 1.0 - interpolation ) * photoDepthAmt.y;
+    return ( w0 * textureLod( tex0, uv, lod ).a + w1 * textureLod( tex1, uv, lod ).a ) / max( w0 + w1, 1e-4 );
+}
+
+/**  Writes the pixel's depth for whatever reads the scene's depth (the depth effects, the 2.5D parallax, the stereo):
+ * the photo's depth on the window depths the host hands over (photoDepthWin, x for 1 = near, y for 0 = far; linear
+ * in window depth is linear in inverse distance, as the maps are).
+ *
+ * @param d  The photo's depth there, 0 far .. 1 near (photoDepthLod()). (in)
+ *
+ * The far plane where neither photo has a map, as a scene without depth leaves it.  Call it on every path: a shader
+ * that writes gl_FragDepth anywhere owns it everywhere.
+ **/
+void photoDepthOut( float d )
+{
+    float w = interpolation * photoDepthAmt.x + ( 1.0 - interpolation ) * photoDepthAmt.y;
+    gl_FragDepth = w > 0.0 ? mix( photoDepthWin.y, photoDepthWin.x, clamp( d, 0.0, 1.0 ) ) : 1.0;
 }
 
 
@@ -3316,8 +3354,14 @@ void main()
     float mode = clamp( audioMode, 0.0, 1.0 );
     gT = ( 0.03 + 0.06 * clamp( speedP, 0.0, 1.0 ) ) * sceneTime + 0.25 * audioAdvance;
     gSpread = clamp( audioSpread, 0.0, 1.0 );
-    vec2  grad;
-    vec3  ph = imgChain( p, 1.0 - 1.2 * clamp( detailP, 0.0, 1.0 ), grad );
+    vec2 grad;
+    vec3 ph = imgChain( p, 1.0 - 1.2 * clamp( detailP, 0.0, 1.0 ), grad );
+    // The photo's depth where the chain ends, at the colour's mip level (26.11.2026): for the depth effects, the
+    // parallax and the stereo; the colour does not change.
+    float d_lod = clamp( log2( max( max( length( gChainDx ), length( gChainDy ) ) * 1024.0, 1.0 ) ) + 1.0
+                             - 1.2 * clamp( detailP, 0.0, 1.0 ),
+                         0.0, 9.0 );
+    photoDepthOut( photoDepthLod( gChainM, d_lod ) );
     float m = luma( ph );
     vec3  photo = max( ( ph - m ) * ( ChainPhotoOnly ? 1.0 : 1.4 ) + m, 0.0 );
     // Relief: the chain's photo lit from a slowly circling light.

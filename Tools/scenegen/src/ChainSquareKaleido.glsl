@@ -18,6 +18,7 @@
  * effect, no edge glints on the kick, no tint with the mode.
 //@params styleP speedP detailP
 //@audio audioSpread audioKick audioMode audioSwell
+//@depth
 //@body
 float gT, gSpread;
 vec2 chain(vec2 p)
@@ -41,6 +42,10 @@ void main()
     gSpread = clamp(audioSpread, 0.0, 1.0);
     vec2 grad;
     vec3 ph = imgChain(p, 1.0 - 1.2 * clamp(detailP, 0.0, 1.0), grad);
+    // The photo's depth where the chain ends, at the colour's mip level (26.11.2026): for the depth effects, the
+    // parallax and the stereo; the colour does not change.
+    float dLod = clamp(log2(max(max(length(gChainDx), length(gChainDy)) * 1024.0, 1.0)) + 1.0 - 1.2 * clamp(detailP, 0.0, 1.0), 0.0, 9.0);
+    photoDepthOut(photoDepthLod(gChainM, dLod));
     float m = luma(ph);
     vec3 photo = max((ph - m) * (chainPhotoOnly ? 1.0 : 1.4) + m, 0.0);
     // Relief: the chain's photo lit from a slowly circling light.
