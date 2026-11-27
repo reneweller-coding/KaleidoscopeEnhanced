@@ -6594,6 +6594,7 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
     <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
+    <float name="reliefParP" minValue="-0.3" maxValue="0.6"></float>
   </TextureShader>
 
   <TextureShader file="..\Scene3D\HolographicLaserDiffractionGrid.frag" type="scene3d" geom="quads" probability="0.5" mood="dark,psychedelic" complexity="10" gpuMs="0.44">
@@ -6815,6 +6816,7 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
     <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
+    <float name="reliefParP" minValue="-0.3" maxValue="0.6"></float>
   </TextureShader>
 
   <TextureShader file="..\Scene3D\OceanAbyssalBrinePool.frag" type="scene3d" geom="grid" probability="0.5" mood="calm,dark,dreamy" complexity="8" gpuMs="0.58">
