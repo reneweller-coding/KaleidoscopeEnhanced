@@ -1391,6 +1391,10 @@ void GLwidget::initializeGL()
 
     // Start audio analyser (WASAPI loopback – captures any playing audio)
     m_audioAnalyzer = new AudioAnalyzer( this );
+    // The build-up signal the active preset asks for (buildUp="new" in the EDM presets); the export's analyser
+    // follows the same choice.
+    AudioAnalyzer::setPresetBuildUpNew( m_actConfiguration && m_actConfiguration->newBuildUp() );
+    m_audioAnalyzer->followPresetBuildUp();
     // The source chosen last time (audio menu); missing devices fall back to the default until they come back.
     {
         QSettings     st( SettingsFile::path(), QSettings::IniFormat );
@@ -2919,6 +2923,7 @@ void GLwidget::timerEvent( QTimerEvent * )
             m_actConfiguration->renderPipeline()->stopRating();
         m_actConfiguration->stop();
         m_actConfiguration = m_pendingConfig;
+        AudioAnalyzer::setPresetBuildUpNew( m_actConfiguration->newBuildUp() );
         m_actConfiguration->start( m_width, m_height );
         m_sceneThumbs.clear(); // indices now name a different config's scene list
         m_pendingConfig = nullptr;

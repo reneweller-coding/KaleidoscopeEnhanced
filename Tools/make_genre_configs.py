@@ -123,6 +123,11 @@ CHAIN_LABS = ("ChainLab2D", "ChainLab3D", "ChainLabTunnel", "ChainSlice3D")
 # half, Cinematic stays with the photo and the relief look.  Every variant walks
 # (morphP 0.5..1) and stays LAB_STAY seconds; their probabilities only weigh
 # the variants against each other (which lab, when the clock calls one).
+# The presets whose music is EDM ask for the second build-up signal of 27.11.2026 (buildUp="new", read by
+# Configuration.cpp and handed to the analyser by the GLwidget): on the 17 EDM builds of the score-cued demos it
+# separates builds from grooves with an AUC of 0.92 against 0.53, on crescendos (Cinematic, Ritual) it is worse --
+# so the other presets keep the old signal (the user's decision of 27.11.2026).
+BUILD_UP_NEW = {"Club", "Electronic", "Psytrance", "Psychedelic"}
 LAB_SHARE = {"Psychedelic": 0.50, "SpaceAmbient": 0.40, "Club": 0.40, "Allround": 0.35, "Ambient": 0.35,
              "Noir": 0.25, "Electronic": 0.30, "Psytrance": 0.45, "Downtempo": 0.30, "Cinematic": 0.15}
 LAB_STAY = {"Ambient": (360, 900), "SpaceAmbient": (420, 1080), "Club": (240, 600), "Psychedelic": (300, 900),
@@ -548,6 +553,8 @@ for entry in GENRES:
         tim += ' timeSceneFadeMin="%d"' % SCENE_FADE_MIN[name]
     if name in LAB_SHARE:
         tim += ' labShare="%.2f"' % LAB_SHARE[name]
+    if name in BUILD_UP_NEW:
+        tim += ' buildUp="new"'
     out = ['<?xml version="1.0" encoding="utf-8" ?>',
            '<configuration ImageDirectory="%s" ConfigurationName="%s"%s%s >'
            % (IMAGE_DIR, name, hid, tim),

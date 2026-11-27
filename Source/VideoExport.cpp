@@ -511,6 +511,7 @@ bool VideoExport::beginGL()
     m_pcmBlock.assign( BlockFrames * 2, 0 );
     m_floatBlock.assign( BlockFrames * 2, 0.f );
     m_analyzer = new AudioAnalyzer();
+    m_analyzer->followPresetBuildUp(); // the build-up the active preset asks for, as in the live show
 
     m_writer = std::thread( &VideoExport::writer, this );
     m_clock.start();
