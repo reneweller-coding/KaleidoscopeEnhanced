@@ -16,7 +16,9 @@
  * Knobs: seedP (the walk's seed), cellsP (how many cells), reachP (the base reach of the operations), hueP.
 //@params seedP cellsP reachP
 //@audio audioSwell
+//@depth
 //@body
+float gPhD = 0.0;   // the photo's depth at the look's photo lookup, 0 far .. 1 near (photoDepthLod)
 /**  The nth term of a sequence.
  *
  * @param s   The sequence, 0..5: Fibonacci word, Thue-Morse, Rudin-Shapiro, paper folding, period doubling, Cantor. (in)
@@ -102,7 +104,10 @@ vec3 seqLook(ivec4 k, ivec4 kv, vec2 p, float t, float nc, float rc)
     else if (k.y == 2) uv = (p + vec2(a, b) * lv(kv.y, 1.0, 0.1, 0.34) * rc) * 0.8 + 0.5;
     else if (k.y == 3) uv = (centre + loc * (a > 0.5 ? 1.0 + lv(kv.y, 2.0, 0.1, 1.3) * rc : 1.0 / (1.0 + lv(kv.y, 3.0, 0.1, 0.9) * rc))) * 0.8 + 0.5;
     else uv = p * 0.8 + 0.5 + lv(kv.y, 4.0, 0.06, 0.18) * rc * vec2(sin(lv(kv.y, 5.0, 0.2, 0.6) * t + lv(kv.y, 6.0, 1.5, 4.5) * a), cos(lv(kv.y, 7.0, 0.2, 0.5) * t + lv(kv.y, 6.0, 1.5, 4.5) * b));
-    return imgLod(uv, lv(kv.w, 3.0, 0.2, 0.6));
+    vec2 puv = uv;
+    float plod = lv(kv.w, 3.0, 0.2, 0.6);
+    gPhD = photoDepthLod(puv, plod);   // the depth where the colour is taken (26.11.2026)
+    return imgLod(puv, plod);
 }
 
 void main()
@@ -115,11 +120,14 @@ void main()
     float t = sceneTime * 0.6 + 4.0 * audioPhase;
     vec3 col = vec3(0.0);
     float ws = 0.0;
+    float dsum = 0.0;   // the looks' photo depth, weighted like their colours
     for (int i = 0; i < 4; ++i) {
         if (gLabW[i] > 0.002) {
             col += gLabW[i] * seqLook(gLabK[i], gLabV[i], p, t, nc, rc);
+            dsum += gLabW[i] * gPhD;
             ws += gLabW[i];
         }
     }
+    photoDepthOut(dsum / max(ws, 1e-3));
     finish(max(col / max(ws, 1e-3), 0.0));
 }

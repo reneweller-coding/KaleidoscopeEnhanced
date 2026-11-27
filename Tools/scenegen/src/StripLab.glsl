@@ -15,7 +15,9 @@
  * Knobs: seedP (the walk's seed), spanP (the base span of time on the screen), speedP (the photo's speed), hueP.
 //@params seedP spanP speedP
 //@audio audioSwell
+//@depth
 //@body
+float gPhD = 0.0;   // the photo's depth at the look's photo lookup, 0 far .. 1 near (photoDepthLod)
 /**  The scanner's moment at a place.
  *
  * @param kind  The scanner, 0..5: rows, columns, diagonal, radial, spiral, wavy rows. (in)
@@ -76,7 +78,10 @@ vec3 stripLook(ivec4 k, ivec4 kv, vec2 p, float t, float sp, float sw)
     if (k.w == 1) m = mix(m1, stripMoment((k.x + 1) - 6 * ((k.x + 1) / 6), kv.x, p), lv(kv.w, 1.0, 0.3, 0.7));
     else if (k.w == 2) m = m1 * sin(lv(kv.w, 2.0, 0.06, 0.18) * t) + lv(kv.w, 3.0, -0.4, 0.4);
     vec2 q = stripPath(k.y, kv.y, p, t + span * m);
-    return imgLod(q * 0.8 + 0.5, 0.5);
+    vec2 puv = q * 0.8 + 0.5;
+    float plod = 0.5;
+    gPhD = photoDepthLod(puv, plod);   // the depth where the colour is taken (26.11.2026)
+    return imgLod(puv, plod);
 }
 
 void main()
@@ -88,11 +93,14 @@ void main()
     float t = (0.6 + 0.9 * clamp(speedP, 0.0, 1.0)) * (sceneTime * 0.6 + 4.0 * audioPhase);
     vec3 col = vec3(0.0);
     float ws = 0.0;
+    float dsum = 0.0;   // the looks' photo depth, weighted like their colours
     for (int i = 0; i < 4; ++i) {
         if (gLabW[i] > 0.002) {
             col += gLabW[i] * stripLook(gLabK[i], gLabV[i], p, t, sp, sw);
+            dsum += gLabW[i] * gPhD;
             ws += gLabW[i];
         }
     }
+    photoDepthOut(dsum / max(ws, 1e-3));
     finish(max(col / max(ws, 1e-3), 0.0));
 }

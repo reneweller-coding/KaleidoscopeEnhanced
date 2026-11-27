@@ -15,7 +15,9 @@
  * Knobs: seedP (the walk's seed), gridP (how fine the glass's pattern is), thickP (the base thickness), hueP.
 //@params seedP gridP thickP
 //@audio audioSwell
+//@depth
 //@body
+float gPhD = 0.0;   // the photo's depth at the look's photo lookup, 0 far .. 1 near (photoDepthLod)
 /**  The refraction of one sort of glass at a place: how far it moves the picture there, and how much it darkens.
  *
  * @param kind   The sort, 0..8: reeded, hammered, bull's-eye, portholes, frosted, cathedral, seeded, pebbled, leaded diamonds. (in)
@@ -125,7 +127,10 @@ vec3 glassLook(ivec4 k, ivec4 kv, vec2 p, float t, float sc, float th)
         blur2 = b2;
     }
     vec2 uv = (p + tk * d) * 0.8 + 0.5;
-    vec3 col = imgLod(uv, 0.3 + lv(kv.y, 2.0, 2.0, 4.4) * max(blur, blur2) * tk);
+    vec2 puv = uv;
+    float plod = 0.3 + lv(kv.y, 2.0, 2.0, 4.4) * max(blur, blur2) * tk;
+    gPhD = photoDepthLod(puv, plod);   // the depth where the colour is taken (26.11.2026)
+    vec3 col = imgLod(puv, plod);
     col *= 1.0 - lv(kv.y, 3.0, 0.35, 0.75) * max(shade, shade2) * (lv(kv.y, 4.0, 0.3, 0.7) + 0.5 * tk);
     return col * 1.1;
 }
@@ -140,11 +145,14 @@ void main()
     float t = sceneTime * 0.6 + 4.0 * audioPhase;
     vec3 col = vec3(0.0);
     float ws = 0.0;
+    float dsum = 0.0;   // the looks' photo depth, weighted like their colours
     for (int i = 0; i < 4; ++i) {
         if (gLabW[i] > 0.002) {
             col += gLabW[i] * glassLook(gLabK[i], gLabV[i], p, t, sc, th);
+            dsum += gLabW[i] * gPhD;
             ws += gLabW[i];
         }
     }
+    photoDepthOut(dsum / max(ws, 1e-3));
     finish(max(col / max(ws, 1e-3), 0.0));
 }

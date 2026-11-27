@@ -14,7 +14,10 @@
  * Knobs: seedP (the walk's seed), delayP (the base delay), strengthP (the maps' base strength), hueP.
 //@params seedP delayP strengthP
 //@audio audioSwell
+//@depth
 //@body
+uniform float depthLook;   // 4: the subject anchor (plan M2) -- each photo folds around its own subject; 0: the old look
+float gPhD = 0.0;   // the photo's depth at the look's photo lookup, 0 far .. 1 near (photoDepthLod)
 /**  One stage of the chain: a coordinate map evaluated at its own time.
  *
  * @param m   The map, 0..7: kaleidoscope, log-spiral, ripples, twirl, inversion, mirror line, domain warp, polar tunnel. (in)
@@ -75,7 +78,16 @@ vec3 chainLook(ivec4 k, ivec4 kv, vec2 p, float t, float dl, float st)
     q = chainMap(k.y, kv.y, q, t - delta, st);
     q = (mirrorUV(q * 0.5 + 0.5) - 0.5) * 2.0;
     q = chainMap(k.z, kv.z, q, t - lv(kv.w, 3.0, 1.4, 2.6) * delta, st);
-    return imgLod(q * 0.5 + 0.5, 0.5);
+    vec2 puv = q * 0.5 + 0.5;
+    float plod = 0.5;
+    if (depthLook > 3.5) {   // the subject anchor (M2); without it the colour stays bit for bit
+        vec4 r = imgDepthOff(puv, anchorOff(photoFocus.xy, photoSubject.y, photoDepthAmt.x),
+                             anchorOff(photoFocus.zw, photoSubject.w, photoDepthAmt.y), plod);
+        gPhD = r.w;
+        return r.rgb;
+    }
+    gPhD = photoDepthLod(puv, plod);   // the depth where the colour is taken (26.11.2026)
+    return imgLod(puv, plod);
 }
 
 void main()
@@ -88,11 +100,14 @@ void main()
     float t = sceneTime * 0.6 + 4.0 * audioPhase;
     vec3 col = vec3(0.0);
     float ws = 0.0;
+    float dsum = 0.0;   // the looks' photo depth, weighted like their colours
     for (int i = 0; i < 4; ++i) {
         if (gLabW[i] > 0.002) {
             col += gLabW[i] * chainLook(gLabK[i], gLabV[i], p, t, dl, st);
+            dsum += gLabW[i] * gPhD;
             ws += gLabW[i];
         }
     }
+    photoDepthOut(dsum / max(ws, 1e-3));
     finish(max(col / max(ws, 1e-3), 0.0));
 }

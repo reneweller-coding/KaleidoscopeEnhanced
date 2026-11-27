@@ -17,7 +17,9 @@
  * Knobs: seedP (the walk's seed), cellP (the lattice's size), flawP (how strong the flaws are), hueP.
 //@params seedP cellP flawP
 //@audio audioSwell audioHarmAdvance
+//@depth
 //@body
+float gPhD = 0.0;   // the photo's depth at the look's photo lookup, 0 far .. 1 near (photoDepthLod)
 /**  Folds a point into the fundamental triangle of a mirror lattice.
  *
  * @param lat  The lattice: 0 hexagonal (the 30-60-90 triangle), 1 square (the 45-45-90 triangle). (in)
@@ -109,7 +111,10 @@ vec3 defLook(ivec4 k, ivec4 kv, vec2 p, float t, float hd, float cs, float st)
     float tt = k.z == 1 ? t * lv(kv.z, 4.0, 1.0, 2.4) : t;
     vec2 q = defFlaw(k.y, kv.y, p, tt, sep, st, k.x == 0 ? 6.0 : 4.0) * size;
     vec2 f = defFold(k.x, kv.x, q);
-    return imgLod(f * lv(kv.x, 4.0, 1.0, 2.2) + lv(kv.x, 5.0, 0.0, 0.2), 0.5);
+    vec2 puv = f * lv(kv.x, 4.0, 1.0, 2.2) + lv(kv.x, 5.0, 0.0, 0.2);
+    float plod = 0.5;
+    gPhD = photoDepthLod(puv, plod);   // the depth where the colour is taken (26.11.2026)
+    return imgLod(puv, plod);
 }
 
 void main()
@@ -122,11 +127,14 @@ void main()
     float t = sceneTime * 0.6 + 4.0 * audioPhase;
     vec3 col = vec3(0.0);
     float ws = 0.0;
+    float dsum = 0.0;   // the looks' photo depth, weighted like their colours
     for (int i = 0; i < 4; ++i) {
         if (gLabW[i] > 0.002) {
             col += gLabW[i] * defLook(gLabK[i], gLabV[i], p, t, audioHarmAdvance, cs, st);
+            dsum += gLabW[i] * gPhD;
             ws += gLabW[i];
         }
     }
+    photoDepthOut(dsum / max(ws, 1e-3));
     finish(max(col / max(ws, 1e-3), 0.0));
 }

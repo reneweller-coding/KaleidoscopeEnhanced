@@ -35,6 +35,7 @@
  * chainPhotoOnly (chain_classes.PHOTO_ONLY, set since 17.10.2026): only the photo -- styleP and paletteP have no effect.
 //@params chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP
 //@audio audioSpread audioKick audioMode audioSwell
+//@depth
 //@body
 float gT, gSpread, gRot, gMw;
 vec2 gCw, gCt;
@@ -467,6 +468,71 @@ vec2 chain(vec2 p)
     return c;
 }
 
+// ---- depth looks (26.11.2026, plan T4, M2, M3): switched by depthLook, 0 = the old look, bit for bit ----
+uniform float depthLook;     // 0 off; 1 parallax before the fold, 2 depth cut, 3 depth wave, 4 subject anchor, 5 subject stays whole
+uniform float depthVar;      // the look's variant 0..99: its constants; variant 0 = the middle of every range
+uniform vec2 photoMask;      // how well depth >= threshold outlines the subject of the photo in tex0 (x) / tex1 (y), 0..1
+
+// A constant of a depth look, set by its variant inside a range (variant 0: the middle), as lv() in the labs.
+float dv(int vi, float j, float lo, float hi)
+{
+    return vi == 0 ? 0.5 * (lo + hi) : mix(lo, hi, fract(sin(float(vi) * 12.9898 + j * 78.233 + 3.7) * 43758.5453));
+}
+
+// A depth look: the colour at the chain's end point c (ph there, its depth pd, mip lod) as the look shows it, and the
+// depth it writes (pd).  Every motion runs on the scene's own clocks (sceneTime, sceneAdvance), never on a beat.
+vec3 depthLookCol(int look, int vi, vec2 p, vec2 c, vec3 ph, float lod, inout float pd)
+{
+    float sw = clamp(audioSwell, 0.0, 1.0);
+    vec2 o0 = anchorOff(photoFocus.xy, photoSubject.y, photoDepthAmt.x);
+    vec2 o1 = anchorOff(photoFocus.zw, photoSubject.w, photoDepthAmt.y);
+    if (look == 1) {                     // parallax before the fold: near and far glide against each other
+        float amp = dv(vi, 1.0, 0.02, 0.06), rate = dv(vi, 2.0, 0.05, 0.11);
+        vec2 drift = amp * vec2(sin(rate * sceneTime), cos(0.73 * rate * sceneTime + 1.1));
+        vec4 r = imgDepthOff(c + (pd - 0.5) * drift, vec2(0.0), vec2(0.0), lod);
+        pd = r.w;
+        return r.rgb;
+    }
+    if (look == 2) {                     // depth cut: the far layer folded once more, with its own mirror count
+        float thr = dv(vi, 3.0, 0.35, 0.65), w = dv(vi, 4.0, 0.06, 0.18);
+        float seg = 6.2831853 / floor(dv(vi, 5.0, 3.0, 8.99));
+        vec2 q = c - 0.5;
+        float an = atan(q.y, q.x) + 0.004 * sceneTime;
+        an = 0.5 * seg - abs(mod(an, seg) - 0.5 * seg);   // the wedge itself (a - abs(...)), not its turned copy
+        vec4 far = imgDepthOff(0.5 + length(q) * vec2(cos(an), sin(an)), vec2(0.0), vec2(0.0), lod);
+        float m = smoothstep(thr - w, thr + w, pd);      // 1 near: the chain as it is
+        pd = mix(far.w, pd, m);
+        return mix(far.rgb, ph, m);
+    }
+    if (look == 3) {                     // depth wave: brightness bands running from near to far
+        float k = dv(vi, 6.0, 1.0, 2.0), rate = dv(vi, 7.0, 0.08, 0.18), amp = dv(vi, 8.0, 0.10, 0.22);
+        float wv = 0.5 + 0.5 * cos(6.2831853 * (k * (1.0 - pd) - rate * sceneTime - 0.3 * sceneAdvance));
+        return ph * (1.0 - 0.5 * amp + amp * wv);
+    }
+    if (look == 4) {                     // subject anchor (M2): every photo folds around its own subject
+        float s = dv(vi, 9.0, 0.7, 1.0);
+        vec4 r = imgDepthOff(c, s * o0, s * o1, lod);
+        pd = r.w;
+        return r.rgb;
+    }
+    // look 5, subject stays whole (M3): inside the subject's soft mask the photo unfolded, around it the chain
+    // folding around the subject; the mask's edge breathes with the swell.
+    vec4 r = imgDepthOff(c, o0, o1, lod);
+    vec2 u = p * dv(vi, 10.0, 0.75, 0.95) + 0.5;
+    vec4 s0 = imgDepthOff(u, o0, o1, 1.0);
+    u += (s0.w - 0.5) * 0.012 * vec2(sin(0.07 * sceneTime), cos(0.05 * sceneTime));   // a slight parallax
+    vec4 s = imgDepthOff(u, o0, o1, 0.0);
+    float thr = interpolation * photoSubject.x + (1.0 - interpolation) * photoSubject.z;
+    // only where depth >= threshold really outlines the subject (photoMask, the maps' IoU; a receding photo's near
+    // foreground would pass the threshold too)
+    float sure = interpolation * smoothstep(0.45, 0.65, photoMask.x) * photoDepthAmt.x
+                 + (1.0 - interpolation) * smoothstep(0.45, 0.65, photoMask.y) * photoDepthAmt.y;
+    float e = dv(vi, 11.0, 0.05, 0.12) * (0.7 + 0.6 * sw);
+    float m = smoothstep(thr - e, thr + e, s.w) * sure;
+    pd = mix(r.w, s.w, m);
+    return mix(r.rgb, s.rgb, m);
+}
+
 void main()
 {
     vec2 p = screenP();
@@ -481,6 +547,13 @@ void main()
     gCt = vec2(0.5) + vec2(0.22 * sin(0.023 * sceneTime + 0.3 * sin(0.011 * sceneTime)), 0.16 * cos(0.019 * sceneTime));
     vec2 grad;
     vec3 ph = imgChain(p, 1.0 - 1.2 * clamp(detailP, 0.0, 1.0), grad);
+    // The photo's depth where the chain ends, at the colour's mip level (imgChain's footprint): the depth effects, the
+    // parallax and the stereo read it (26.11.2026); the colour does not change.
+    float dLod = clamp(log2(max(max(length(gChainDx), length(gChainDy)) * 1024.0, 1.0)) + 1.0 - 1.2 * clamp(detailP, 0.0, 1.0), 0.0, 9.0);
+    float pd = photoDepthLod(gChainM, dLod);
+    if (depthLook > 0.5)   // a depth look (plan T4, M2, M3); without one the colour stays bit for bit
+        ph = depthLookCol(int(depthLook + 0.5), int(depthVar + 0.5), p, gChainM, ph, dLod, pd);
+    photoDepthOut(pd);
     float m = luma(ph);
     // Colour field: follows the chain's own (mirrored, hence seamless) coordinates
     // and wanders with the music; the photo's luma keeps the detail.

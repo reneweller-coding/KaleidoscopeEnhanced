@@ -1257,6 +1257,7 @@ private:
                                ///< loadNewTexture().
     QImage m_nextImage;        ///< The freshly loaded/prepared photo, written by ImageLoader::run(), consumed by
                                ///< loadNewTexture().
+    // The photo's depth (26.11.2026, PhotoDepth.h), loaded with m_nextImage.
     PhotoDepth::Info m_nextImageDepth; ///< m_nextImage's depth (its map is in the image's alpha), written with it.
 
 
@@ -1420,6 +1421,21 @@ private:
      * @param imageList  Output list; matching file paths are appended. (out)
      **/
     void traverse( const QString &dirname, QStringList &imageList );
+    /**  How real a 2D scene's depth is this frame (plan T2): the photos' share with a depth map, if the scene passes
+     * the photo's depth on (EffectShader::writesDepth()).
+     *
+     * @param scene  The scene. (in)
+     *
+     * @return
+     *   interpolation * photoDepthAmt.x + (1 - interpolation) * photoDepthAmt.y for a scene with `// @depth`, else
+     *   0 (no map, a live input, a scene without depth) -- the scene slot's depthValid.
+     **/
+    float photoDepthLayer( EffectShader *scene );
+    /**  KALEIDO_SHOW_DEPTH=1 (plan T2): writes each scene's depth buffer as a grey picture over its colour, before the
+     * combine stage (Engine/DepthView.frag: the photo's depth for a 2D scene with `// @depth`, the linearised distance
+     * for a 3D scene, black for none).  Not for eye-packed frames.
+     **/
+    void renderDepthViews();
     /**  Uploads the pending next photo (m_nextImage, filled by ImageLoader) into @p texID.
      *
      * @param texID  Destination texture id (m_actTex or m_nextTex after a swap). (in,out)
@@ -2385,6 +2401,9 @@ private:
     // it as photoDepthAmt, photoFocus, photoSubject (EffectShader::M_PhotoDepthAmt ..., set in updateImageState()).
     PhotoDepth::Info m_actDepth;  ///< The depth of the photo in m_actTex (tex0).
     PhotoDepth::Info m_nextDepth; ///< The depth of the photo in m_nextTex (tex1).
+    // KALEIDO_SHOW_DEPTH (plan T2): the depth view's program and framebuffer.
+    GLuint m_depthViewProg = 0; ///< Engine/DepthView.frag, built on first use.
+    GLuint m_depthViewFbo = 0;  ///< Framebuffer with only a scene's colour texture attached (the depth is sampled).
 
     // ---- The second photo (17.10.2026) ----
     // Scenes that set two pictures against each other (imgB() in Tools/scenegen) get the photo shown BEFORE the

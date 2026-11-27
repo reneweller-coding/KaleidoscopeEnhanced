@@ -217,6 +217,79 @@ vec3 imgB(vec2 uv, float lod)
 }
 """
 
+# The photo's depth (26.11.2026, plan T2): the depth map rides in the alpha channel of tex0/tex1 (Source/PhotoDepth.h);
+# a scene that passes it on says `//@depth` in its source and calls photoDepthOut() on every path.  The host then
+# enables the depth writes for it and tells the depth effects, the parallax and the stereo that its depth is real.
+DEPTH_LIB = r"""
+// ---- the photo's depth ----
+/**  The photos' depth at a point and mip level: the alpha channel of tex0 and tex1 (the app's photo loader puts
+ * the depth map there), each weighted with the cross-fade and with whether its photo has a map at all.
+ *
+ * @param uv   The point (mirrored at the edges, as imgLod()). (in)
+ * @param lod  The mip level: the colour's, so depth and colour share one footprint. (in)
+ *
+ * @return
+ *   The depth, 0 far .. 1 near; 0 where neither photo has a map.
+ **/
+float photoDepthLod(vec2 uv, float lod)
+{
+    uv = mirrorUV(uv);
+    float w0 = interpolation * photoDepthAmt.x, w1 = (1.0 - interpolation) * photoDepthAmt.y;
+    return (w0 * textureLod(tex0, uv, lod).a + w1 * textureLod(tex1, uv, lod).a) / max(w0 + w1, 1e-4);
+}
+
+/**  Writes the pixel's depth for whatever reads the scene's depth (the depth effects, the 2.5D parallax, the stereo):
+ * the photo's depth on the window depths the host hands over (photoDepthWin, x for 1 = near, y for 0 = far; linear
+ * in window depth is linear in inverse distance, as the maps are).  The far plane where neither photo has a map, as
+ * a scene without depth leaves it.  Call it on every path: a shader that writes gl_FragDepth anywhere owns it
+ * everywhere.
+ *
+ * @param d  The photo's depth there, 0 far .. 1 near (photoDepthLod()). (in)
+ **/
+void photoDepthOut(float d)
+{
+    float w = interpolation * photoDepthAmt.x + (1.0 - interpolation) * photoDepthAmt.y;
+    gl_FragDepth = w > 0.0 ? mix(photoDepthWin.y, photoDepthWin.x, clamp(d, 0.0, 1.0)) : 1.0;
+}
+"""
+
+# The subject anchor (26.11.2026, plan M2): each photo folds around its own subject (photoFocus, photoSubject from the
+# host); appended for sources that call imgDepthOff( or anchorOff( (with DEPTH_LIB, which they need).
+ANCHOR_LIB = r"""
+// ---- the subject anchor ----
+/**  The photos at a point, each shifted by an offset of its own (the subject anchor, plan M2), and their depth.
+ *
+ * @param uv   The point (mirrored at the edges, as imgLod()). (in)
+ * @param o0   The offset of the photo in tex0. (in)
+ * @param o1   The offset of the photo in tex1. (in)
+ * @param lod  The mip level. (in)
+ *
+ * @return
+ *   The cross-faded colour (rgb) and the depth, 0 far .. 1 near (w; as photoDepthLod()).
+ **/
+vec4 imgDepthOff(vec2 uv, vec2 o0, vec2 o1, float lod)
+{
+    vec4 a = textureLod(tex0, mirrorUV(uv + o0), lod), b = textureLod(tex1, mirrorUV(uv + o1), lod);
+    float w0 = interpolation * photoDepthAmt.x, w1 = (1.0 - interpolation) * photoDepthAmt.y;
+    return vec4((interpolation * a + (1.0 - interpolation) * b).rgb, (w0 * a.a + w1 * b.a) / max(w0 + w1, 1e-4));
+}
+
+/**  How far one photo's subject lies from the picture's centre (plan M2): the shift that puts it where the fold's
+ * centre samples -- zero without a depth map or a sure measure, so such a photo stays centred.
+ *
+ * @param f     The photo's subject centre, texture coordinates (photoFocus). (in)
+ * @param conf  The confidence of the measure, 0..1 (photoSubject). (in)
+ * @param amt   1 where the photo has a depth map (photoDepthAmt). (in)
+ *
+ * @return
+ *   The offset from the picture's centre to the subject.
+ **/
+vec2 anchorOff(vec2 f, float conf, float amt)
+{
+    return (f - 0.5) * smoothstep(0.45, 0.55, conf) * amt;   // the maps trust a centre from conf 0.5 (26.11.)
+}
+"""
+
 # The scene's colour family (22.10.2026): one wandering hue from the photo and its neighbours, instead of a different
 # colour for every cell -- the list of 22.10. asks for "not too colourful" (docs/proposals-2026-10-22-abstrakt-400.md,
 # guideline 9).  Appended for sources that call famHue(.
@@ -3605,9 +3678,19 @@ def assemble(name):
         out.append("// @state %s %s %s%s" % (st.group(1), st.group(2), st.group(3), " 32" if st.group(4) else ""))
         out += ["uniform sampler2D texState;", "uniform int statePass;", "uniform float stateFrame;",
                 "uniform vec2 stateRes;", "uniform float stateFrac;"]
+    depth = re.search(r"^//@depth\s*$", src, re.M)          # the scene writes the photo's depth (DEPTH_LIB)
+    if depth:
+        out += ["// @depth", "uniform vec2 photoDepthAmt;", "uniform vec2 photoDepthWin;"]
+    anchor = depth and re.search(r"\b(imgDepthOff|anchorOff)\s*\(", src)
+    if anchor:
+        out += ["uniform vec4 photoFocus;", "uniform vec4 photoSubject;"]
     out.append(LIB)
     if re.search(r"\bimgB\s*\(", src):
         out.append(PHOTOB_LIB)
+    if depth:
+        out.append(DEPTH_LIB)
+    if anchor:
+        out.append(ANCHOR_LIB)
     if re.search(r"\bfamHue\s*\(", src):
         out.append(FAMILY_LIB)
     if re.search(r"\blabWalk\s*\(", src):

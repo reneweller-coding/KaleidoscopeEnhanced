@@ -15,7 +15,9 @@
  * Knobs: seedP (the walk's seed), depthP (how deep the folds go), softP (how soft the creases are), hueP.
 //@params seedP depthP softP
 //@audio audioSwell
+//@depth
 //@body
+float gPhD = 0.0;   // the photo's depth at the look's photo lookup, 0 far .. 1 near (photoDepthLod)
 /**  The tilt of the face a place lies on, for a fold pattern, and the distance to the nearest crease.
  *
  * @param kind  The pattern, 0..5: pleats, diagonal pleats, Miura, waterbomb, Yoshimura, crumple. (in)
@@ -101,7 +103,10 @@ vec3 foldLook(ivec4 k, ivec4 kv, vec2 p, float t, float dp, float sf, float sw)
     vec3 L = k.z == 1 ? normalize(vec3(cos(a), sin(a), lv(kv.z, 2.0, 0.2, 0.56))) : normalize(vec3(cos(a), sin(a), lv(kv.z, 3.0, 0.6, 1.2)));
     float lam = clamp(dot(n, L), 0.0, 1.0);
     vec2 uv = p * 0.8 / max(cos(lv(kv.x, 12.0, 0.5, 1.1) * th), 0.4) + 0.5;
-    vec3 col = imgLod(uv, 0.4);
+    vec2 puv = uv;
+    float plod = 0.4;
+    gPhD = photoDepthLod(puv, plod);   // the depth where the colour is taken (26.11.2026)
+    vec3 col = imgLod(puv, plod);
     float shade = lv(kv.z, 5.0, 0.44, 0.8) + lv(kv.z, 6.0, 0.42, 0.82) * lam;
     if (k.z == 2) {
         vec3 L2 = normalize(vec3(-cos(a), -sin(a), lv(kv.z, 4.0, 0.4, 1.0)));
@@ -122,11 +127,14 @@ void main()
     float t = sceneTime * 0.6 + 4.0 * audioPhase;
     vec3 col = vec3(0.0);
     float ws = 0.0;
+    float dsum = 0.0;   // the looks' photo depth, weighted like their colours
     for (int i = 0; i < 4; ++i) {
         if (gLabW[i] > 0.002) {
             col += gLabW[i] * foldLook(gLabK[i], gLabV[i], p, t, dp, sf, sw);
+            dsum += gLabW[i] * gPhD;
             ws += gLabW[i];
         }
     }
+    photoDepthOut(dsum / max(ws, 1e-3));
     finish(max(col / max(ws, 1e-3), 0.0) * 1.1);
 }
