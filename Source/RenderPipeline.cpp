@@ -2778,10 +2778,12 @@ void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
 
     // What the shaders know about the two slots' depth (PhotoDepth.h): a live input stands in for both photos and
     // has no map.
-    const PhotoDepth::Info none;
+    const PhotoDepth::Info  none;
     const PhotoDepth::Info &d0 = m_liveTex ? none : m_actDepth, &d1 = m_liveTex ? none : m_nextDepth;
     EffectShader::M_PhotoDepthAmt[0] = d0.map ? 1.f : 0.f;
     EffectShader::M_PhotoDepthAmt[1] = d1.map ? 1.f : 0.f;
+    EffectShader::M_PhotoMask[0] = d0.mask;
+    EffectShader::M_PhotoMask[1] = d1.mask;
     const float focus[4] = { d0.focusU, d0.focusV, d1.focusU, d1.focusV };
     const float subject[4] = { d0.thr, d0.conf, d1.thr, d1.conf };
     for ( int i = 0; i < 4; ++i )
@@ -2789,6 +2791,52 @@ void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
         EffectShader::M_PhotoFocus[i] = focus[i];
         EffectShader::M_PhotoSubject[i] = subject[i];
     }
+}
+
+float RenderPipeline::photoDepthLayer( EffectShader *scene )
+{
+    if ( !scene || m_liveTex || !scene->writesDepth() )
+        return 0.f;
+    const float t = std::min( std::max( m_interpolationTexture, 0.f ), 1.f );
+    return t * EffectShader::M_PhotoDepthAmt[0] + ( 1.f - t ) * EffectShader::M_PhotoDepthAmt[1];
+}
+
+void RenderPipeline::renderDepthViews()
+{
+    if ( m_depthViewProg == 0 )
+    {
+        m_depthViewProg = setShaders( "..\\standard.vert", "..\\Engine\\DepthView.frag" );
+        glGenFramebuffers( 1, &m_depthViewFbo );
+    }
+    if ( m_depthViewProg == 0 || m_depthViewFbo == 0 )
+        return;
+    GLint fbo = 0;
+    glGetIntegerv( GL_FRAMEBUFFER_BINDING, &fbo );
+    glUseProgram( m_depthViewProg );
+    glUniform1i( glGetUniformLocation( m_depthViewProg, "texDepth" ), 29 );
+    glUniform2f( glGetUniformLocation( m_depthViewProg, "photoDepthWin" ),
+                 EffectShader::windowDepth( EffectShader::M_PhotoDepthDist[0] ),
+                 EffectShader::windowDepth( EffectShader::M_PhotoDepthDist[1] ) );
+    glUniform2f( glGetUniformLocation( m_depthViewProg, "nearFar" ), EffectShader::SceneNear, EffectShader::SceneFar );
+    const GLint kind_uni = glGetUniformLocation( m_depthViewProg, "depthKind" );
+    glViewport( 0, 0, m_width, m_height );
+    for ( int slot = 0; slot < 2; ++slot )
+    {
+        if ( slot == 1 && m_scheduler.texState() == 0 )
+            break;
+        EffectShader *e = m_effectTextures[slot == 0 ? m_scheduler.actTexture() : m_scheduler.nextTexture()];
+        if ( e->is3D() && m_trueStereoPacked ) // its depth is in the eye-packed target, not here
+            continue;
+        glUniform1i( kind_uni, e->is3D() ? 2 : ( EffectShader::M_DepthPhoto[slot] > 0.f ? 1 : 0 ) );
+        glActiveTexture( GL_TEXTURE0 + 29 );
+        glBindTexture( GL_TEXTURE_2D, slot == 0 ? m_depthTexEffect1 : m_depthTexEffect2 );
+        glBindFramebuffer( GL_FRAMEBUFFER, m_depthViewFbo );
+        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                                slot == 0 ? m_texIDFBOEffectTexture1 : m_texIDFBOEffectTexture2, 0 );
+        drawWindow();
+    }
+    glActiveTexture( GL_TEXTURE0 );
+    glBindFramebuffer( GL_FRAMEBUFFER, static_cast<GLuint>( fbo ) );
 }
 
 SceneScheduler::Tick RenderPipeline::buildSchedulerTick( const AudioFeatures &audio, float timeSinceLastFrameSec )
@@ -3090,8 +3138,11 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
         glBindFramebuffer( GL_FRAMEBUFFER, scene_fbo );
     }
 
-    EffectShader::M_DepthValid[0] = tex1_is_3d ? 1.f : 0.f;
-    if ( EffectShader::M_DepthValid[0] == 0.f )
+    // A 2D scene that passes the photo's depth on (plan T2): its depth is real as far as the photos have maps.
+    const float photo_d1 = tex1_is_3d ? 0.f : photoDepthLayer( m_effectTextures[m_scheduler.actTexture()] );
+    EffectShader::M_DepthValid[0] = tex1_is_3d ? 1.f : photo_d1;
+    EffectShader::M_DepthPhoto[0] = photo_d1 > 0.f ? 1.f : 0.f;
+    if ( !tex1_is_3d ) // a 2D scene with depth writes all of it; one without leaves the far plane
     {
         glClearDepth( 1.0 );
         glClear( GL_DEPTH_BUFFER_BIT );
@@ -3140,6 +3191,7 @@ void RenderPipeline::renderNextScenePass( const AudioFeatures &audioFx )
     // this output (tex1) by (1-interpolation), which is 0 at interpolation==1.0, so
     // it is invisible.  Saves a whole effect pass during the common solo periods.
     EffectShader::M_DepthValid[1] = 0.f;
+    EffectShader::M_DepthPhoto[1] = 0.f;
     if ( m_scheduler.texState() != 0 )
     {
         bool tex2_is_3d = m_effectTextures[m_scheduler.nextTexture()]->is3D();
@@ -3156,8 +3208,10 @@ void RenderPipeline::renderNextScenePass( const AudioFeatures &audioFx )
         glBindFramebuffer( GL_FRAMEBUFFER,
                            full_packed ? m_stereoTarget[1].fbo : ( msaa_tex2 ? m_msaaFbo : m_fboEffectTexture2 ) );
 
-        EffectShader::M_DepthValid[1] = tex2_is_3d ? 1.f : 0.f;
-        if ( EffectShader::M_DepthValid[1] == 0.f )
+        const float photo_d2 = tex2_is_3d ? 0.f : photoDepthLayer( m_effectTextures[m_scheduler.nextTexture()] );
+        EffectShader::M_DepthValid[1] = tex2_is_3d ? 1.f : photo_d2;
+        EffectShader::M_DepthPhoto[1] = photo_d2 > 0.f ? 1.f : 0.f;
+        if ( !tex2_is_3d )
         {
             glClearDepth( 1.0 );
             glClear( GL_DEPTH_BUFFER_BIT );
@@ -3838,6 +3892,9 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
 
     renderActiveScenePass( audio_fx );
     renderNextScenePass( audio_fx );
+    static const bool ShowDepth = qEnvironmentVariableIntValue( "KALEIDO_SHOW_DEPTH" ) != 0; // plan T2: depth as grey
+    if ( ShowDepth )
+        renderDepthViews();
     glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
     checkFramebufferStatus();
 
@@ -4680,8 +4737,8 @@ void RenderPipeline::createTexture()
     // The second photo starts as a third one: half the list away from the first -- no roll of the seeded generator,
     // so a scripted run's later rolls stay where they were.  From the first swap on it is the photo shown before.
     {
-        const int n = static_cast<int>( m_imageList.size() );
-        const int k = static_cast<int>( m_imageList.indexOf( first ) );
+        const int        n = static_cast<int>( m_imageList.size() );
+        const int        k = static_cast<int>( m_imageList.indexOf( first ) );
         PhotoDepth::Info b_depth; // the second photo's depth rides in its alpha; no shader reads it yet
         createPhotoB( preparePhoto( m_imageList[( ( k < 0 ? 0 : k ) + n / 2 ) % n], b_depth ) );
     }

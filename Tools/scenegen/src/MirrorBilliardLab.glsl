@@ -17,7 +17,10 @@
  * Knobs: seedP (the walk's seed), sizeP (the room's size), skewP (how far from a perfect room), hueP.
 //@params seedP sizeP skewP
 //@audio audioSwell audioHarmAdvance
+//@depth
 //@body
+uniform float depthLook;   // 4: the subject anchor (plan M2) -- each photo folds around its own subject; 0: the old look
+float gPhD = 0.0;   // the photo's depth at the look's photo lookup, 0 far .. 1 near (photoDepthLod)
 /**  One mirror wall of a room as a half plane, dot(q, n) <= c.
  *
  * @param kind  The room, 0..6: wedge, triangle, right isosceles, 30-60-90, square, pentagon, heptagon. (in)
@@ -99,7 +102,16 @@ vec3 billLook(ivec4 k, ivec4 kv, vec2 p, float t, float hd, float R0, float sk)
     vec2 u = billUnfold(k.x, q, k.x == 0 ? al : tilt, R);
     if (k.x == 2 || k.x == 3) u -= vec2(lv(kv.x, 4.0, 0.4, 0.8) * R, lv(kv.x, 5.0, 0.1, 0.3) * R);
     float sc = (k.w == 0 ? 0.6 : (k.w == 1 ? 0.95 : 1.5)) * lv(kv.w, 1.0, 0.7, 1.3);
-    return imgLod(u * sc * 0.5 / R * 0.8 + 0.5, lv(kv.w, 2.0, 0.3, 0.7));
+    vec2 puv = u * sc * 0.5 / R * 0.8 + 0.5;
+    float plod = lv(kv.w, 2.0, 0.3, 0.7);
+    if (depthLook > 3.5) {   // the subject anchor (M2); without it the colour stays bit for bit
+        vec4 r = imgDepthOff(puv, anchorOff(photoFocus.xy, photoSubject.y, photoDepthAmt.x),
+                             anchorOff(photoFocus.zw, photoSubject.w, photoDepthAmt.y), plod);
+        gPhD = r.w;
+        return r.rgb;
+    }
+    gPhD = photoDepthLod(puv, plod);   // the depth where the colour is taken (26.11.2026)
+    return imgLod(puv, plod);
 }
 
 void main()
@@ -112,11 +124,14 @@ void main()
     float t = sceneTime * 0.6 + 4.0 * audioPhase;
     vec3 col = vec3(0.0);
     float ws = 0.0;
+    float dsum = 0.0;   // the looks' photo depth, weighted like their colours
     for (int i = 0; i < 4; ++i) {
         if (gLabW[i] > 0.002) {
             col += gLabW[i] * billLook(gLabK[i], gLabV[i], p, t, audioHarmAdvance, R, sk);
+            dsum += gLabW[i] * gPhD;
             ws += gLabW[i];
         }
     }
+    photoDepthOut(dsum / max(ws, 1e-3));
     finish(max(col / max(ws, 1e-3), 0.0));
 }

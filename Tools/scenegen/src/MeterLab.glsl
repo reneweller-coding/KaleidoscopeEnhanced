@@ -18,7 +18,9 @@
  * Knobs: seedP (the walk's seed), rowsP (how many bars show), spreadP (how far the cells' windows differ), hueP.
 //@params seedP rowsP spreadP
 //@audio audioSwell audioBeatPhase audioBarPhase audioPhrasePos
+//@depth
 //@body
+float gPhD = 0.0;   // the photo's depth at the look's photo lookup, 0 far .. 1 near (photoDepthLod)
 /**  The metre's beats per bar.
  *
  * @param m  The metre, 0..7. (in)
@@ -111,7 +113,10 @@ vec3 meterLook(ivec4 k, ivec4 kv, vec2 p, float t, float nr, float sp, float sw)
     else if (k.y == 4) off = lv(kv.y, 9.0, 0.1, 0.3) * sp * vec2(sin(lv(kv.y, 10.0, 0.1, 0.3) * t + 0.9 * jj), cos(lv(kv.y, 13.0, 0.08, 0.26) * t + 0.6 * ii));
     else { uvc = vec2(0.5); sz = lv(kv.y, 11.0, 0.6, 1.2); }
     vec2 uv = uvc + off + rot2(ang) * (f * sz);
-    vec3 col = imgLod(uv, 0.4);
+    vec2 puv = uv;
+    float plod = 0.4;
+    gPhD = photoDepthLod(puv, plod);   // the depth where the colour is taken (26.11.2026)
+    vec3 col = imgLod(puv, plod);
     float m = 1.0;
     float st = 0.6 + 0.5 * sw;
     if (k.z == 0) m = lv(kv.z, 3.0, 0.25, 0.65) + lv(kv.z, 4.0, 0.65, 1.25) * st * glowB * (0.6 + 0.4 * glowR);
@@ -131,11 +136,14 @@ void main()
     float t = sceneTime * 0.6 + 4.0 * audioPhase;
     vec3 col = vec3(0.0);
     float ws = 0.0;
+    float dsum = 0.0;   // the looks' photo depth, weighted like their colours
     for (int i = 0; i < 4; ++i) {
         if (gLabW[i] > 0.002) {
             col += gLabW[i] * meterLook(gLabK[i], gLabV[i], p, t, nr, sp, sw);
+            dsum += gLabW[i] * gPhD;
             ws += gLabW[i];
         }
     }
+    photoDepthOut(dsum / max(ws, 1e-3));
     finish(max(col / max(ws, 1e-3), 0.0));
 }

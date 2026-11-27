@@ -17,7 +17,9 @@
  * Knobs: seedP (the walk's seed), cellsP (how many cells), mixP (how different the cells' windows are), hueP.
 //@params seedP cellsP mixP
 //@audio audioSwell audioSpread
+//@depth
 //@body
+float gPhD = 0.0;   // the photo's depth at the look's photo lookup, 0 far .. 1 near (photoDepthLod)
 /**  The cell a place lies in, for one of eight divisions of the plane.
  *
  * @param kind    The division: 0 quadtree, 1 Voronoi, 2 stripes, 3 rings, 4 honeycomb, 5 triangles, 6 spiral sectors, 7 bricks. (in)
@@ -179,7 +181,10 @@ vec3 partLook(ivec4 k, ivec4 kv, vec2 p, float sc, float t, float mx, float sd)
     partCell(k.x, kv.x, q, sc, id, centre, size);
     vec2 d = q - centre;
     vec2 uv = partMap(k.y, kv.y, centre, d, size, id, t, mx);
-    vec3 col = imgLod(uv, 0.3);
+    vec2 puv = uv;
+    float plod = 0.3;
+    gPhD = photoDepthLod(puv, plod);   // the depth where the colour is taken (26.11.2026)
+    vec3 col = imgLod(puv, plod);
     float e = 1.0 - clamp(length(d) / max(size, 1e-4), 0.0, 1.0);
     if (k.z == 1) col *= 1.0 - sd * lv(kv.z, 1.0, 0.35, 0.75) * (1.0 - smoothstep(0.0, lv(kv.z, 2.0, 0.15, 0.45), e));
     else if (k.z == 2) { vec2 dn = d / max(size, 1e-4); col *= 1.0 + sd * lv(kv.z, 3.0, 0.1, 0.9) * (1.0 - smoothstep(0.0, lv(kv.z, 4.0, 0.04, 0.32), e)) * clamp(-dn.x - dn.y, -1.0, 1.0); }
@@ -198,11 +203,14 @@ void main()
     float sd = 0.5 + 0.5 * clamp(audioSpread, 0.0, 1.0);
     vec3 col = vec3(0.0);
     float ws = 0.0;
+    float dsum = 0.0;   // the looks' photo depth, weighted like their colours
     for (int i = 0; i < 4; ++i) {
         if (gLabW[i] > 0.002) {
             col += gLabW[i] * partLook(gLabK[i], gLabV[i], p, sc, t, mx, sd);
+            dsum += gLabW[i] * gPhD;
             ws += gLabW[i];
         }
     }
+    photoDepthOut(dsum / max(ws, 1e-3));
     finish(max(col / max(ws, 1e-3), 0.0));
 }

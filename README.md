@@ -150,7 +150,10 @@ white = near) and a table `photo_info.tsv`; `Tools/depth_maps.py` makes them.
 The program loads a map with its photo (the walk never takes the maps for
 photos) and hands it to the scenes; without maps everything looks as before.
 For comparisons: `KALEIDO_NO_DEPTH=1` ignores all maps, `KALEIDO_DEPTH_DIR=<folder>`
-takes the maps (and their `photo_info.tsv`) from one flat folder first.
+takes the maps (and their `photo_info.tsv`) from one flat folder first,
+`KALEIDO_SHOW_DEPTH=1` shows each scene's depth as a grey picture (white = near),
+and `KALEIDO_DEPTH_RANGE=near,far` sets the distances a photo's depth is laid on
+(default 8,80, the units of the 3D scenes).
 
 Building the packs yourself, from folders you have filled:
 

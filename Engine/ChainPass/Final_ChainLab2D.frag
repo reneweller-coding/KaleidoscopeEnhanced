@@ -12,6 +12,7 @@
  *
  *  @author René Weller
  */
+// @depth
 uniform sampler2D texChain;      ///< The chain coordinate per pixel, computed by the chain passes.
 uniform vec2      chainOff;      ///< Offset of this pixel grid in the chain texture (in pixels).
 uniform float     chainScale;    ///< the chain's grid relative to the frame (0 = 1)
@@ -40,6 +41,13 @@ uniform float speedP;            ///< Speed knob, 0..1.
 uniform float detailP;           ///< Detail knob, 0..1.
 uniform float paletteP;          ///< Palette knob: photo colours .. colour field, 0..1.
 uniform float hueP;              ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform vec2 photoDepthAmt; ///< 1 where the photo in tex0 (x) / tex1 (y) carries a depth map in its alpha channel, else
+                            ///< 0.
+uniform vec2 photoDepthWin; ///< Window depth of the photo's near end (x, depth 1) and far end (y, depth 0), from the
+                            ///< host.
+uniform vec4 photoFocus;         ///< Subject centre of the photo in tex0 (xy) and tex1 (zw), texture coordinates.
+uniform vec4 photoSubject; ///< Depth threshold (subject = depth >= it) and confidence of the photo in tex0 (xy), tex1
+                           ///< (zw).
 /**  The scene's chain of transforms: a coordinate in, the transformed coordinate out.
  *
  * @param p  The coordinate. (in)
@@ -181,6 +189,59 @@ void finish( vec3 col )
     t /= 1.0 + 0.35 * max( t.r, max( t.g, t.b ) );
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
+/**  The photos' depth at a point and mip level: the alpha of tex0/tex1, weighted with the cross-fade and the maps.
+ *
+ * @param uv   The point (mirrored at the edges, as imgLod()). (in)
+ * @param lod  The mip level: the colour's, so depth and colour share one footprint. (in)
+ *
+ * @return
+ *   The depth, 0 far .. 1 near; 0 where neither photo has a map.
+ **/
+float photoDepthLod( vec2 uv, float lod )
+{
+    uv = mirrorUV( uv );
+    float w0 = interpolation * photoDepthAmt.x, w1 = ( 1.0 - interpolation ) * photoDepthAmt.y;
+    return ( w0 * textureLod( tex0, uv, lod ).a + w1 * textureLod( tex1, uv, lod ).a ) / max( w0 + w1, 1e-4 );
+}
+/**  Writes the pixel's depth (gl_FragDepth) from the photo's depth: the host's window depths, far without a map.
+ *
+ * @param d  The photo's depth there, 0 far .. 1 near (photoDepthLod()). (in)
+ **/
+void photoDepthOut( float d )
+{
+    float w = interpolation * photoDepthAmt.x + ( 1.0 - interpolation ) * photoDepthAmt.y;
+    gl_FragDepth = w > 0.0 ? mix( photoDepthWin.y, photoDepthWin.x, clamp( d, 0.0, 1.0 ) ) : 1.0;
+}
+/**  The photos at a point, each shifted by its own offset (the subject anchor), and their depth in w.
+ *
+ * @param uv   The point (mirrored at the edges). (in)
+ * @param o0   The offset of the photo in tex0. (in)
+ * @param o1   The offset of the photo in tex1. (in)
+ * @param lod  The mip level. (in)
+ *
+ * @return
+ *   The cross-faded colour (rgb) and the depth, 0 far .. 1 near (w).
+ **/
+vec4 imgDepthOff( vec2 uv, vec2 o0, vec2 o1, float lod )
+{
+    vec4  a = textureLod( tex0, mirrorUV( uv + o0 ), lod ), b = textureLod( tex1, mirrorUV( uv + o1 ), lod );
+    float w0 = interpolation * photoDepthAmt.x, w1 = ( 1.0 - interpolation ) * photoDepthAmt.y;
+    return vec4( ( interpolation * a + ( 1.0 - interpolation ) * b ).rgb,
+                 ( w0 * a.a + w1 * b.a ) / max( w0 + w1, 1e-4 ) );
+}
+/**  How far one photo's subject lies from the picture's centre; zero without a map or a sure measure.
+ *
+ * @param f     The photo's subject centre, texture coordinates. (in)
+ * @param conf  The confidence of the measure, 0..1. (in)
+ * @param amt   1 where the photo has a depth map. (in)
+ *
+ * @return
+ *   The offset from the picture's centre to the subject.
+ **/
+vec2 anchorOff( vec2 f, float conf, float amt )
+{
+    return ( f - 0.5 ) * smoothstep( 0.45, 0.55, conf ) * amt;
+}
 /** @{ */
 vec2 gChainM, gChainDx, gChainDy; ///< gChainM: The mirrored chain coordinate of this pixel; gChainDx: Its screen
                                   ///< derivative in x; gChainDy: Its screen derivative in y.
@@ -320,6 +381,93 @@ vec3 chainAfterglow( vec3 col )
     vec3 prev = texture( texPrevFrame, gl_FragCoord.xy / resolution ).rgb;
     return max( col, prev * ( 0.78 * smoothstep( 0.15, 1.0, glowP ) ) );
 }
+uniform float depthLook; ///< The depth look: 0 off (the old look), 1 parallax before the fold, 2 depth cut, 3 depth
+                         ///< wave, 4 subject anchor, 5 subject stays whole.
+uniform float depthVar;  ///< The depth look's variant 0..99: its constants (variant 0 = the middle of every range).
+uniform vec2 photoMask; ///< How well depth >= threshold outlines the subject of the photo in tex0 (x) / tex1 (y), 0..1.
+/**  A constant of a depth look, set by its variant inside a range (variant 0: the middle).
+ *
+ * @param vi  The look's variant, 0..99. (in)
+ * @param j   The stream: another number for every constant. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float dv( int vi, float j, float lo, float hi )
+{
+    return vi == 0 ? 0.5 * ( lo + hi )
+                   : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
+}
+/**  A depth look: the colour at the chain's end point as the look shows it, and the depth it writes.
+ *
+ * @param look  The look, 1..5. (in)
+ * @param vi    Its variant, 0..99. (in)
+ * @param p     The pixel's centred coordinate. (in)
+ * @param c     The chain's end point in the photo. (in)
+ * @param ph    The photo's colour there. (in)
+ * @param lod   The mip level of that lookup. (in)
+ * @param pd    The photo's depth there; the depth the look writes. (in,out)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
+vec3 depthLookCol( int look, int vi, vec2 p, vec2 c, vec3 ph, float lod, inout float pd )
+{
+    float sw = clamp( audioSwell, 0.0, 1.0 );
+    vec2  o0 = anchorOff( photoFocus.xy, photoSubject.y, photoDepthAmt.x );
+    vec2  o1 = anchorOff( photoFocus.zw, photoSubject.w, photoDepthAmt.y );
+    if ( look == 1 )
+    {
+        float amp = dv( vi, 1.0, 0.02, 0.06 ), rate = dv( vi, 2.0, 0.05, 0.11 );
+        vec2  drift = amp * vec2( sin( rate * sceneTime ), cos( 0.73 * rate * sceneTime + 1.1 ) );
+        vec4  r = imgDepthOff( c + ( pd - 0.5 ) * drift, vec2( 0.0 ), vec2( 0.0 ), lod );
+        pd = r.w;
+        return r.rgb;
+    }
+    if ( look == 2 )
+    {
+        float thr = dv( vi, 3.0, 0.35, 0.65 ), w = dv( vi, 4.0, 0.06, 0.18 );
+        float seg = 6.2831853 / floor( dv( vi, 5.0, 3.0, 8.99 ) );
+        vec2  q = c - 0.5;
+        float an = atan( q.y, q.x ) + 0.004 * sceneTime;
+        an = 0.5 * seg - abs( mod( an, seg ) - 0.5 * seg );
+        vec4  far = imgDepthOff( 0.5 + length( q ) * vec2( cos( an ), sin( an ) ), vec2( 0.0 ), vec2( 0.0 ), lod );
+        float m = smoothstep( thr - w, thr + w, pd );
+        pd = mix( far.w, pd, m );
+        return mix( far.rgb, ph, m );
+    }
+    if ( look == 3 )
+    {
+        float k = dv( vi, 6.0, 1.0, 2.0 ), rate = dv( vi, 7.0, 0.08, 0.18 ), amp = dv( vi, 8.0, 0.10, 0.22 );
+        float wv = 0.5 + 0.5 * cos( 6.2831853 * ( k * ( 1.0 - pd ) - rate * sceneTime - 0.3 * sceneAdvance ) );
+        return ph * ( 1.0 - 0.5 * amp + amp * wv );
+    }
+    if ( look == 4 )
+    {
+        float s = dv( vi, 9.0, 0.7, 1.0 );
+        vec4  r = imgDepthOff( c, s * o0, s * o1, lod );
+        pd = r.w;
+        return r.rgb;
+    }
+
+
+    vec4 r = imgDepthOff( c, o0, o1, lod );
+    vec2 u = p * dv( vi, 10.0, 0.75, 0.95 ) + 0.5;
+    vec4 s0 = imgDepthOff( u, o0, o1, 1.0 );
+    u += ( s0.w - 0.5 ) * 0.012 * vec2( sin( 0.07 * sceneTime ), cos( 0.05 * sceneTime ) );
+    vec4  s = imgDepthOff( u, o0, o1, 0.0 );
+    float thr = interpolation * photoSubject.x + ( 1.0 - interpolation ) * photoSubject.z;
+
+
+    float sure = interpolation * smoothstep( 0.45, 0.65, photoMask.x ) * photoDepthAmt.x
+                 + ( 1.0 - interpolation ) * smoothstep( 0.45, 0.65, photoMask.y ) * photoDepthAmt.y;
+    float e = dv( vi, 11.0, 0.05, 0.12 ) * ( 0.7 + 0.6 * sw );
+    float m = smoothstep( thr - e, thr + e, s.w ) * sure;
+    pd = mix( r.w, s.w, m );
+    return mix( r.rgb, s.rgb, m );
+}
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -334,8 +482,17 @@ void main()
     gCw = vec2( 0.5 ) + 0.15 * vec2( sin( 0.017 * sceneTime ), cos( 0.013 * sceneTime ) );
     gCt = vec2( 0.5 )
           + vec2( 0.22 * sin( 0.023 * sceneTime + 0.3 * sin( 0.011 * sceneTime ) ), 0.16 * cos( 0.019 * sceneTime ) );
-    vec2  grad;
-    vec3  ph = imgChain( p, 1.0 - 1.2 * clamp( detailP, 0.0, 1.0 ), grad );
+    vec2 grad;
+    vec3 ph = imgChain( p, 1.0 - 1.2 * clamp( detailP, 0.0, 1.0 ), grad );
+
+
+    float d_lod = clamp( log2( max( max( length( gChainDx ), length( gChainDy ) ) * 1024.0, 1.0 ) ) + 1.0
+                             - 1.2 * clamp( detailP, 0.0, 1.0 ),
+                         0.0, 9.0 );
+    float pd = photoDepthLod( gChainM, d_lod );
+    if ( depthLook > 0.5 )
+        ph = depthLookCol( int( depthLook + 0.5 ), int( depthVar + 0.5 ), p, gChainM, ph, d_lod, pd );
+    photoDepthOut( pd );
     float m = luma( ph );
 
 

@@ -533,6 +533,17 @@ public:
      *   (Scene3DShader) so the host can select the per-eye stereo render path.
      **/
     virtual bool is3D() const { return false; }
+    /**  Whether this 2D scene passes the photo's depth on: its fragment source has a line `// @depth` (26.11.2026,
+     * plan T2; Tools/scenegen DEPTH_LIB) and writes gl_FragDepth from the photo's depth on every path.
+     *
+     * @return
+     *   True for such a scene once its program is built; draw() then runs it with the depth test on (GL_ALWAYS) and
+     *   the depth writes on, and the host treats its depth buffer as real (depthValid, parallax, stereo).
+     *
+     * Read from the file the program was built from (the chain runner's final pass for a chain lab), cached per
+     * program, so a hot reload is seen.
+     **/
+    bool writesDepth();
     /**  Whether this scene shows a loaded model -- a single recognisable solid object rather than an abstract field.
      *
      * @return
@@ -700,6 +711,34 @@ public:
      * tex1 (zw); (1, 0) where not measured.
      **/
     static float M_PhotoSubject[4];
+    /** The distances a photo's depth is laid on (plan T2): x for depth 1 (near), y for depth 0 (far), in the units
+     * of the shared projection (SceneNear .. SceneFar).  Between them the depth is linear in inverse distance -- in
+     * window depth -- as the maps are (relative inverse depth, stretched per photo).  KALEIDO_DEPTH_RANGE="near,far"
+     * overrides it for a calibration run.
+     **/
+    static float M_PhotoDepthDist[2];
+    /** Per scene slot (the active scene's tex0 / the next one's tex1 in the combine stage): 1 where that scene's
+     * depth is a photo's (a 2D scene with `// @depth`), 0 for a 3D scene or none -- `depthPhoto`, so a depth effect
+     * can be quieter on a photo than in a room (set by RenderPipeline with M_DepthValid).
+     **/
+    static float M_DepthPhoto[2];
+    /** `photoMask`: how well depth >= threshold outlines the subject of the photo in tex0 (x) / tex1 (y), the IoU
+     * photo_info.tsv's `mask` column gives (0 without a measure) -- a subject mask (plan M3) is drawn only where it is
+     * high; photoSubject's confidence is about the centre alone.
+     **/
+    static float M_PhotoMask[2];
+    /**  The window depth (0..1) of a distance in the shared projection (SceneNear, SceneFar).
+     *
+     * @param dist  The distance from the camera. (in)
+     *
+     * @return
+     *   The depth-buffer value a 3D scene would write there.
+     **/
+    static float windowDepth( float dist )
+    {
+        const float n = SceneNear, f = SceneFar;
+        return 0.5f * ( ( f + n ) / ( f - n ) - 2.f * f * n / ( ( f - n ) * dist ) ) + 0.5f;
+    }
     /** Score cues live this frame (set by RenderPipeline, CueReceiver.h): the chain walk takes the generator's
      * section and drop counters (M_CueSections, M_CueDrops) instead of the analyser's.
      **/
@@ -1076,6 +1115,8 @@ protected:
      * Cellular automata, pattern-forming equations and a photo carried by a flow live here.
      **/
     void             stepState();
+    bool             m_writesDepth = false;    ///< writesDepth() for m_writesDepthProg.
+    GLuint           m_writesDepthProg = 0;    ///< Program m_writesDepth belongs to (0: not yet read).
     int              m_usesState = -1;         ///< -1 not yet known, 0 no state, 1 the shader carries a state.
     GLuint           m_stateUsesProg = 0;      ///< Program m_usesState and the locations below belong to.
     GLuint           m_stateTex[2] = { 0, 0 }; ///< The ping-pong pair (RGBA16F, repeat, linear).

@@ -234,6 +234,9 @@ float                         EffectShader::M_PhotoBMix = 0.f;
 float                         EffectShader::M_PhotoDepthAmt[2] = { 0.f, 0.f };
 float                         EffectShader::M_PhotoFocus[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
 float                         EffectShader::M_PhotoSubject[4] = { 1.f, 0.f, 1.f, 0.f };
+float                         EffectShader::M_PhotoDepthDist[2] = { 8.f, 80.f };
+float                         EffectShader::M_DepthPhoto[2] = { 0.f, 0.f };
+float                         EffectShader::M_PhotoMask[2] = { 0.f, 0.f };
 std::map<std::string, float>  EffectShader::M_ClassTaste;
 std::map<std::string, double> EffectShader::M_ClassSeen;
 std::set<std::string>         EffectShader::M_ClassSeenDirty;
@@ -249,6 +252,20 @@ float                         EffectShader::M_ShadowPass2 = 0.f;
 float                         EffectShader::M_LightDir2[3] = { -0.35f, 0.55f, 0.60f };
 float                         EffectShader::M_LightM2[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f,
                                                               0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f };
+
+/** KALEIDO_DEPTH_RANGE="near,far": the distances a photo's depth is laid on, for a calibration run (plan T2/T3). */
+static const bool s_depthRangeEnv = []
+{
+    const char *v = getenv( "KALEIDO_DEPTH_RANGE" );
+    float       n = 0.f, f = 0.f;
+    if ( v && sscanf( v, "%f,%f", &n, &f ) == 2 && n >= 1.f && f > n && f < EffectShader::SceneFar )
+    {
+        EffectShader::M_PhotoDepthDist[0] = n;
+        EffectShader::M_PhotoDepthDist[1] = f;
+        return true;
+    }
+    return false;
+}();
 
 void EffectShader::cleanShaderPrograms()
 {
@@ -553,7 +570,51 @@ void EffectShader::draw()
         if ( l_tex_mandelbrot >= 0 )
             glUniform1i( l_tex_mandelbrot, 35 );
     }
+    // A 2D scene that passes the photo's depth on (`// @depth`): gl_FragDepth lands only with the depth test on --
+    // GL_ALWAYS, writes on for this draw, the state as it was afterwards.
+    if ( writesDepth() )
+    {
+        const GLboolean test = glIsEnabled( GL_DEPTH_TEST );
+        GLboolean       mask = GL_TRUE;
+        GLint           func = GL_LESS;
+        glGetBooleanv( GL_DEPTH_WRITEMASK, &mask );
+        glGetIntegerv( GL_DEPTH_FUNC, &func );
+        glEnable( GL_DEPTH_TEST );
+        glDepthFunc( GL_ALWAYS );
+        glDepthMask( GL_TRUE );
+        drawWindow();
+        glDepthMask( mask );
+        glDepthFunc( static_cast<GLenum>( func ) );
+        if ( !test )
+            glDisable( GL_DEPTH_TEST );
+        return;
+    }
     drawWindow();
+}
+
+bool EffectShader::writesDepth()
+{
+    if ( !m_glReady || m_shProgId == 0 )
+        return false;
+    if ( m_writesDepthProg == m_shProgId )
+        return m_writesDepth;
+    m_writesDepthProg = m_shProgId;
+    m_writesDepth = false;
+    const char *file = fragmentFile(); // null for a program built from source in memory (no file to read)
+    if ( !file )
+        return false;
+    std::istringstream src( textFileRead( file ) );
+    for ( std::string line; std::getline( src, line ); )
+    {
+        while ( !line.empty() && ( line.back() == '\r' || line.back() == ' ' || line.back() == '\t' ) )
+            line.pop_back();
+        if ( line == "// @depth" )
+        {
+            m_writesDepth = true;
+            break;
+        }
+    }
+    return m_writesDepth;
 }
 
 
@@ -850,6 +911,10 @@ enum AudioLocE
     AL_PHOTODEPTHAMT,
     AL_PHOTOFOCUS,
     AL_PHOTOSUBJECT,
+    // Plan T2/T3: where a 2D scene lays the photo's depth (window depths), and which scene slot's depth is a photo's.
+    AL_PHOTODEPTHWIN,
+    AL_DEPTHPHOTO,
+    AL_PHOTOMASK,
     AL_COUNT
 };
 /** The audio uniforms' names, indexed by AudioLocE (the order must match). */
@@ -878,7 +943,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioSectionId", "audioSectionPrev", "audioSectionAge", "audioSectionKnown", "audioSectionCount",
     "audioMelodyPhase", "audioHarmAdvance", "audioMelodyConf",
     "texPhotoB0", "texPhotoB1", "photoBMix",
-    "photoDepthAmt", "photoFocus", "photoSubject" };
+    "photoDepthAmt", "photoFocus", "photoSubject",
+    "photoDepthWin", "depthPhoto", "photoMask" };
 }
 
 void EffectShader::applyAudioFeatures( const AudioFeatures &features )
@@ -1111,6 +1177,12 @@ void EffectShader::applyAudioFeatures( const AudioFeatures &features )
     if ( locs[AL_PHOTOSUBJECT] >= 0 )
         glUniform4f( locs[AL_PHOTOSUBJECT], M_PhotoSubject[0], M_PhotoSubject[1], M_PhotoSubject[2],
                      M_PhotoSubject[3] );
+    if ( locs[AL_PHOTODEPTHWIN] >= 0 )
+        glUniform2f( locs[AL_PHOTODEPTHWIN], windowDepth( M_PhotoDepthDist[0] ), windowDepth( M_PhotoDepthDist[1] ) );
+    if ( locs[AL_DEPTHPHOTO] >= 0 )
+        glUniform2f( locs[AL_DEPTHPHOTO], M_DepthPhoto[0], M_DepthPhoto[1] );
+    if ( locs[AL_PHOTOMASK] >= 0 )
+        glUniform2f( locs[AL_PHOTOMASK], M_PhotoMask[0], M_PhotoMask[1] );
     // The two scene depth buffers, as the combine stage sees them.  depthValid
     // says whether each one actually holds a 3D scene's geometry — a 2D effect
     // leaves the far plane there, and a depth-driven combine has to know the

@@ -215,6 +215,8 @@ def write_final(rel, name, bake=0):
            "// run as passes by the app (EffectShader chain runner); the chain coordinate comes from texChain.",
            "uniform sampler2D texChain;", "uniform vec2 chainOff;"] + (["// @chainbake %d" % bake] if bake else
                                                                       ["uniform float chainScale;   // the chain's grid relative to the frame (0 = 1)"])
+    if re.search(r"^// @depth\s*$", lab, re.M):     # the lab writes the photo's depth: the app reads it here
+        out.insert(3, "// @depth")
     done_f = set()
     for kind, nm, text in items:
         if kind == "pp":

@@ -52,6 +52,11 @@ uniform float seedP;  ///< Seed knob: the walk's seed, 0..1.
 uniform float cellsP; ///< Cells knob: how many cells, 0..1.
 uniform float mixP;   ///< Mix knob: how different the cells' windows are, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+// @depth
+uniform vec2 photoDepthAmt; ///< 1 where the photo in tex0 (x) / tex1 (y) carries a depth map in its alpha channel, else
+                            ///< 0.
+uniform vec2 photoDepthWin; ///< Window depth of the photo's near end (x, depth 1) and far end (y, depth 0), from the
+                            ///< host.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -509,6 +514,39 @@ void finish( vec3 col )
 }
 
 
+// ---- the photo's depth ----
+/**  The photos' depth at a point and mip level: the alpha channel of tex0 and tex1 (the app's photo loader puts the
+ * depth map there), each weighted with the cross-fade and with whether its photo has a map at all.
+ *
+ * @param uv   The point (mirrored at the edges, as imgLod()). (in)
+ * @param lod  The mip level: the colour's, so depth and colour share one footprint. (in)
+ *
+ * @return
+ *   The depth, 0 far .. 1 near; 0 where neither photo has a map.
+ **/
+float photoDepthLod( vec2 uv, float lod )
+{
+    uv = mirrorUV( uv );
+    float w0 = interpolation * photoDepthAmt.x, w1 = ( 1.0 - interpolation ) * photoDepthAmt.y;
+    return ( w0 * textureLod( tex0, uv, lod ).a + w1 * textureLod( tex1, uv, lod ).a ) / max( w0 + w1, 1e-4 );
+}
+
+/**  Writes the pixel's depth for whatever reads the scene's depth (the depth effects, the 2.5D parallax, the stereo):
+ * the photo's depth on the window depths the host hands over (photoDepthWin, x for 1 = near, y for 0 = far; linear
+ * in window depth is linear in inverse distance, as the maps are).
+ *
+ * @param d  The photo's depth there, 0 far .. 1 near (photoDepthLod()). (in)
+ *
+ * The far plane where neither photo has a map, as a scene without depth leaves it.  Call it on every path: a shader
+ * that writes gl_FragDepth anywhere owns it everywhere.
+ **/
+void photoDepthOut( float d )
+{
+    float w = interpolation * photoDepthAmt.x + ( 1.0 - interpolation ) * photoDepthAmt.y;
+    gl_FragDepth = w > 0.0 ? mix( photoDepthWin.y, photoDepthWin.x, clamp( d, 0.0, 1.0 ) ) : 1.0;
+}
+
+
 // ---- the lab's walk ----
 /** Test pin of slot 0: 1 + the class to hold it on (0: the walk decides). */
 uniform float labPinA;
@@ -678,6 +716,7 @@ void labWalk( float seed, ivec4 n, float period )
     }
 }
 
+float gPhD = 0.0; ///< the photo's depth at the look's photo lookup, 0 far .. 1 near (photoDepthLod)
 /**  The cell a place lies in, for one of eight divisions of the plane.
  *
  * @param kind    The division: 0 quadtree, 1 Voronoi, 2 stripes, 3 rings, 4 honeycomb, 5 triangles, 6 spiral
@@ -891,7 +930,10 @@ vec3 partLook( ivec4 k, ivec4 kv, vec2 p, float sc, float t, float mx, float sd 
     partCell( k.x, kv.x, q, sc, id, centre, size );
     vec2  d = q - centre;
     vec2  uv = partMap( k.y, kv.y, centre, d, size, id, t, mx );
-    vec3  col = imgLod( uv, 0.3 );
+    vec2  puv = uv;
+    float plod = 0.3;
+    gPhD = photoDepthLod( puv, plod ); // the depth where the colour is taken (26.11.2026)
+    vec3  col = imgLod( puv, plod );
     float e = 1.0 - clamp( length( d ) / max( size, 1e-4 ), 0.0, 1.0 );
     if ( k.z == 1 )
         col *= 1.0 - sd * lv( kv.z, 1.0, 0.35, 0.75 ) * ( 1.0 - smoothstep( 0.0, lv( kv.z, 2.0, 0.15, 0.45 ), e ) );
@@ -922,13 +964,16 @@ void main()
     float sd = 0.5 + 0.5 * clamp( audioSpread, 0.0, 1.0 );
     vec3  col = vec3( 0.0 );
     float ws = 0.0;
+    float dsum = 0.0; // the looks' photo depth, weighted like their colours
     for ( int i = 0; i < 4; ++i )
     {
         if ( gLabW[i] > 0.002 )
         {
             col += gLabW[i] * partLook( gLabK[i], gLabV[i], p, sc, t, mx, sd );
+            dsum += gLabW[i] * gPhD;
             ws += gLabW[i];
         }
     }
+    photoDepthOut( dsum / max( ws, 1e-3 ) );
     finish( max( col / max( ws, 1e-3 ), 0.0 ) );
 }

@@ -310,6 +310,10 @@ void PreviewWidget::setDepthUniforms( QOpenGLShaderProgram *p )
     p->setUniformValue( "photoDepthAmt", QVector2D( a.map ? 1.f : 0.f, b.map ? 1.f : 0.f ) );
     p->setUniformValue( "photoFocus", QVector4D( a.focusU, a.focusV, b.focusU, b.focusV ) );
     p->setUniformValue( "photoSubject", QVector4D( a.thr, a.conf, b.thr, b.conf ) );
+    p->setUniformValue( "photoMask", QVector2D( a.mask, b.mask ) );
+    // the window depths of the shared projection, as the app sets them (EffectShader::M_PhotoDepthDist)
+    p->setUniformValue( "photoDepthWin", QVector2D( EffectShader::windowDepth( EffectShader::M_PhotoDepthDist[0] ),
+                                                    EffectShader::windowDepth( EffectShader::M_PhotoDepthDist[1] ) ) );
 }
 
 void PreviewWidget::loadImages()

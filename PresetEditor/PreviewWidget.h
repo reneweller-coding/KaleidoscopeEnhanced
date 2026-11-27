@@ -409,8 +409,8 @@ private:
      **/
     GLuint m_img0 = 0, m_img1 = 0; ///< tex1 sample image texture (GL object name, owned); the same image as #m_img0
                                    ///< when the directory holds only one file.
-    PhotoDepth::Info m_img0Depth;  ///< #m_img0's depth (photoDepthAmt.x, photoFocus.xy, photoSubject.xy).
-    PhotoDepth::Info m_img1Depth;  ///< #m_img1's depth (photoDepthAmt.y, photoFocus.zw, photoSubject.zw).
+    PhotoDepth::Info          m_img0Depth; ///< #m_img0's depth (photoDepthAmt.x, photoFocus.xy, photoSubject.xy).
+    PhotoDepth::Info          m_img1Depth; ///< #m_img1's depth (photoDepthAmt.y, photoFocus.zw, photoSubject.zw).
     GLuint                    m_vbo = 0;           ///< Fullscreen-quad vertex buffer (NDC positions).
     QOpenGLVertexArrayObject *m_quadVAO = nullptr; ///< Vertex array object with the quad's aPos attribute baked in (a
                                                    ///< core-profile context needs a bound VAO to draw); owned, created
