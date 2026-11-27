@@ -374,6 +374,8 @@ public:
         float depthParPhoto = 0.f;        ///< Parallax strength on the photo's depth (slewed by the caller; 0 = none).
         float stereoPhoto = 0.f; ///< Share of the photo's real depth in the stereo's depth (slewed; 0 = the old guess).
         float photoWin[2] = { 0.f, 1.f }; ///< Window depth of the photo's near end (depth 1) and far end (depth 0).
+        // rays (27.11.2026): light shafts through the photo's depth, read from sceneDepthTex like the parallax.
+        float raysP = 0.f; ///< Strength of the light shafts through a photo's depth (slewed by the caller; 0 = off).
     };
 
     /**  Run the full present sequence: history capture, brightness limiter, auto-exposure, bloom, then Present.frag
@@ -607,6 +609,7 @@ private:
     GLint m_presentPhParUni = -1;         ///< Uniform location: parallax strength on a photo's depth ("depthParPhoto").
     GLint m_presentPhStereoUni = -1; ///< Uniform location: the photo's depth's share in the stereo ("stereoPhoto").
     GLint m_presentPhWinUni = -1;         ///< Uniform location: the photo's near/far window depths ("photoDepthWin").
+    GLint m_presentRaysUni = -1; ///< Uniform location: light shafts through a photo's depth ("raysP"; rays, 27.11.2026).
 
     // ---- Lyrics / artist image ----
     GLuint m_lyricsTex = 0;               ///< Uploaded lyrics overlay texture.

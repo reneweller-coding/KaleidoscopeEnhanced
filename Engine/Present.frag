@@ -125,6 +125,9 @@ uniform float     oldHue;        ///< 1 = the harmony drift rotates RGB about th
 uniform float depthParPhoto; ///< parallax strength on a photo's depth (a 2D scene marked for depth; slewed, 0 = none)
 uniform float stereoPhoto;       ///< share of the photo's real depth in the stereo depth (slewed, 0 = the old guess)
 uniform vec2  photoDepthWin;     ///< window depth of the photo's near end (x, depth 1) and far end (y, depth 0)
+// ---- rays (27.11.2026): light shafts through the photo's depth -- BEGIN (uniform) ----
+uniform float raysP; ///< light shafts through a photo's depth: strength (the scene's knob, slewed by the host; 0 = off)
+// ---- rays -- END ----
 
 /**  Pseudo-random number 0..1 from a 2D point.
  *
@@ -353,6 +356,58 @@ float photoDepthAt( vec2 puv )
     return clamp( ( z - photoDepthWin.y ) / ( photoDepthWin.x - photoDepthWin.y ), 0.0, 1.0 );
 }
 
+// ---- rays (27.11.2026): light shafts through the photo's depth -- BEGIN (function) ----
+const int   RaysTaps = 16;    ///< Samples of the march toward the light.
+const float RaysReach = 0.6;  ///< The longest march, in frame heights.
+const float RaysFar = 0.5;    ///< Farness (1 - the photo's depth) from which a sample lets light through (all of it from 0.85).
+const float RaysLum = 0.35;   ///< Luminance from which a far sample counts as light (all of it from 0.8).
+const float RaysGain = 1.5;   ///< The shafts' strength at raysP 1.
+const float RaysDecay = 0.93; ///< Weight of a sample against the one before it (the light thins along the march).
+
+/**  Light shafts through the photo's depth (crepuscular rays): the far, bright part of the picture shines toward the
+ * viewer and everything nearer cuts the light.
+ *
+ * @param puv  Coordinate in the frame. (in)
+ *
+ * @return
+ *   The light to add (screen blend), 0..1 per channel, tinted by what shines.
+ *
+ * From the pixel a march of RaysTaps samples toward the light point; a sample counts where the photo is far
+ * (RaysFar) and the frame bright (RaysLum), a near sample counts nothing -- so a shaft ends at a silhouette.  The
+ * start of the march is jittered per pixel with an interleaved gradient noise that never changes (no time in it): no
+ * bands, no flicker.  The light point rests in the upper middle and drifts on two slow sines (periods 2.6 and 3.6
+ * minutes): it never jumps, also not on a photo change (the frame and its depth cross-fade under it).  The strength
+ * follows the slow loudness swell only (audioSwell: seconds, never a beat).
+ **/
+vec3 raysLight( vec2 puv )
+{
+    vec2  lp = vec2( 0.5 + 0.16 * sin( time * 0.041 ), 0.80 + 0.07 * sin( time * 0.029 + 1.7 ) );
+    vec2  d = lp - puv;
+    float dist = length( vec2( d.x * frameRes.x / frameRes.y, d.y ) );
+    vec2  stp = d * ( min( 1.0, RaysReach / max( dist, 1e-4 ) ) / float( RaysTaps ) );
+    float ign = fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );
+    vec3  acc = vec3( 0.0 );
+    float wgt = 1.0, sum = 0.0;
+    for ( int i = 0; i < RaysTaps; ++i )
+    {
+        vec2  q = clamp( puv + stp * ( float( i ) + ign ), 0.0, 1.0 );
+        float z = textureLod( sceneDepth, q, 0.0 ).r;
+        float fr = 1.0 - clamp( ( z - photoDepthWin.y ) / ( photoDepthWin.x - photoDepthWin.y ), 0.0, 1.0 );
+        vec3  s = clamp( textureLod( tex, q, 0.0 ).rgb, 0.0, 1.0 );
+        float y = dot( s, vec3( 0.299, 0.587, 0.114 ) );
+        acc += s * ( smoothstep( RaysFar, 0.85, fr ) * smoothstep( RaysLum, 0.8, y ) * wgt );
+        sum += wgt;
+        wgt *= RaysDecay;
+    }
+    acc /= sum;
+    // Light, not a copy of the picture: two thirds of its colour.  Fainter far from the light point.
+    acc = mix( vec3( dot( acc, vec3( 0.299, 0.587, 0.114 ) ) ), acc, 0.67 );
+    float fall = 1.0 - 0.8 * smoothstep( 0.25, 1.2, dist );
+    float env = 0.65 + 0.35 * clamp( audioSwell, 0.0, 1.0 );
+    return clamp( acc * ( RaysGain * raysP * env * fall ), 0.0, 1.0 );
+}
+// ---- rays -- END ----
+
 /**  Pseudo-depth for the stereoscopic reprojection: smoothed brightness (the blurred bloom buffer doubles as a depth
  * cue) pops bright structures toward the viewer; the radial term sinks the tunnel centre behind the screen.
  *
@@ -547,6 +602,15 @@ void main()
         vec3 mx = max( max( max( n, s ), max( e, w ) ), c );
         c = clamp( c + ( 4.0 * c - ( n + s + e + w ) ) * sharpen, mn, mx );
     }
+
+    // ---- rays (27.11.2026): light shafts through the photo's depth -- BEGIN (call) ----
+    // raysP 0 (every scene without the knob, without `// @depth`, or whose photo has no map): skipped, the old picture.
+    if ( raysP > 0.001 )
+    {
+        vec3 rl = raysLight( puv );
+        c += rl * ( 1.0 - min( c, 1.0 ) ); // the screen blend, written for light above 1 too
+    }
+    // ---- rays -- END ----
 
     // 16-bit intermediates keep what an 8-bit target never held: a scene's stray NaN or infinity (a normalize of
     // zero, a division by it) would reach the grade, and light far above white.  Both are bounded here.
