@@ -326,11 +326,24 @@ def main():
     ap.add_argument("--scenes", default="", help="comma-separated names, or @file with one name per line (a pick)")
     ap.add_argument("--chunks", default="", help="a:b -- chunks a..b-1 (of the catalogue, or of the pick)")
     ap.add_argument("--minutes", type=float, default=0.0, help="start no further chunk after this many minutes")
+    ap.add_argument("--default-settings", action="store_true",
+                    help="the app's defaults (an empty settings copy) instead of a copy of the user's settings")
     ap.add_argument("--report", action="store_true")
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
     os.makedirs(WORK, exist_ok=True)
     mode = "plain" if a.plain else "copy"
+    if a.default_settings:
+        # The measurement of 26.11.2026 ran in a worktree without a settings file -- the app's defaults; its last
+        # part keeps that condition after the user's file was copied in.
+        empty = os.path.join(WORK, "default_settings_%d.ini")
+
+        def settings_env(env, slot=0):
+            p = empty % slot
+            open(p, "w").close()
+            env["KALEIDO_SETTINGS"] = p
+            return env
+        screen.settings_env = settings_env
     if a.report:
         report(mode)
         return 0

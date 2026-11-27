@@ -367,6 +367,23 @@ private:
      **/
     void logLightStats( const Inputs &in, float scale );
 
+    /**  The frame as the photosensitivity limiter measures it with 16-bit intermediates (Engine/LightMeasure.frag):
+     * each pixel at most 1, as an 8-bit target holds it, plus the glow its light above 1 adds beyond the 8-bit
+     * frame's -- mipmapped, so the limiter's mips average what the viewer sees.
+     *
+     * @param in  This frame's inputs: the source texture, its size and the audio the glow's weight follows. (in)
+     *
+     * @return
+     *   The measure frame (m_measureTex), or the source itself where the shader did not build.
+     *
+     * Averaged at 16 bit as it is, a dense field of lights above 1 read as a bright area that the present pass's
+     * roll-off never shows (ParticleTunnelFlight tripped the flash hazard in 48 of 400 logged frames and was dimmed
+     * to 0.35, against none at 8 bit); clamped alone, it missed the glow that light adds and that pulses with the
+     * beat.  A frame without light above 1 is measured exactly as an 8-bit one.  One full-resolution pass and one
+     * mipmap generation a frame, only with the switch (docs/engine-internals-69-light.md).
+     **/
+    GLuint measureTexture( const Inputs &in );
+
     /**  (Re)allocate the mipmapped final-frame texture at the given size.
      *
      * @param w            Texture width. (in)
@@ -527,10 +544,16 @@ private:
     GLint m_presentPalAmtUni = -1;     ///< Uniform location: cover palette strength ("paletteAmt").
     GLint m_presentSceneDepthUni = -1; ///< Uniform location: scene depth sampler ("sceneDepth", always bound to unit
                                        ///< 6).
-    GLint m_presentDepthParUni = -1;   ///< Uniform location: parallax strength ("depthPar").
-    GLint m_presentNearFar2Uni = -1;   ///< Uniform location: near/far plane distances ("nearFar2").
-    GLint m_presentHdrUni = -1;        ///< Uniform location: 16-bit intermediates ("hdrBuffers").
-    bool  m_hdr = false;               ///< The intermediates are RGBA16F (setup()): the source may hold light above 1.
+    GLint  m_presentDepthParUni = -1;  ///< Uniform location: parallax strength ("depthPar").
+    GLint  m_presentNearFar2Uni = -1;  ///< Uniform location: near/far plane distances ("nearFar2").
+    GLint  m_presentHdrUni = -1;       ///< Uniform location: 16-bit intermediates ("hdrBuffers").
+    bool   m_hdr = false;              ///< The intermediates are RGBA16F (setup()): the source may hold light above 1.
+    GLuint m_measureTex = 0;           ///< measureTexture(): the mipmapped RGBA16F frame the limiter reads (HDR only).
+    GLuint m_measureFbo = 0;           ///< measureTexture(): the FBO that draws into m_measureTex.
+    GLuint m_measureProg = 0; ///< measureTexture(): Engine/LightMeasure.frag (0 = not built; the source is read).
+    bool   m_measureTried = false;     ///< measureTexture(): the program was asked for (once).
+    /** Width m_measureTex was allocated at. */
+    int m_measureW = 0, m_measureH = 0; ///< Height m_measureTex was allocated at.
 
     // ---- Lyrics / artist image ----
     GLuint m_lyricsTex = 0;               ///< Uploaded lyrics overlay texture.

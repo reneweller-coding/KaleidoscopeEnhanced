@@ -357,6 +357,51 @@ void PresentPass::captureHistory( GLuint sourceTex, int renderW, int renderH,
         ++m_histCount;
 }
 
+GLuint PresentPass::measureTexture( const Inputs &in )
+{
+    if ( !m_measureTried )
+    {
+        m_measureTried = true;
+        m_measureProg = setShaders( "..\\standard.vert", "..\\Engine\\LightMeasure.frag" );
+    }
+    if ( !m_measureProg )
+        return in.source;
+    if ( m_measureTex == 0 || m_measureW != in.renderW || m_measureH != in.renderH )
+    {
+        if ( m_measureTex == 0 )
+            glGenTextures( 1, &m_measureTex );
+        glBindTexture( GL_TEXTURE_2D, m_measureTex );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, in.renderW, in.renderH, 0, GL_RGBA, GL_FLOAT, NULL );
+        if ( m_measureFbo == 0 )
+            glGenFramebuffers( 1, &m_measureFbo );
+        glBindFramebuffer( GL_FRAMEBUFFER, m_measureFbo );
+        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_measureTex, 0 );
+        m_measureW = in.renderW;
+        m_measureH = in.renderH;
+    }
+    // The glow Present.frag adds back from the bright pass: the bloom (0.12 + 0.05 beat + 0.10 swell) and the
+    // streaks (0.30 x (0.10 + 0.30 swell + 0.80 drop) of the bloom, their cool tint 0.75 in luma).
+    const AudioFeatures &a = *in.fx;
+    const float          glow = 0.12f + 0.05f * a.beatDecay + 0.10f * a.swell
+                                + 0.30f * 0.75f * ( 0.10f + 0.30f * a.swell + 0.80f * a.dropPulse );
+    glBindFramebuffer( GL_FRAMEBUFFER, m_measureFbo );
+    glViewport( 0, 0, in.renderW, in.renderH );
+    glUseProgram( m_measureProg );
+    glActiveTexture( GL_TEXTURE0 );
+    glBindTexture( GL_TEXTURE_2D, in.source );
+    glUniform1i( glGetUniformLocation( m_measureProg, "tex" ), 0 );
+    glUniform1f( glGetUniformLocation( m_measureProg, "glowWeight" ), glow );
+    drawFullscreen();
+    glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+    glBindTexture( GL_TEXTURE_2D, m_measureTex );
+    glGenerateMipmap( GL_TEXTURE_2D );
+    return m_measureTex;
+}
+
 // Seconds back -> layer index (clamped to what the ring holds).
 float PresentPass::historyLayerBack( float secs ) const
 {
@@ -467,6 +512,9 @@ void PresentPass::run( const Inputs &in )
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, in.source );
     glGenerateMipmap( GL_TEXTURE_2D ); // every frame (bloom samples a mip)
+    // 16-bit intermediates: the limiter measures the frame as an 8-bit target holds it (measureTexture()).
+    const GLuint measured = m_hdr ? measureTexture( in ) : in.source;
+    glBindTexture( GL_TEXTURE_2D, in.source );
 
     // The picture's mean colour for the OSC output (setMeanColourWanted()): the top mip is the mean, read into one
     // of two pixel-pack buffers every 6th frame; the buffer filled 12 frames ago is mapped first -- long done, so
@@ -558,7 +606,7 @@ void PresentPass::run( const Inputs &in )
         glUseProgram( m_limitProg );
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 3, m_autoExpBuf );
         glActiveTexture( GL_TEXTURE0 );
-        glBindTexture( GL_TEXTURE_2D, in.source );
+        glBindTexture( GL_TEXTURE_2D, measured );
         glUniform1i( glGetUniformLocation( m_limitProg, "texFrame" ), 0 );
         glUniform1i( glGetUniformLocation( m_limitProg, "lvl" ), lvl );
         glUniform2i( glGetUniformLocation( m_limitProg, "lsize" ), std::max( 1, in.renderW >> lvl ),
@@ -597,6 +645,7 @@ void PresentPass::run( const Inputs &in )
         m_safetyAccumDt += in.dtFrame;
         if ( m_safetyFrame % 3 == 0 )
         {
+            glBindTexture( GL_TEXTURE_2D, measured );
             int lw = 1, lh = 1;
             glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_WIDTH, &lw );
             glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_HEIGHT, &lh );
