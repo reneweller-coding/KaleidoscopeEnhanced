@@ -86,16 +86,16 @@ vec3 gHaze = vec3( 0.0 ); ///< The colour of the build-up's haze, set in main() 
  * @return
  *   x: the build-up's tension, 0..1, released by a drop; y: the clearing after a drop, 0..1.
  *
- * The tension starts below the present pass's held breath (`breath`, the build-up's upper half from 0.5: it takes
- * colour and light from the whole frame) and works only in the depth.  The clearing is an envelope of its own, never
- * the pulse: the drop pulse jumps to 1 at the hit and decays as exp( -t / 0.7 s ), so its value says how long ago
- * the hit was.  The envelope rises from 0 to 1 between 0.15 and 0.55 s after the hit (pulse 0.8 .. 0.45), holds to
- * about 1.6 s (0.1) and is gone by 4 s (0.003); a pulse of 1 gives 0, so the hit itself is no step.
+ * The tension (build-up 0.3 .. 0.7) starts below the present pass's held breath (`breath`, the build-up's upper
+ * half from 0.5: it takes colour and light from the whole frame) and works only in the depth.  The clearing is an
+ * envelope of its own, never the pulse: the drop pulse jumps to 1 at the hit and decays as exp( -t / 0.7 s ), so its
+ * value says how long ago the hit was.  The envelope rises from 0 to 1 between 0.15 and 0.55 s after the hit (pulse 0.8
+ * .. 0.45), holds to about 1.6 s (0.1) and is gone by 4 s (0.003); a pulse of 1 gives 0, so the hit itself is no step.
  **/
 vec2 tensionArc()
 {
     float clear = ( 1.0 - smoothstep( 0.45, 0.8, audioDrop ) ) * smoothstep( 0.003, 0.1, audioDrop );
-    return vec2( smoothstep( 0.35, 0.8, audioBuildUp ) * ( 1.0 - clear ), clear );
+    return vec2( smoothstep( 0.3, 0.7, audioBuildUp ) * ( 1.0 - clear ), clear );
 }
 
 /**  How far a point lies, on a log scale.
@@ -165,15 +165,15 @@ float phaseHG( float cosT, float g )
  * @return
  *   The colour (RGB).
  *
- * The haze's front walks from beyond the far end (no tension) to farness 0.45 (full tension), so the back goes first
- * and the near stays clear; its colour is a pale mix of the air and the sun without the kick (gHaze), a veil and no
- * second dimming -- the held breath already dims the whole frame.
+ * The haze's front walks from the far end (no tension) to farness 0.25 (full tension; 0.45 on a photo, whose near
+ * end is 0.26), so the back goes first and the near stays clear longest; its colour is a pale mix of the air and the
+ * sun without the kick (gHaze), a veil and no second dimming -- the held breath already dims the whole frame.
  **/
 vec3 arcFogged( vec3 c, vec3 air, float ext, float z, float valid, float ph )
 {
     float s = arcP * ( ph > 0.5 ? PhotoArc : 1.0 );
-    float front = 1.1 - 0.65 * gArc.x;
-    float haze = 0.7 * gArc.x * smoothstep( front - 0.15, front + 0.15, farness( z ) ) * min( valid, 1.0 );
+    float front = 1.0 - ( ph > 0.5 ? 0.55 : 0.75 ) * gArc.x;
+    float haze = 0.7 * gArc.x * smoothstep( front - 0.2, front + 0.2, farness( z ) ) * min( valid, 1.0 );
     vec3  col = mix( c, air, ext * ( 1.0 - 0.6 * gArc.y * s ) );
     return mix( col, gHaze, clamp( haze * s, 0.0, 1.0 ) );
 }

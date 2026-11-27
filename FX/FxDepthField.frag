@@ -82,16 +82,16 @@ const float PhotoArc = 0.6; ///< The tension arc on a photo, relative to a room 
  * @return
  *   x: the build-up's tension, 0..1, released by a drop; y: the clearing after a drop, 0..1.
  *
- * The tension starts below the present pass's held breath (`breath`, the build-up's upper half from 0.5: it takes
- * colour and light from the whole frame) and works only in the depth.  The clearing is an envelope of its own, never
- * the pulse: the drop pulse jumps to 1 at the hit and decays as exp( -t / 0.7 s ), so its value says how long ago
- * the hit was.  The envelope rises from 0 to 1 between 0.15 and 0.55 s after the hit (pulse 0.8 .. 0.45), holds to
- * about 1.6 s (0.1) and is gone by 4 s (0.003); a pulse of 1 gives 0, so the hit itself is no step.
+ * The tension (build-up 0.3 .. 0.7) starts below the present pass's held breath (`breath`, the build-up's upper
+ * half from 0.5: it takes colour and light from the whole frame) and works only in the depth.  The clearing is an
+ * envelope of its own, never the pulse: the drop pulse jumps to 1 at the hit and decays as exp( -t / 0.7 s ), so its
+ * value says how long ago the hit was.  The envelope rises from 0 to 1 between 0.15 and 0.55 s after the hit (pulse 0.8
+ * .. 0.45), holds to about 1.6 s (0.1) and is gone by 4 s (0.003); a pulse of 1 gives 0, so the hit itself is no step.
  **/
 vec2 tensionArc()
 {
     float clear = ( 1.0 - smoothstep( 0.45, 0.8, audioDrop ) ) * smoothstep( 0.003, 0.1, audioDrop );
-    return vec2( smoothstep( 0.35, 0.8, audioBuildUp ) * ( 1.0 - clear ), clear );
+    return vec2( smoothstep( 0.3, 0.7, audioBuildUp ) * ( 1.0 - clear ), clear );
 }
 
 /**  A depth buffer is stored non-linearly — most of its precision sits near the camera.
