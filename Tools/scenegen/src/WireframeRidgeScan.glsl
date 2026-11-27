@@ -5,6 +5,8 @@
  * Audio Reactivity (structure, not only light):
  *   audioSpread  -> the number of lines (smoothed)
  *   audioAdvance -> the mesh turns (integrated)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: sizeP (the height of the relief), hueP.
 //@params sizeP
@@ -58,5 +60,5 @@ void main()
         float vis = smoothstep(0.05, 0.6, slope * 1.2 + 0.2);
         col = c * 0.12 + c * 1.8 * line * vis + vec3(0.25, 0.35, 0.5) * line * 0.2;
     }
-    finish(col);
+    finish(voiceRoles(col, screenP()));
 }

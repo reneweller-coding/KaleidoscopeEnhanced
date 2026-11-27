@@ -16,6 +16,8 @@
  *   audioRoughness  -> the membranes wobble
  *   audioHigh       -> the particles sparkle (light)
  *   audioSwell      -> the glow (slow)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: speciesP (how many species/rings), densityP (particles per ring),
  * sizeP, hueP.
@@ -66,5 +68,5 @@ void main()
         vec3 nc = hsv2rgb(vec3(fract(h0 + 0.5), 0.6, 1.0));
         col += nc * exp(-r * 14.0) * 0.6 * (0.6 + 0.6 * swell);
     }
-    finish(col);
+    finish(voiceRoles(col, screenP()));
 }

@@ -14,6 +14,8 @@
  *   audioKick       -> the bevel edges flash (light)
  *   audioMode       -> metal: steel in minor, brass in major
  *   audioSwell      -> the glow in the eyepiece (slow)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: tickP (scale ticks), knurlP (knurling), photoP (photo on the rings), hueP.
 //@params tickP knurlP photoP
@@ -70,5 +72,5 @@ void main()
     // Depth darkening and the eyepiece glow.
     col *= smoothstep(-4.0, -1.5, lr);
     col += gc * exp(-r * 12.0) * (0.5 + 1.0 * swell);
-    finish(col);
+    finish(voiceRoles(col, screenP()));
 }

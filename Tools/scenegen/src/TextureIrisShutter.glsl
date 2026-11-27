@@ -14,6 +14,8 @@
  *   audioKick       -> the blade edges flash (light)
  *   audioMode       -> the steel: cold blue in minor, bronze in major
  *   audioSwell      -> the light shining through from the far centre (slow)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: bladesP (blade count), curveP (blade curvature), photoP (photo on the blades), hueP.
 //@params bladesP curveP photoP
@@ -89,5 +91,5 @@ void main()
     // Light from the far centre.
     vec3 lc = glowColour(imgLod(vec2(0.5 + 0.1 * sin(0.03 * sceneTime), 0.5), 5.0), p, hueP * 0.159);
     acc += trans * lc * (0.5 + 0.8 * swell);
-    finish(acc);
+    finish(voiceRoles(acc, screenP()));
 }

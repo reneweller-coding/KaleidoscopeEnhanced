@@ -13,6 +13,8 @@
  *   audioRoughness  -> the rings buckle more
  *   audioKick       -> a ring flares as it passes (light)
  *   audioSwell      -> the haze (slow)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: ringsP (ring spacing), bendP (how much the photo bends the rings),
  * thickP (tube thickness), hueP.
@@ -54,5 +56,5 @@ void main()
     }
     // Far rings melt into a glow; near the rim the tunnel wall reflects them.
     col += vec3(0.2, 0.15, 0.3) * exp(-r * 4.0) * (0.3 + 0.5 * swell);
-    finish(col);
+    finish(voiceRoles(col, screenP()));
 }

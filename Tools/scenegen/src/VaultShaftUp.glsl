@@ -13,6 +13,8 @@
  *   audioKick       -> the windows flare (light)
  *   audioMode       -> the light: cool in minor, golden in major
  *   audioSwell      -> the sky glow at the top (slow)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: archP (arches per wall), storeyP (storey height), glassP (window brightness), hueP.
 //@params archP storeyP glassP
@@ -77,5 +79,5 @@ void main()
     vec3 sky = mix(lc, glowColour(imgLod(vec2(0.5), 6.0), p, hueP * 0.159), 0.3) * (0.6 + 0.8 * swell);
     col = mix(sky, col, exp(-z * 0.06));
     col += sky * exp(-length(p) * 10.0) * 0.8;
-    finish(col);
+    finish(voiceRoles(col, screenP()));
 }

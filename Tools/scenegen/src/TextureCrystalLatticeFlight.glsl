@@ -13,6 +13,8 @@
  *   audioKick       -> the nodes flash (light)
  *   audioMode       -> the light: cool in minor, warm in major
  *   audioSwell      -> the fog (slow)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: cellP (cell size), glowP (strut glow), fogP (base fog), hueP.
 //@params cellP glowP fogP
@@ -73,5 +75,5 @@ void main()
     }
     // Glow halo around near-misses.
     col += gc * exp(-max(dmin, 0.0) * 60.0) * 0.12 * (0.3 + clamp(glowP, 0.0, 1.0));
-    finish(col);
+    finish(voiceRoles(col, screenP()));
 }
