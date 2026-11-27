@@ -254,16 +254,21 @@ def prep(bands, blk, lo_cut):
     slow_db = (10.0 * np.log10(slow + 1e-12)).tolist()
     groove = np.empty(n)
     slots = [-300.0] * 90
-    slot, secs, prev_max = 0, 0.0, -300.0       # prev_max: the maximum over the other 89 slots
+    # The C++ adds the block length in float32 until 0.5 s: at 48 kHz that is 51 blocks, not 50 -- count them so.
+    per_slot, acc = 0, np.float32(0.0)
+    while acc < np.float32(0.5):
+        acc = np.float32(acc + np.float32(blk))
+        per_slot += 1
+    slot, secs, prev_max = 0, 0, -300.0         # secs: blocks into the slot; prev_max: the other 89 slots' maximum
     for i in range(n):
-        if secs == 0.0:
+        if secs == 0:
             slots[slot] = slow_db[i]
         else:
             slots[slot] = max(slots[slot], slow_db[i])
-        secs += blk
+        secs += 1
         g = max(prev_max, slots[slot])
-        if secs >= 0.5:
-            secs = 0.0
+        if secs >= per_slot:
+            secs = 0
             slot = (slot + 1) % 90
             slots[slot] = -300.0
             prev_max = max(slots[j] for j in range(90) if j != slot)

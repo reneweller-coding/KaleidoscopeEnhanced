@@ -125,8 +125,10 @@ measures causally).
 | **mean, EDM builds** | 0.41 | 0.04 | **0.92** | **0.81** | **0.50** | 0.51 | **16/17** | |
 | mean, long builds (11) | 0.11 | 0.07 | 0.51 | 0.54 | 0.09 | 0.22 | 4/11 | |
 
-Outside the builds 4.4 % of the time above 0.45 (old 5.7 %), groove time 0.8 % (old 6.3 %); the groove-only demos
-(six Breakbeat, the Analemma and Ritual pieces, two ambient) at most 6.6 % (Ritual serpent; old there 0.8 %).
+Outside the builds 4.4 % of the time above 0.45 (old 5.7 %), groove time 0.8 % (old 6.3 %).  Per demo the groove
+time above 0.45 is at most 3.6 % in the demos without a build (Ritual didgeridoo; old 0.1 %; Breakbeat bristol 3.0 %,
+old 0) and 6.6 % in the Ritual serpent's grooves (old 0.8 %); it fell in the Analemma pieces (e.g. ancestors 11.0 ->
+2.6 %, didgeridoo 20.3 -> 0 %) and in Cinematic drift (24.6 -> 0 %).
 
 *Where it is worse*, demo by demo (the reason the default stays old):
 - aucX of goa (0.78 -> 0.60) and ostgut (0.95 -> 0.85): their breakdowns read high now (the bass gone, the top
@@ -140,7 +142,17 @@ Outside the builds 4.4 % of the time above 0.45 (old 5.7 %), groove time 0.8 % (
 
 #### Verification
 
-(filled in below once the C++ build has run; see "Not verified" if it is missing)
+- *The port against the C++* (`PresetEditor --features WAV x.csv --buildup-trace T`, then `buildup_lab.py --check T
+  WAV`) on goa, uplifting and block: the new build-up within 0.004 of the C++ (uplifting 0.00001); fast bass,
+  centroid, top share and both rises within 1e-4..1e-2.  One port detail mattered: the drop detector's half-second
+  slots add the block length in float32, which at 48 kHz takes 51 blocks, not 50 (the groove level differed by 2.3 dB
+  in uplifting until the port counted the same way).  The groove level still differs at single blocks of goa and
+  block (where a slot ends exactly on the boundary); the build-up does not show it.
+- *Identity* (all `--features` columns every 10 ms, broadband120.wav and goa): this build at its default against
+  `KALEIDO_OLD_BUILDUP=1` -- identical in every column; against `KALEIDO_OLD_BUILDUP=0` -- only `buildup` differs
+  (99.6 / 99.95 % of the rows).  Against the main checkout's editor (built 13:02 from a state I could not pin down)
+  every column but `hat_c` is identical; this diff touches no drum code.
+- *Self test* (`Kaleidoscope.exe -q`): 186 passed, 0 failed at the default and with `KALEIDO_OLD_BUILDUP=0`.
 
 #### Not done, next steps
 
