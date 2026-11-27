@@ -185,13 +185,18 @@ AudioAnalyzer::AudioAnalyzer( QObject *parent )
 {
     m_tapClock.start(); // tap-tempo clock (read from both threads, set once)
     {
-        // KALEIDO_OLD_DRUMS=1: all three drums as before 27.11.2026; or the drums named (kick, snare, hat, any order).
+        // Which drums keep the band groups' envelope.  Unset: kick and snare (on a real kit the separator's snare
+        // found fewer snares and its kick answered the piano more -- docs/engine-internals-70-analyzer.md), the hat
+        // from the separator.  KALEIDO_OLD_DRUMS=1 (or all): all three as before 27.11.2026; 0 (or none): all three
+        // from the separator; otherwise the drums named (kick, snare, hat, any order) keep the old one.
         const char        *old_drums = getenv( "KALEIDO_OLD_DRUMS" );
         const std::string  v = old_drums ? old_drums : "";
         const bool         all = v == "1" || v == "all";
+        const bool         none = v == "0" || v == "none";
         static const char *Names[3] = { "kick", "snare", "hat" };
+        static const bool  Default[3] = { true, true, false };
         for ( int d = 0; d < 3; ++d )
-            m_oldDrum[d] = all || v.find( Names[d] ) != std::string::npos;
+            m_oldDrum[d] = !old_drums ? Default[d] : all || ( !none && v.find( Names[d] ) != std::string::npos );
         m_oldDrums = m_oldDrum[0] && m_oldDrum[1] && m_oldDrum[2];
     }
     std::memset( m_bassHistory, 0, sizeof( m_bassHistory ) );

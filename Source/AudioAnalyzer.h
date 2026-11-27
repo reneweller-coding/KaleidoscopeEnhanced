@@ -615,14 +615,14 @@ private:
      **/
     float m_onsetAvgGrp[3] = {};  ///< Running ODF averages per instrument group (kick/snare/hat).
     int   m_onsetCoolGrp[3] = {}; ///< Per-group re-trigger cooldowns, in blocks.
-    float m_onsetEnvGrp[3] = {};  ///< Decaying output envelopes per instrument group.  Since 27.11.2026 only the
-                                  ///< analyser's own readers use them (sections, build-up) and KALEIDO_OLD_DRUMS=1.
-    /** The kick/snare/hat envelopes AudioFeatures publishes since 27.11.2026 (Tools/drum_lab.py). */
+    float m_onsetEnvGrp[3] = {};  ///< Decaying output envelopes per instrument group: the analyser's own readers
+                                  ///< (sections, build-up) and, per #m_oldDrum, the published kick/snare/hat.
+    /** The separator's kick/snare/hat envelopes (27.11.2026; Tools/drum_lab.py), published per #m_oldDrum. */
     DrumSeparator m_drums;
-    /** KALEIDO_OLD_DRUMS=1 (read once at construction): publish the band groups' envelopes as before 27.11.2026 and
-     * skip the separator (for comparisons). */
+    /** All three drums from the band groups (KALEIDO_OLD_DRUMS=1): the separator is skipped. */
     bool m_oldDrums = false;
-    /** Per drum (kick, snare, hat): publish its band group's envelope (KALEIDO_OLD_DRUMS=1, or naming the drum). */
+    /** Per drum (kick, snare, hat): publish its band group's envelope.  Read once at construction: unset kick and
+     * snare (the separator lost to them on a real kit), 1 all, 0 none, else the drums named in KALEIDO_OLD_DRUMS. */
     bool   m_oldDrum[3] = {};
     double m_drumClock = 0.0; ///< Seconds analysed (#M_DrumTrace's time).
 

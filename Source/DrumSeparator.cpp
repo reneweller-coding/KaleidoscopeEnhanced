@@ -142,21 +142,42 @@ void DrumSeparator::process( const float *mags, int fftSize, int sampleRate )
         layout( fftSize, sampleRate );
     const int half = std::min( fftSize / 2 + 1, 4097 );
 
-    // 1. The percussive spectrum: the median across #MedianBins bins above the split (edges repeated).
+    // 1. The percussive spectrum: the median across #MedianBins bins above the split (edges repeated).  A sliding
+    //    window kept sorted: per bin one value leaves and one enters (a linear shift in 17 values) -- the same
+    //    median as sorting each window, at a fraction of the cost.
     {
         const int r = MedianBins / 2;
-        float     win[MedianBins];
-        for ( int k = 0; k < half; ++k )
+        auto      at = [&]( int k )
+        { return mags[std::min( half - 1, std::max( 0, k ) )]; };
+        for ( int k = 0; k < std::min( m_split, half ); ++k )
+            m_perc[k] = mags[k];
+        if ( m_split < half )
         {
-            if ( k < m_split )
-            {
-                m_perc[k] = mags[k];
-                continue;
-            }
+            float win[MedianBins];
             for ( int j = 0; j < MedianBins; ++j )
-                win[j] = mags[std::min( half - 1, std::max( 0, k - r + j ) )];
-            std::nth_element( win, win + r, win + MedianBins );
-            m_perc[k] = win[r];
+                win[j] = at( m_split - r + j );
+            std::sort( win, win + MedianBins );
+            m_perc[m_split] = win[r];
+            for ( int k = m_split + 1; k < half; ++k )
+            {
+                const float out = at( k - 1 - r ), in = at( k + r );
+                int         i = 0;
+                while ( i < MedianBins - 1 && win[i] != out ) // the leaving value is in the window (bounded all
+                    ++i;                                      // the same: a NaN would never compare equal)
+                // close its gap and open one for the new value, keeping the order
+                while ( i > 0 && win[i - 1] > in )
+                {
+                    win[i] = win[i - 1];
+                    --i;
+                }
+                while ( i < MedianBins - 1 && win[i + 1] < in )
+                {
+                    win[i] = win[i + 1];
+                    ++i;
+                }
+                win[i] = in;
+                m_perc[k] = win[r];
+            }
         }
     }
 

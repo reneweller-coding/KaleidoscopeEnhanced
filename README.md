@@ -600,10 +600,11 @@ The photosensitivity limiter keeps measuring what you see. Details: docs/engine-
 
 ### Kick, snare and hi-hat
 
-The scenes' `audioKick`, `audioSnare` and `audioHat` follow the drums themselves since 27.11.2026: the analysis
-splits each onset onto drum templates (Source/DrumSeparator.h), so a bass line no longer flashes the kick and a lead
-melody no longer the hi-hat. `KALEIDO_OLD_DRUMS=1` brings back the earlier band-group onsets, for comparisons.
-Details: docs/engine-internals-70-analyzer.md.
+Since 27.11.2026 the scenes' `audioHat` follows the hi-hat itself: the analysis splits each onset onto drum templates
+(Source/DrumSeparator.h), so a lead melody no longer flashes the hi-hat. `audioKick` and `audioSnare` keep the earlier
+band-group onsets by default -- the separator's kick and snare did better on synthetic music but not on a real drum
+kit. `KALEIDO_OLD_DRUMS` chooses: `1` all three as before, `0` all three from the separator, or the drums named
+(`kick,snare` is the default). Details: docs/engine-internals-70-analyzer.md.
 
 ---
 

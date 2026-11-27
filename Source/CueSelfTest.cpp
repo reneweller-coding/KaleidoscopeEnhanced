@@ -473,7 +473,7 @@ std::vector<float> drumTrack( int rate, double seconds )
 /**  The drum envelopes (DrumSeparator, 27.11.2026): a kick on the beat, a hat on the off-beat and a plucked lead
  * at 1.8-2.8 kHz on two sixteenths per beat.  The kick and the hat must follow their drums and the lead must drive
  * neither -- the band groups before them heard the lead in their "hat" (it lies above 1.7 kHz).  The old way is
- * run beside it (KALEIDO_OLD_DRUMS=1 for one analysis).
+ * run beside it (KALEIDO_OLD_DRUMS=1; the separator alone with KALEIDO_OLD_DRUMS=none).
  **/
 void drumChecks()
 {
@@ -530,15 +530,24 @@ void drumChecks()
         v *= 0.8f / peak;
 
     // The hits: blocks where an envelope jumps; the share of events with a hit 0..60 ms after them.
+    // Every analysis below names its drums (the default keeps kick and snare old); the caller's setting comes back.
+    const bool       had_env = qEnvironmentVariableIsSet( "KALEIDO_OLD_DRUMS" );
+    const QByteArray saved_env = qgetenv( "KALEIDO_OLD_DRUMS" );
+    auto             analyse = [&]( bool old_way )
+    {
+        qputenv( "KALEIDO_OLD_DRUMS", old_way ? "1" : "none" );
+        std::vector<AudioFeatures> tl =
+            AudioAnalyzer::analyzeSamples( pcm.data(), static_cast<int>( pcm.size() ), 1, rate );
+        if ( had_env )
+            qputenv( "KALEIDO_OLD_DRUMS", saved_env );
+        else
+            qunsetenv( "KALEIDO_OLD_DRUMS" );
+        return tl;
+    };
     auto shares = [&]( bool old_way, float out[3][3] )
     {
-        if ( old_way )
-            qputenv( "KALEIDO_OLD_DRUMS", "1" );
-        const std::vector<AudioFeatures> tl =
-            AudioAnalyzer::analyzeSamples( pcm.data(), static_cast<int>( pcm.size() ), 1, rate );
-        if ( old_way )
-            qunsetenv( "KALEIDO_OLD_DRUMS" );
-        const double blk = 480.0 / rate;
+        const std::vector<AudioFeatures> tl = analyse( old_way );
+        const double                     blk = 480.0 / rate;
         for ( int d = 0; d < 3; ++d )
         {
             std::vector<double> hit;
@@ -567,21 +576,30 @@ void drumChecks()
     float nw[3][3], od[3][3];
     shares( false, nw );
     shares( true, od );
+    // The default (KALEIDO_OLD_DRUMS unset): kick and snare from the band groups, the hat from the separator.
+    {
+        qunsetenv( "KALEIDO_OLD_DRUMS" );
+        const std::vector<AudioFeatures> def =
+            AudioAnalyzer::analyzeSamples( pcm.data(), static_cast<int>( pcm.size() ), 1, rate );
+        if ( had_env )
+            qputenv( "KALEIDO_OLD_DRUMS", saved_env );
+        const std::vector<AudioFeatures> o = analyse( true ), n = analyse( false );
+        bool                             same = def.size() == o.size() && def.size() == n.size();
+        for ( size_t i = 0; same && i < def.size(); ++i )
+            same = def[i].onsetKick == o[i].onsetKick && def[i].onsetSnare == o[i].onsetSnare
+                   && def[i].onsetHat == n[i].onsetHat;
+        check( same, "by default the kick and the snare keep the band groups' envelopes, the hat is the separator's" );
+    }
     // The cost: the whole analysis per 10-ms block with and without the separator (best of three).
     {
         double best[2] = { 1e9, 1e9 };
         for ( int rep = 0; rep < 3; ++rep )
             for ( int w = 0; w < 2; ++w )
             {
-                if ( w == 0 )
-                    qputenv( "KALEIDO_OLD_DRUMS", "1" );
                 QElapsedTimer tm;
                 tm.start();
-                const std::vector<AudioFeatures> tl =
-                    AudioAnalyzer::analyzeSamples( pcm.data(), static_cast<int>( pcm.size() ), 1, rate );
+                const std::vector<AudioFeatures> tl = analyse( w == 0 );
                 const double us = static_cast<double>( tm.nsecsElapsed() ) / 1000.0 / std::max<size_t>( 1, tl.size() );
-                if ( w == 0 )
-                    qunsetenv( "KALEIDO_OLD_DRUMS" );
                 best[w] = std::min( best[w], us );
             }
         printf( "  (info) analysis per 10-ms block: %.1f us without the separator, %.1f us with it\n", best[0],
