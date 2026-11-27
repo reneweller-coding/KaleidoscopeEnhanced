@@ -121,8 +121,13 @@ within release_check's budgets (ChainLab2D 1.5, ChainLabTunnel 2.0, ChainLab3D 8
 *Readbacks.*  The snapshot tool's frozen frame (the web remote's `/api/snapshot`, a readback of the presented
 picture) works with the default: 10 scenes off and on, 0 failed; with `KALEIDO_HDR_BUFFERS=0` 9 of 10 identical to
 2026-11-26-base (LightningStorm differs as it does between two runs of the old code, a GPU simulation).  The video
-export works with 16 bit (every flash count above is an export).  Not run again: the recorder, the screenshot key
-(both read the presented 8-bit picture, code unchanged), the 30-min soak.  The rewind history ring stays 8 bit
+export works with 16 bit (every flash count above is an export).  Not run again: the recorder and the screenshot key
+(both read the presented 8-bit picture, code unchanged).
+
+*Soak* (`Tools/soak.py --shuffle 1 --minutes 30`, at HEAD with A, B and C, the default settings, alone; one piece of
+30 min, it cannot be split): 301 scene changes, 0 GL errors, private memory -13.4 MB an hour after minute 10, GPU
+memory 2,584..3,214 MB after the warm-up and falling (-597 MB an hour) -- nothing grows.  The tool's "F1: NOT met" is
+its rule of at least 600 scene changes (an hour), as in L1.  The rewind history ring stays 8 bit
 (known).
 
 *Self test* 182 passed, 0 failed with the default and with `KALEIDO_HDR_BUFFERS=0`.
@@ -214,7 +219,7 @@ rerun green (3,516 files same; C++ 0, shaders 0 warnings), self test 182/0 again
 ### Not verified
 
 - The 8-bit fallback on a driver without RGBA16F targets (Mesa/Linux: the CI).
-- The recorder and the screenshot key with 16 bit (unchanged code, reading the presented 8-bit picture); a new
-  30-min soak.
+- The recorder and the screenshot key with 16 bit (unchanged code, reading the presented 8-bit picture); a soak of an
+  hour or more.
 - GPU memory with the default (L1 measured +330 MB).
 - The depth looks over many photos in the app (only the snapshot photo).
