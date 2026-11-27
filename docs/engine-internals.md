@@ -13717,8 +13717,12 @@ the first constants (gain 1.5) were invisible on dark pictures and, at three tim
 ones.  Two rules made the effect usable: a sample lights the pixel only as far as it is brighter than the pixel
 (`RaysOver` 0.3), and a near pixel takes 15 % of the light (`RaysNear`: the subject stays a silhouette in the
 shafts); gain 3.2.  Knob 0 is unchanged against the frames before the change (three photos, 0 changed at tolerance
-0).  Not verified: the rays in motion and with music (the strength follows the swell, so silent frames show its
-floor); GPU time (32 texture reads a pixel while on).
+0).  GPU time (`perf_labs.py ChainLab2D --passes`, the rays forced with `KALEIDO_RAYS`): off 0.72 ms a frame, on at 0.8
+1.38 ms with the taps at full resolution -- found because release_check's perf step showed ChainLab2D at 1.50 ms
+(p90) after the rays went into the presets.  The colour of the taps is now read from mip 2 (the frame has its mips
+for the bloom anyway; soft shafts lose nothing) and the depth only where a tap can give light: 0.85 ms, the sheet
+unchanged but softer.  Not verified: the rays in motion and with music (the strength follows the swell, so silent
+frames show its floor).
 
 #### The haze rarer and weaker
 
