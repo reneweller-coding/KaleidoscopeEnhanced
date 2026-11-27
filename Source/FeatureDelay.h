@@ -21,9 +21,10 @@
  *
  *  Rules it keeps:
  *  - Off (target 0 and nothing left to slew) it stores nothing and the reader gets the newest snapshot as before.
- *  - A change of the delay moves the effective delay at #Slew seconds per second of audio: the delayed timeline then
- *    runs at half or one and a half times speed for a moment, never backwards, so no counter ever steps back (a
- *    counter that went back would read as a beat, a section or a track change to AudioEventLatch and the scheduler).
+ *  - A change of the delay moves the effective delay at FeatureDelay::Slew seconds per second of audio: the delayed
+ *    timeline then runs at half or one and a half times speed for a moment, never backwards, so no counter ever steps
+ *    back (a counter that went back would read as a beat, a section or a track change to AudioEventLatch and the
+ *    scheduler).
  *  - Set before the first block (setTarget( secs, true )), the delay holds from the start: until that much audio has
  *    been analysed the reader gets a silent snapshot -- nothing has reached the ear yet.
  *

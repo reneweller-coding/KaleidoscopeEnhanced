@@ -3304,6 +3304,10 @@ void GLwidget::drawCalibration( QPainter *painter )
     const float   lat = RenderPipeline::latency();
     const QString value = lat < 0.f ? ui( S_CALIB_DELAY_FMT ).arg( qRound( -lat * 1000.f ) )
                                     : ui( S_CALIB_LEAD_FMT ).arg( qRound( lat * 1000.f ) );
+    // the text on a dark band: over a busy scene it was hard to read (the first look at it, 27.11.2026)
+    painter->setPen( Qt::NoPen );
+    painter->setBrush( QColor( 0, 0, 0, 170 ) );
+    painter->drawRoundedRect( QRectF( c.x() - 4.2 * r, c.y() + 1.42 * r, 8.4 * r, side * 0.19 ), 10.0, 10.0 );
     painter->setPen( QColor( 230, 230, 240 ) );
     painter->setFont( QFont( "Segoe UI", std::max( 10, side / 45 ) ) );
     painter->drawText( QRectF( c.x() - 3.0 * r, c.y() + 1.45 * r, 6.0 * r, side * 0.06 ), Qt::AlignCenter, value );
