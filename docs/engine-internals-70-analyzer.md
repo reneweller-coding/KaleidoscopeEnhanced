@@ -179,7 +179,10 @@ drum that stays worse on the real kit ships on the old envelope by default.
 - *Hat: the separator.*  Better on every measure of the screening music (F, leak, crosstalk -- as change and at the
   lead's hits); the kit has no hat truth; on the user's tracks its rate is +13 %.  But one scene, PulsarLighthouse,
   now trips the photosensitivity limiter more on the screening music (flash-on 1 -> 20 of 120 samples, see "The
-  picture") -- open, with the lead.
+  picture") -- fixed in the scene: PulsarLighthouse's hat gain 1.2 -> 0.4 (gains 0.6 / 0.4 / 0.25 tried: flash-on
+  1 / 0 / 0, dimmed 70 / 57 / 57).  Same run as before: flash-on 0 of 120 (old drums and gain: 1), dimmed 57 (70), and
+  it still follows the hats (hat hit 0.024, sync 0.21 against 0.005 / 0.02); strip
+  `sheets\analyzer\PulsarLighthouse_hat_before_after.jpg` (top old, bottom new).
 - *Kick: the band group.*  The separator's kick is better in F on both sets, leaks a third less on the kit, is 14 ms
   faster and keeps the user's tracks' statistics exactly -- but on the kit the keys light it three times as much
   (0.11 -> 0.37) and its recall is 0.78 against 0.80.
