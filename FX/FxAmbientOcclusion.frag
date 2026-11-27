@@ -13,7 +13,13 @@
  *  haloing, and blends the occlusion of both incoming scene layers.  A 2D
  *  scene that passes the photo's depth on (26.11.2026, depthPhoto) gets a
  *  fraction of the occlusion (PhotoAO).
+ *  With arcP above 0 (plan P2, 27.11.2026) the shadows carry the music's
+ *  tension arc: in a build-up the ambient light withdraws from the back
+ *  toward the front and the creases deepen, a drop lifts both within half a
+ *  second.
  *    interpolation -> cross-fades the two scene layers and their occlusion terms
+ *    audioBuildUp  -> (arcP) the shadow grows from the back, the creases deepen
+ *    audioDrop     -> (arcP) lifts the occlusion, an envelope of its own (tensionArc())
  *    audioAmbient  -> raises/lowers the overall occlusion strength (breathing)
  *    audioSubBass  -> adds extra occlusion darkening
  *    audioKick     -> briefly lightens the occlusion on a hit
@@ -63,6 +69,44 @@ uniform float strengthP; ///< preset: how dark the creases go
 uniform float tintP;     ///< preset: how much colour the shadow keeps
 
 const int Samples = 12; ///< Samples per pixel.
+
+uniform float audioBuildUp; ///< Build-up tension toward a drop, 0..1 (smoothed: ~0.5 s rise, ~1.2 s fall).
+uniform float audioDrop;    ///< Drop pulse: 1 at the hit, then decaying (about exp( -t / 0.7 s )).
+uniform float arcP;         ///< preset: the tension arc through the depth (plan P2); 0 = off, the old picture
+
+const float PhotoArc = 0.6; ///< The tension arc on a photo, relative to a room (27.11.2026).
+
+/**  The tension arc through the depth (plan P2, 27.11.2026): how far the music builds toward a drop, and how far a
+ * drop has cleared the air.
+ *
+ * @return
+ *   x: the build-up's tension, 0..1, released by a drop; y: the clearing after a drop, 0..1.
+ *
+ * The tension (build-up 0.3 .. 0.7) starts below the present pass's held breath (`breath`, the build-up's upper
+ * half from 0.5: it takes colour and light from the whole frame) and works only in the depth.  The clearing is an
+ * envelope of its own, never the pulse: the drop pulse jumps to 1 at the hit and decays as exp( -t / 0.7 s ), so its
+ * value says how long ago the hit was.  The envelope rises from 0 to 1 between 0.15 and 0.55 s after the hit (pulse 0.8
+ * .. 0.45), holds to about 2.6 s (0.03) and is gone by 5.5 s (0.0005); a pulse of 1 gives 0, so the hit itself is no
+ * step.
+ **/
+vec2 tensionArc()
+{
+    float clear = ( 1.0 - smoothstep( 0.45, 0.8, audioDrop ) ) * smoothstep( 0.0005, 0.03, audioDrop );
+    return vec2( smoothstep( 0.3, 0.7, audioBuildUp ) * ( 1.0 - clear ), clear );
+}
+
+/**  How far a point lies, on a log scale.
+ *
+ * @param z  Linear distance. (in)
+ *
+ * @return
+ *   0 at 4 units (the near end of a room) .. 1 at 60 and beyond (the sky); a photo's depth spans 0.26 (its near
+ *   end, 8 units) .. 1 (its far end, 80).
+ **/
+float farness( float z )
+{
+    return clamp( log( z / 4.0 ) / log( 15.0 ), 0.0, 1.0 );
+}
 
 /**  Depth buffer value to linear distance.
  *
@@ -177,6 +221,27 @@ float occlusionSmooth( sampler2D dep, vec2 uv, float valid )
                + occlusion( dep, uv + vec2( t.x, -t.y ), valid ) + occlusion( dep, uv + vec2( -t.x, -t.y ), valid ) );
 }
 
+/**  How much of the ambient light the build-up has taken from a layer's pixel: from the back toward the front.
+ *
+ * @param dep    The depth texture. (in)
+ * @param uv     Screen coordinate. (in)
+ * @param valid  The share of real depth, 0..1. (in)
+ * @param t      The tension, 0..1. (in)
+ * @param ph     1 where the depth is a photo's: the front stops at farness 0.45. (in)
+ *
+ * @return
+ *   The withdrawal, 0..1: 0 in front of the shadow's front, which walks from the far end to farness 0.25 (the
+ *   fog's).
+ **/
+float withdrawal( sampler2D dep, vec2 uv, float valid, float t, float ph )
+{
+    if ( valid <= 0.0 )
+        return 0.0;
+    float front = 1.0 - ( ph > 0.5 ? 0.55 : 0.75 ) * t;
+    return t * smoothstep( front - 0.2, front + 0.2, farness( linearise( texture( dep, uv ).r ) ) )
+           * min( valid, 1.0 );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -200,6 +265,23 @@ void main()
     // rather than like light changing.
     occ *= 0.65 + 0.45 * audioAmbient + 0.25 * audioSubBass - 0.20 * audioKick;
     occ = clamp( occ, 0.0, 1.0 );
+    if ( arcP > 0.0 )
+    {
+        // Plan P2, the tension arc: the build-up deepens the creases and takes the ambient light from the back
+        // toward the front (a withdrawal toward the cool shadow colour below, at most 0.35); a drop lifts the
+        // occlusion to a fifth of itself, and the withdrawal with the tension.  The withdrawal is the one part of
+        // the arc that darkens a region: where the final pass's held breath dims the whole frame (its target,
+        // clamp( ( buildUp - 0.5 ) x 2.2, 0, 1 )), it gives up to half of itself, so the two do not double.
+        vec2  arc = tensionArc();
+        float sa = arcP * ( depthPhoto.x > 0.5 ? PhotoArc : 1.0 ), sb = arcP * ( depthPhoto.y > 0.5 ? PhotoArc : 1.0 );
+        float wa = withdrawal( texDepth0, uv, depthValid.x, arc.x, depthPhoto.x ) * sa;
+        float wb = withdrawal( texDepth1, uv, depthValid.y, arc.x, depthPhoto.y ) * sb;
+        float s = mix( sb, sa, clamp( interpolation, 0.0, 1.0 ) );
+        float held = clamp( ( audioBuildUp - 0.5 ) * 2.2, 0.0, 1.0 );
+        occ = clamp( occ * ( 1.0 + 0.8 * arc.x * s ) * ( 1.0 - 0.8 * arc.y * s )
+                         + 0.35 * ( 1.0 - 0.5 * held ) * mix( wb, wa, clamp( interpolation, 0.0, 1.0 ) ),
+                     0.0, 1.0 );
+    }
 
     // Occluded areas do not just get darker, they get COOLER and keep some of
     // their own colour — light that reaches a crease has bounced off the walls

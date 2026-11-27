@@ -15,7 +15,13 @@
  *  blurred too, quieter: the focus sits on the photo's subject (photoSubject,
  *  or the near half without one), half the aperture, at most PhotoMaxCoc of
  *  the blur, no rack focus.
+ *  With arcP above 0 (plan P2, 27.11.2026) the lens carries the music's
+ *  tension arc: in a build-up the aperture opens around the focus (the
+ *  subject comes loose from its background), a drop makes everything sharp
+ *  within half a second.
  *    interpolation -> cross-fades the two independently blurred scene layers
+ *    audioBuildUp  -> (arcP) opens the aperture
+ *    audioDrop     -> (arcP) closes it below its rest, an envelope of its own (tensionArc())
  *    audioSubBass  -> pulls the focal plane in toward the camera
  *    audioKick     -> snaps the focal plane back out (rack focus)
  *    audioBeat     -> subtle overall brightness pulse
@@ -63,6 +69,31 @@ uniform float bokehP;    ///< preset: highlight blooming in the blur
 
 const float Pi = 3.14159265358979; ///< Pi.
 const float PhotoMaxCoc = 0.4;     ///< The largest blur on a photo, relative to a room's (26.11.2026): a hint of focus.
+
+uniform float audioBuildUp; ///< Build-up tension toward a drop, 0..1 (smoothed: ~0.5 s rise, ~1.2 s fall).
+uniform float audioDrop;    ///< Drop pulse: 1 at the hit, then decaying (about exp( -t / 0.7 s )).
+uniform float arcP;         ///< preset: the tension arc through the depth (plan P2); 0 = off, the old picture
+
+const float PhotoArc = 0.6; ///< The tension arc on a photo, relative to a room (27.11.2026).
+
+/**  The tension arc through the depth (plan P2, 27.11.2026): how far the music builds toward a drop, and how far a
+ * drop has cleared the air.
+ *
+ * @return
+ *   x: the build-up's tension, 0..1, released by a drop; y: the clearing after a drop, 0..1.
+ *
+ * The tension (build-up 0.3 .. 0.7) starts below the present pass's held breath (`breath`, the build-up's upper
+ * half from 0.5: it takes colour and light from the whole frame) and works only in the depth.  The clearing is an
+ * envelope of its own, never the pulse: the drop pulse jumps to 1 at the hit and decays as exp( -t / 0.7 s ), so its
+ * value says how long ago the hit was.  The envelope rises from 0 to 1 between 0.15 and 0.55 s after the hit (pulse 0.8
+ * .. 0.45), holds to about 2.6 s (0.03) and is gone by 5.5 s (0.0005); a pulse of 1 gives 0, so the hit itself is no
+ * step.
+ **/
+vec2 tensionArc()
+{
+    float clear = ( 1.0 - smoothstep( 0.45, 0.8, audioDrop ) ) * smoothstep( 0.0005, 0.03, audioDrop );
+    return vec2( smoothstep( 0.3, 0.7, audioBuildUp ) * ( 1.0 - clear ), clear );
+}
 
 /**  A depth buffer is stored non-linearly — most of its precision sits near the camera.
  *
@@ -175,10 +206,29 @@ void main()
     // A photo is no room: its own focus (the subject), half the aperture, at most PhotoMaxCoc of the blur (its depth
     // spans 8..80 units, so nearly all of it would lie far from any focus), no rack focus on the music.
     float pf = photoFocusDist();
-    vec3  a = blurAt( tex0, texDepth0, uv, depthPhoto.x > 0.5 ? pf : focus, depthValid.x,
-                      depthPhoto.x > 0.5 ? 0.5 * apertureP : apertureP, depthPhoto.x > 0.5 ? PhotoMaxCoc : 1.0 );
-    vec3  b = blurAt( tex1, texDepth1, uv, depthPhoto.y > 0.5 ? pf : focus, depthValid.y,
-                      depthPhoto.y > 0.5 ? 0.5 * apertureP : apertureP, depthPhoto.y > 0.5 ? PhotoMaxCoc : 1.0 );
+    vec3  a, b;
+    if ( arcP > 0.0 )
+    {
+        // Plan P2, the tension arc: the build-up opens the aperture around the focus (up to 2.5 x; a photo's blur
+        // may grow to 1.5 x PhotoMaxCoc), a drop closes it to a fifth -- everything sharp -- and lets it come back.
+        vec2 arc = tensionArc();
+        vec2 s = arcP * vec2( depthPhoto.x > 0.5 ? PhotoArc : 1.0, depthPhoto.y > 0.5 ? PhotoArc : 1.0 );
+        vec2 ka = ( 1.0 + 1.5 * arc.x * s ) * ( 1.0 - 0.8 * arc.y * s );
+        vec2 kc = 1.0 + 0.5 * arc.x * s;
+        a = blurAt( tex0, texDepth0, uv, depthPhoto.x > 0.5 ? pf : focus, depthValid.x,
+                    ( depthPhoto.x > 0.5 ? 0.5 * apertureP : apertureP ) * ka.x,
+                    depthPhoto.x > 0.5 ? PhotoMaxCoc * kc.x : 1.0 );
+        b = blurAt( tex1, texDepth1, uv, depthPhoto.y > 0.5 ? pf : focus, depthValid.y,
+                    ( depthPhoto.y > 0.5 ? 0.5 * apertureP : apertureP ) * ka.y,
+                    depthPhoto.y > 0.5 ? PhotoMaxCoc * kc.y : 1.0 );
+    }
+    else
+    {
+        a = blurAt( tex0, texDepth0, uv, depthPhoto.x > 0.5 ? pf : focus, depthValid.x,
+                    depthPhoto.x > 0.5 ? 0.5 * apertureP : apertureP, depthPhoto.x > 0.5 ? PhotoMaxCoc : 1.0 );
+        b = blurAt( tex1, texDepth1, uv, depthPhoto.y > 0.5 ? pf : focus, depthValid.y,
+                    depthPhoto.y > 0.5 ? 0.5 * apertureP : apertureP, depthPhoto.y > 0.5 ? PhotoMaxCoc : 1.0 );
+    }
 
     vec3 col = mix( b, a, clamp( interpolation, 0.0, 1.0 ) );
 

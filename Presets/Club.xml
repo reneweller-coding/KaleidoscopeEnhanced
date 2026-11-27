@@ -5059,11 +5059,13 @@
     <float name="shaftP"  minValue="0.5" maxValue="1.1"></float>
     <float name="lengthP" minValue="0.6" maxValue="1.1"></float>
     <float name="dustP"   minValue="0.3" maxValue="0.9"></float>
+    <float name="arcP"    minValue="-0.3" maxValue="1.0"></float>
   </CombineShader>
   <CombineShader file="..\\FX\\FxRimLight.frag" type="normal" mood="bright,dreamy" probability="0.004" complexity="3">
     <float name="rimP"   minValue="0.50" maxValue="1.50"></float>
     <float name="sharpP" minValue="0.25" maxValue="0.90"></float>
     <float name="fillP"  minValue="0.30" maxValue="1.00"></float>
+    <float name="arcP"   minValue="-0.3" maxValue="1.0"></float>
   </CombineShader>
   <CombineShader file="..\\FX\\FxHeatShimmer.frag" type="normal" mood="aggressive,bright" probability="0.006" complexity="3">
     <float name="heatP"  minValue="0.40" maxValue="1.60"></float>
