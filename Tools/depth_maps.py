@@ -8,27 +8,31 @@ The app reads the maps from <photo folder>\.depth\ (the photo walk skips that fo
 Output, per photo of --images (the long side of the map is 512, the photo's aspect is kept):
   <out>\<photo name without extension>.png   8-bit grey, 255 = near, 0 = far, stretched per photo between the 2nd
                                              and the 98th percentile of the model's inverse depth (disparity)
-  <out>\photo_info.tsv                        one row per photo, header `file relief slope flat fx fy thr conf model`;
-                                             rows of earlier runs are kept and merged (sorted by file name)
+  <out>\photo_info.tsv                        one row per photo, header
+                                             `file relief slope flat fx fy thr conf model mask`; rows of earlier
+                                             runs are kept and merged (sorted by file name)
 Columns: relief = spread of the depth once the large-scale tilt or bowl of the picture is removed, relative to the
 distance (relief_measures(); 0 = a surface without relief, flat photos read below 0.1, photos with things in them
 0.3 and more); slope = share of the area with a real gradient (edges of things, slopes; a tilt alone does not
 count); flat = 1 when relief is low, or lowish without slope, and no clear subject (FLAT_*; patterns, textures,
 sky -- the app then gives the photo no depth); mask = how well `map >= thr` reproduces the subject region (0..1);
 fx, fy = subject centre in image coordinates (x right, y DOWN, 0..1); thr = map value 0..1 that separates the
-subject from the background (subject is map >= thr); conf = 0..1, how clearly that subject stands out (subject();
-the app falls back to the picture centre when it is low; 0 for flat photos).  "-" where not measured.
+subject from the background (subject is map >= thr); conf = 0..1, how clearly that subject stands out -- about the
+CENTRE (subject(); trust it from 0.5, below that the app falls back to the picture centre; 0 for flat photos).
+"-" where not measured.
 
 Models (the licence lines and the comparison: docs/engine-internals-69-maps.md):
   dav2s  Depth Anything V2 Small (Hugging Face depth-anything/Depth-Anything-V2-Small-hf, Apache-2.0), disparity
   da3ml  Depth Anything 3 Mono Large (Hugging Face depth-anything/DA3MONO-LARGE, Apache-2.0), depth; the code from
-         github.com/ByteDance-Seed/Depth-Anything-3 (Apache-2.0), installed without its export dependencies
+         github.com/ByteDance-Seed/Depth-Anything-3 (Apache-2.0), installed without its export dependencies;
+         --da3-sky off keeps the depth head's values where its sky head would set dark backgrounds to far
+         (recommended for this photo pack: it cut black backgrounds out as holes); model column da3ml-nosky
 
 Environment: its own venv (see Tools/depth_maps_requirements.txt), HF_HOME pointing at a cache outside the profile
 and the repository.  torch is imported only when a model runs, so --help, --measure and --sheet need no GPU.
 
   python Tools/depth_maps.py --images Images --out <dir> --model dav2s [--files a.jpg b.jpg | --list photos.txt]
-         [--limit N] [--force] [--raw <dir>]
+         [--limit N] [--force] [--raw <dir>] [--da3-sky off] [--pause s]
       Computes the maps that are missing or older than their photo (resumable: kill it and start it again), one model
       on the GPU, at below-normal priority.  --raw keeps the model's own output (float16 .npy, map size) for
       re-measuring without the model.
@@ -39,7 +43,8 @@ and the repository.  torch is imported only when a model runs, so --help, --meas
   python Tools/depth_maps.py --sheet subject --images Images --out <dir> --sheets <dir> --list photos.txt
       The subject centre as a cross, the subject outline (map >= thr, the chosen region), conf, per photo.
   python Tools/depth_maps.py --sheet flat --images Images --out <dir> --sheets <dir>
-      The photos the flat rule calls flat and the borderline ones, photo next to map, sorted by relief.
+      The flat rule's calibration: the flat photos nearest the line, 30 flat ones at random, the non-flat ones
+      nearest the line (photo next to map, relief and slope under each).
 """
 import argparse
 import os
@@ -308,9 +313,10 @@ def subject(n, debug=None):
     background surface.
 
     The map is smoothed at MEASURE_SIDE; a robust quadratic surface through its far part is removed (a ground or
-    wall that recedes, or the bowl a model makes of a flat picture, is no subject); Otsu's threshold on the rest splits near from far; after a small opening and closing the
-    connected region with the largest raised volume is the subject.  fx/fy is its centroid weighted by the height
-    above the threshold.  thr is the value of the PLAIN map (the shader has no plane) whose mask `map >= thr` agrees
+    wall that recedes, or the bowl a model makes of a flat picture, is no subject); Otsu's threshold on the rest
+    splits near from far; after a small opening and closing the connected region with the largest raised volume is
+    the subject.  fx/fy is its centroid weighted by the height above the threshold.  thr is the value of the PLAIN
+    map (the shader has no background surface) whose mask `map >= thr` agrees
     best with the region (intersection over union).  conf is the product of factors 0..1:
       edge   the region's median height against a ring around it (in the detrended map's 1..99 % range): 0 up to
              0.2, full from 0.5 -- textures with relief (wire wool, salt crust, foam) stand out by only 0.25-0.4
