@@ -36,7 +36,7 @@ is taken there (the rim's strength, 0.5 .. 1.5 in the presets), so the new knob 
 - *Layers*: both layers' halos are cross-faded with `interpolation`, like the rim; a layer without depth
   (`depthValid` 0) gets none; a photo's halo is `HaloPhoto` 0.8 of a room's and fades in with the share of mapped photos.
 
-### Verified (27.11.2026, 16:35 .. 16:44)
+### Verified (27.11.2026, 16:35 .. 16:46)
 
 - `Tools/shadercheck.py --new cdab7da3` (the driver compiles FX/FxRimLight.frag): 1 file, 0 errors, 0 warnings
   (before the formatter's two line wraps; whitespace only).  `cgvr_format.py --check`: clean; `doc_shaders.py --check`:
@@ -46,14 +46,17 @@ is taken there (the rim's strength, 0.5 .. 1.5 in the presets), so the new knob 
   old file from .screen/fxold against the new one, the preset entry without `haloP`; frozen shots, 640 x 360, JPG):
   **FoldLab (a photo's depth): identical, max 0.  PillarHall (a 3D scene): NOT identical -- max 6 of 255, mean 0.022,
   5,324 of 230,400 pixels differ, 226 by more than 2, spread over the whole frame (most on the floor).**
-  Repeated: the same numbers (max 6, mean 0.0217).  The new shader against itself: identical (max 0) -- so the
-  frames are reproducible and **the new file's knob-0 picture differs from the old file's in the 3D path** (`lit()`),
-  by a little, on a JPG.  The halo itself is off there (FoldLab would show it).  Cause not found.  Tried: the halo
-  with a reciprocal-depth function of its own instead of calling `linearise()` -- the same numbers, dropped again.
-  Suspected, not shown: the driver compiles `lit()` differently in the larger program, and its tie-breaks
-  ( abs( zr - zc ) < abs( zc - zl ), equal on a plane like the floor ) flip on the last bit.  The engine's source
-  scans were ruled out for `textureLod` (EffectShader::usesSceneLod looks for tex0 as the first argument only).
-  **The sprint's rule "knob 0 = bit-identical" is met for a photo's depth and NOT shown for a 3D scene's.**
+  Repeated: the same numbers.  **That difference is not the halo's -- any change of the file's text gives it:**
+  - the new shader against itself: identical (max 0) -- the frames are reproducible;
+  - control C, the OLD text plus one comment line against the old text: max 6, mean 0.0217 -- the same difference;
+  - the new shader (no `haloP`) against control C's frame: **identical, 0 of 230,400 pixels differ**;
+  - the new shader against itself with the halo's block dead (`if ( false )`): identical; without the `audioSwell`
+    uniform, and with a reciprocal-depth function of its own instead of `linearise()`: the same max 6 against the old
+    text (both dropped again).
+  So knob 0 is the old code path in both scenes; what PillarHall shows is a difference between an untouched and a
+  changed FxRimLight.frag as such (FoldLab does not show it).  Its cause was not looked for (a guess: a cached program
+  of the unchanged text against a fresh compile, and `lit()`'s tie-breaks on planes flipping on the last bit).  It
+  concerns every old-against-new comparison of a changed FX file with this tool, not this change.
 - *Knob on* (`Tools/halo_shot.py`, haloP 0 / 1 / 2 with the same rolls, silent): PillarHall -- haloP 1: max 30 of 255,
   mean +0.32, 6.9 % of the pixels changed by more than 2; haloP 2: max 56, mean +0.75, 8.8 %.  FoldLab -- haloP 1:
   max 41, mean +1.87, 41.7 %; haloP 2: max 67, mean +1.26, 84.8 % (JPG blocks: the lines run through most 8 x 8
@@ -64,10 +67,8 @@ is taken there (the rim's strength, 0.5 .. 1.5 in the presets), so the new knob 
 
 ### Not verified
 
-- Why PillarHall's knob-0 frame differs from the old shader's (above): whether it is the JPG enlarging single 8-bit
-  steps, and which part of the new text causes it (next steps: a lossless shot; the block in `main()` removed with the
-  declarations kept; `audioSwell` replaced by a uniform the file already reads).
-
+- Why a changed FxRimLight.frag (even by one comment line) renders PillarHall differently from the untouched file
+  (max 6 of 255 on a JPG, above).  The frames are JPGs: a lossless comparison was not made.
 - No video, no music: the frames are silent shots (audioSwell 0, the halo at 0.3 of its full strength).  How the halo
   breathes with the swell, and whether the per-pixel dither is visible as grain in motion or at 4K, was not looked at.
 - The terraces of a photo's 8-bit depth: no ramp sheet was rendered; FoldLab's lines follow the folds' depth edges,
