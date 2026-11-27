@@ -19,8 +19,12 @@
  *  With arcP above 0 (plan P2, 27.11.2026) the light behind carries the
  *  music's tension arc: in a build-up the rim narrows to a thin outline and
  *  withdraws a little, at a drop it flares, wider and brighter, within half a
- *  second.
+ *  second.  With haloP above 0 (27.11.2026) the light behind also shows
+ *  on the background: the far side of a depth edge glows softly in the
+ *  frame's own colour, lifted toward a warm white (a halo that separates the
+ *  subject from what is behind it), and the near side gets a thin, weaker rim.
  *    interpolation -> cross-fades the two rim-lit scene layers
+ *    audioSwell    -> (haloP) the halo's strength, a seconds envelope (no beat)
  *    audioBuildUp  -> (arcP) a thinner, fainter rim
  *    audioDrop     -> (arcP) the rim flares, an envelope of its own (tensionArc())
  *    audioKick     -> flashes the rim-light intensity
@@ -262,6 +266,63 @@ vec3 litPhoto( sampler2D src, sampler2D dep, vec2 uv, float valid, vec2 px, vec3
                  * ( PhotoRim * min( valid, 1.0 ) );
 }
 
+// ---- halo (27.11.2026): the back light's glow behind the subject -- one block, see also main() ----------------
+uniform float haloP;      ///< preset: the back light's halo on the far side of depth edges; 0 = off, the old picture
+uniform float audioSwell; ///< Slow swell of the music's level, 0..1 (a seconds envelope).
+
+const float HaloRadius = 0.015;                 ///< The halo's reach, in picture heights (4 px of 270).
+const vec3  HaloWarm = vec3( 1.0, 0.92, 0.80 ); ///< The warm white the frame's own colour is lifted toward.
+const float HaloLift = 0.6;                     ///< How far the frame's colour is lifted toward HaloWarm.
+const float HaloNear = 0.35;                    ///< The thin rim on the near side of the edge, relative to the halo.
+const float HaloGain = 0.8;                     ///< The halo's light at haloP 1 and a full swell (screen-blended).
+const float HaloPhoto = 0.8;                    ///< The halo on a photo's depth, relative to a room's.
+
+/**  How much a pixel lies behind (x) or in front of (y) a depth edge within HaloRadius.
+ *
+ * @param dep    The depth texture. (in)
+ * @param uv     Screen coordinate. (in)
+ * @param valid  1 where the depth buffer is valid (a photo: the share of the photos with a map), else 0. (in)
+ * @param photo  1 where the depth is a photo's (8-bit terraces: a higher threshold), else 0. (in)
+ *
+ * @return
+ *   x: the far side's halo, 0..1, falling off with the distance from the edge; y: the near side's thin rim, 0..1.
+ *
+ * Eight taps: four opposite pairs on a disc, rotated per pixel (a fixed dither, so the fall-off is smooth instead of
+ * four ghost outlines).  Per pair the second difference of the reciprocal depth, relative to the nearest of the three:
+ * 1 / z is linear in screen space on a plane, so a floor running to the horizon or a wall seen at a slant gives 0,
+ * and only a step counts -- positive where the centre is the far side (a neighbour is clearly nearer than the plane
+ * through the other two), negative where it is the near side.  The ramp starts above what the terraces of an 8-bit
+ * photo map give (two levels at the near end: 0.07) and is smooth: no threshold line, no contours.  No derivatives
+ * (textureLod), no branch on the pixel.
+ **/
+vec2 haloAt( sampler2D dep, vec2 uv, float valid, float photo )
+{
+    if ( photo > 0.5 ? valid <= 0.0 : valid < 0.5 )
+        return vec2( 0.0 );
+
+    vec2  ramp = photo > 0.5 ? vec2( 0.12, 0.60 ) : vec2( 0.04, 0.45 );
+    vec2  rad = HaloRadius * vec2( resolution.y / max( resolution.x, 1.0 ), 1.0 );
+    float rot = 6.2831853 * fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );
+    float wc = 1.0 / linearise( textureLod( dep, uv, 0.0 ).r );
+    vec2  sum = vec2( 0.0 );
+    vec2  norm = vec2( 0.0 );
+    for ( int i = 0; i < 4; i++ )
+    {
+        float r = sqrt( ( float( i ) + 0.5 ) / 4.0 );
+        float a = rot + 2.3999632 * float( i );
+        vec2  o = vec2( cos( a ), sin( a ) ) * r * rad;
+        float wa = 1.0 / linearise( textureLod( dep, uv + o, 0.0 ).r );
+        float wb = 1.0 / linearise( textureLod( dep, uv - o, 0.0 ).r );
+        float e = ( wa + wb - 2.0 * wc ) / max( max( wa, wb ), wc );
+        // The halo falls off with the distance; the rim counts the innermost taps only (thin).
+        vec2 w = vec2( 1.0 - 0.6 * r, ( 1.0 - r ) * ( 1.0 - r ) );
+        sum += w * vec2( smoothstep( ramp.x, ramp.y, e ), smoothstep( ramp.x, ramp.y, -e ) );
+        norm += w;
+    }
+    return sum / norm * ( photo > 0.5 ? HaloPhoto * min( valid, 1.0 ) : 1.0 );
+}
+// ---- end of the halo's block ----------------------------------------------------------------------------------------
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -305,6 +366,17 @@ void main()
         float held = ( pulse - 0.9 * audioKick * 0.6 * arc.x * s ) / pulse;
         vec3  base = mix( texture( tex1, uv ).rgb, texture( tex0, uv ).rgb, clamp( interpolation, 0.0, 1.0 ) );
         col = base + ( col - base ) * ( ( 1.0 - 0.3 * arc.x * s ) * held * ( 1.0 + 0.4 * arc.y * s ) );
+    }
+
+    if ( haloP > 0.0 ) // 27.11.2026, the halo: the far side of a depth edge glows, the near side gets a thin rim
+    {
+        vec2 h = mix( haloAt( texDepth1, uv, depthValid.y, depthPhoto.y ), haloAt( texDepth0, uv, depthValid.x, depthPhoto.x ),
+                      clamp( interpolation, 0.0, 1.0 ) );
+        // The strength follows the swell (seconds), never the beat.  Screen-blended in the frame's own colour lifted
+        // toward a warm white: what is added shrinks with what is there, so nothing clips to a flat white.
+        float amt = min( haloP, 2.0 ) * HaloGain * ( 0.3 + 0.7 * clamp( audioSwell, 0.0, 1.0 ) ) * ( h.x + HaloNear * h.y );
+        vec3  lifted = mix( clamp( col, 0.0, 1.0 ), HaloWarm, HaloLift );
+        col += lifted * min( amt, 1.0 ) * ( 1.0 - clamp( col, 0.0, 1.0 ) );
     }
 
     col *= 1.0 + 0.12 * audioBeat + 0.10 * audioSubBass;
