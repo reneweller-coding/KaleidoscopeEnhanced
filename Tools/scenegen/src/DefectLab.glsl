@@ -15,12 +15,20 @@
  *   audioSectionId/Age -> a new section re-rolls every stage (a new lattice, a new flaw)
  *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
  *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
+ *   depthLook 4     -> the subject anchor (plan M2, 26.11.2026): each photo is sampled shifted by its own
+ *                      subject's offset from the centre (photoFocus; none without a sure subject), so the
+ *                      lab's centre shows the subject; 0 = the old look
+ *   depthLook 6     -> the anchor and frequency by depth (freqDepth(), plan P3, 27.11.2026): the bass brightens
+ *                      the photo's near layer, the mids raise the colour of its middle layer, the highs set
+ *                      fine round glints into its far layer; light and colour only; depthVar = its variant
  *
  * Knobs: seedP (the walk's seed), cellP (the lattice's size), flawP (how strong the flaws are), hueP.
 //@params seedP cellP flawP
 //@audio audioSwell audioHarmAdvance
 //@depth
 //@body
+uniform float depthLook;   // 4: the subject anchor (plan M2) -- each photo is sampled around its own subject; 6: the anchor and frequency by depth (plan P3); 0: the old look
+uniform float depthVar;    // the variant of look 6, 0..99: freqDepth()'s constants; 0 = the middle of every range
 float gPhD = 0.0;   // the photo's depth at the look's photo lookup, 0 far .. 1 near (photoDepthLod)
 /**  Folds a point into the fundamental triangle of a mirror lattice.
  *
@@ -115,6 +123,12 @@ vec3 defLook(ivec4 k, ivec4 kv, vec2 p, float t, float hd, float cs, float st)
     vec2 f = defFold(k.x, kv.x, q);
     vec2 puv = f * lv(kv.x, 4.0, 1.0, 2.2) + lv(kv.x, 5.0, 0.0, 0.2);
     float plod = 0.5;
+    if (depthLook > 3.5) {   // the subject anchor (plan M2); without it the colour stays bit for bit
+        vec4 aq = imgDepthOff(puv, anchorOff(photoFocus.xy, photoSubject.y, photoDepthAmt.x),
+                              anchorOff(photoFocus.zw, photoSubject.w, photoDepthAmt.y), plod);
+        gPhD = aq.w;
+        return aq.rgb;
+    }
     gPhD = photoDepthLod(puv, plod);   // the depth where the colour is taken (26.11.2026)
     return imgLod(puv, plod);
 }
@@ -137,6 +151,10 @@ void main()
             ws += gLabW[i];
         }
     }
-    photoDepthOut(dsum / max(ws, 1e-3));
-    finish(voiceRoles(max(col / max(ws, 1e-3), 0.0), screenP()));
+    float phD = dsum / max(ws, 1e-3);
+    photoDepthOut(phD);
+    col = max(col / max(ws, 1e-3), 0.0);
+    if (depthLook > 5.5)   // look 6: the subject anchor and frequency by depth (plan P3, 27.11.2026)
+        col = freqDepth(col, phD, screenP(), imgLod(screenP() * 0.5 + 0.5, 6.0), int(clamp(depthVar, 0.0, 99.0) + 0.5));
+    finish(voiceRoles(col, screenP()));
 }
