@@ -2188,7 +2188,7 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
     {
         static const bool ByDepth = !qEnvironmentVariableIsSet( "KALEIDO_PHOTO_BY_DEPTH" )
                                     || qEnvironmentVariableIntValue( "KALEIDO_PHOTO_BY_DEPTH" ) != 0;
-        int wish = -1;
+        int               wish = -1;
         if ( ByDepth && m_liveTex == 0 && !m_effectTextures.empty() )
         {
             const unsigned int i = m_scheduler.texState() != 0 ? m_scheduler.nextTexture() : m_scheduler.actTexture();
@@ -2207,10 +2207,12 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
             if ( depth_scene ? map : !map )
                 ++m_photoStat[depth_scene ? 1 : 3];
             if ( ( m_photoStat[0] + m_photoStat[2] ) % 1800 == 0 )
-                fprintf( stderr, "[photo-stats] depth scenes %lld frames, with a map %lld (%.1f %%); other scenes %lld "
-                                 "frames, with a flat photo %lld (%.1f %%)\n",
+                fprintf( stderr,
+                         "[photo-stats] depth scenes %lld frames, with a map %lld (%.1f %%); other scenes %lld "
+                         "frames, with a flat photo %lld (%.1f %%)\n",
                          m_photoStat[0], m_photoStat[1], m_photoStat[0] ? 100.0 * m_photoStat[1] / m_photoStat[0] : 0.0,
-                         m_photoStat[2], m_photoStat[3], m_photoStat[2] ? 100.0 * m_photoStat[3] / m_photoStat[2] : 0.0 );
+                         m_photoStat[2], m_photoStat[3],
+                         m_photoStat[2] ? 100.0 * m_photoStat[3] / m_photoStat[2] : 0.0 );
         }
     }
 

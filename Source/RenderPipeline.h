@@ -1311,12 +1311,12 @@ private:
 
     // Live mood snapshot for the ImageLoader's mood-matched image choice
     // (written once per frame in paint(), read on the loader thread).
-    std::atomic<float> m_moodValence{ 0.5f }; ///< Live snapshot of the music's valence (0..1), for the loader thread's
-                                              ///< mood-matched image choice.
-    std::atomic<float> m_moodArousal{ 0.5f }; ///< Live snapshot of the music's arousal (0..1), for the loader thread's
-                                              ///< mood-matched image choice.
-    std::atomic<float> m_moodAmbient{ 0.f };  ///< Live snapshot of the music's ambient factor (0..1), for the loader
-                                              ///< thread's mood-matched image choice.
+    std::atomic<float> m_moodValence{ 0.5f };  ///< Live snapshot of the music's valence (0..1), for the loader thread's
+                                               ///< mood-matched image choice.
+    std::atomic<float> m_moodArousal{ 0.5f };  ///< Live snapshot of the music's arousal (0..1), for the loader thread's
+                                               ///< mood-matched image choice.
+    std::atomic<float> m_moodAmbient{ 0.f };   ///< Live snapshot of the music's ambient factor (0..1), for the loader
+                                               ///< thread's mood-matched image choice.
     std::atomic<int> m_photoWantDepth{ -1 }; ///< Plan 27.11.2026 P1: what the scene that will show the next photo wants
                                              ///< -- 1 a photo with relief (it writes the photo's depth), 0 a flat one,
                                              ///< -1 no wish (live input, no scenes, KALEIDO_PHOTO_BY_DEPTH=0).
