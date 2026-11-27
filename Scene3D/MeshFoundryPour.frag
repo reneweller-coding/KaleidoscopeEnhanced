@@ -53,6 +53,64 @@ in vec3  vCup;    ///< Cup (from the vertex stage).
 const float Dist = 48.0;    ///< Distance of the main object from the camera (world units).
 const float Ground = -18.0; ///< Height of the ground (world units).
 
+// ---- shadow map of the scene's lamp (Tools/scenegen/patch_shadow3d.py) ----
+uniform float           shadowPass;                           ///< 1 during the shadow map's depth-only pass.
+uniform sampler2DShadow texShadow;                            ///< The lamp's shadow map (depth comparison).
+uniform float           shadowTexel;                          ///< Size of a shadow-map texel (texture coordinates).
+uniform float           shadowMapP; ///< Lamp shadow: 0 = none (the old look, no depth pass) .. 1 = full.
+const vec3              SmLamp = vec3( -0.2, 0.8, -0.5 );     ///< Toward the lamp main() shades with.
+const vec3              SmCentre = vec3( 0.0, Ground, Dist ); ///< Centre of the shadow box (world units).
+const float             SmBox = 35.0;                         ///< Half size of the shadow box (world units).
+
+/**  A point in the clip space of the lamp's shadow map: an orthographic view along the lamp onto the box around
+ * SmCentre.
+ *
+ * @param p  The point (world units). (in)
+ *
+ * @return
+ *   Its clip coordinates (w = 1).
+ *
+ * The construction of RenderPipeline::updateLightMatrixGeneric() -- eye 2 SmBox out along the lamp, looking at the
+ * box centre, near 0.1, far 4 SmBox -- but along the scene's own lamp, so the shadows fall where its light says.
+ **/
+vec4 smClip( vec3 p )
+{
+    vec3  l = normalize( SmLamp );
+    vec3  f = -l;
+    vec3  up = ( abs( f.y ) > 0.98 ) ? vec3( 1.0, 0.0, 0.0 ) : vec3( 0.0, 1.0, 0.0 );
+    vec3  s = normalize( cross( f, up ) );
+    vec3  u = cross( s, f );
+    vec3  q = p - SmCentre - l * ( 2.0 * SmBox );
+    float zn = 0.1, zf = 4.0 * SmBox;
+    return vec4( dot( q, s ) / SmBox, dot( q, u ) / SmBox, ( 2.0 * dot( q, f ) - zf - zn ) / ( zf - zn ), 1.0 );
+}
+
+/**  How much of the lamp's light reaches a point: the shadow map, 3 x 3 taps on top of the hardware's own 2 x 2
+ * comparison filter, the lookup lifted off the surface along its normal (no self-shadowing stripes).
+ *
+ * @param p  The point (world units). (in)
+ * @param n  Its normal (unit length). (in)
+ *
+ * @return
+ *   1 lit .. 0 in shadow; 1 outside the box.
+ **/
+float smShadow( vec3 p, vec3 n )
+{
+    vec3  l = normalize( SmLamp );
+    float ndl = max( dot( n, l ), 0.0 );
+    vec4  c = smClip( p + n * ( 2.0 * SmBox * shadowTexel * 2.2 / max( ndl, 0.15 ) ) );
+    vec3  t = c.xyz * 0.5 + 0.5;
+    if ( t.z > 1.0 || any( lessThan( t.xy, vec2( 0.0 ) ) ) || any( greaterThan( t.xy, vec2( 1.0 ) ) ) )
+        return 1.0;
+    float bias = 0.0006 + 0.0030 * ( 1.0 - ndl );
+    float s = 0.0;
+    for ( int y = -1; y <= 1; ++y )
+        for ( int x = -1; x <= 1; ++x )
+            s += texture( texShadow, vec3( t.xy + vec2( float( x ), float( y ) ) * 1.5 * shadowTexel, t.z - bias ) );
+    return s / 9.0;
+}
+// ---- end of the shadow map ----
+
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
  * @param c  The colour. (in)
@@ -204,6 +262,8 @@ vec3 renderSky( vec3 dir )
         float haze = exp( -t * 0.008 );
         col = vec3( 0.12, 0.10, 0.08 ) * ( 0.6 + 0.6 * noise2( P.xz * 0.15 ) );
         col += vec3( 1.0, 0.45, 0.12 ) * exp( -length( P.xz - vCup.xz ) * 0.05 ) * ( 0.3 + 1.2 * pour );
+        if ( shadowMapP > 0.0 )
+            col *= 1.0 - 0.65 * shadowMapP * ( 1.0 - smShadow( P, vec3( 0.0, 1.0, 0.0 ) ) ); // patch_shadow3d.py
         col = mix( vec3( 0.02 ), col, haze );
     }
     else
@@ -254,6 +314,11 @@ vec3 renderSky( vec3 dir )
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
+    if ( shadowPass > 0.5 )
+    {
+        fragColor = vec4( 0.0 ); // the depth pass (patch_shadow3d.py): nothing to shade
+        return;
+    }
     if ( vBg > 0.5 )
     {
         fragColor = vec4( renderSky( normalize( vPos ) ), 1.0 );
@@ -301,6 +366,8 @@ void main()
     // melt itself as two point lights (the lip and the cup).
     vec3 lamp_dir = normalize( vec3( -0.2, 0.8, -0.5 ) );
     vec3 col = alb * vec3( 0.7, 0.7, 0.75 ) * max( dot( n, lamp_dir ), 0.0 ) * 0.5;
+    if ( shadowMapP > 0.0 )
+        col *= 1.0 - shadowMapP * ( 1.0 - smShadow( vPos, n ) ); // the lamp's shadow (patch_shadow3d.py)
     col += alb * vec3( 1.0, 0.45, 0.15 ) * max( dot( n, normalize( vec3( 0.8, 0.1, 0.5 ) ) ), 0.0 )
            * ( 0.2 + 0.6 * bass );
     col += alb * vec3( 0.10, 0.09, 0.10 ) * 0.5;
