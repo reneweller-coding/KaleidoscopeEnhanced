@@ -14,9 +14,12 @@ A shared GLSL block -- written into each scene file, no include (the decision of
   reliefNormal(n,f,uv,amt)  the normal tilted by the relief: Mikkelsen 2010,
                     "Bump Mapping Unparametrized Surfaces on the GPU" -- the
                     surface gradient from the derivatives of the position, no
-                    vertex tangents.  The height's slope in the photo comes from
-                    four taps of a coarse mip (the 8-bit map would draw
-                    terraces), the chain rule carries it to the screen.
+                    vertex tangents (his frame with the facet's own normal,
+                    the gradient laid into the shading normal's plane).  The
+                    height's slope in the photo comes from taps of two coarse
+                    mips (reliefSlope(); the 8-bit map would draw terraces),
+                    steep edges compressed; the chain rule carries it to the
+                    screen.
 
 and the knob `uniform float reliefP` -- 0 (never set: no preset entry) = the
 old look, every added line sits behind `if ( reliefP > 0.0 )`; above 0 the
