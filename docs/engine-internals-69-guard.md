@@ -78,7 +78,17 @@ as video exports at 1280 x 720, 15 fps: 11.2 min of lock (about 20 times real ti
 there, so 85 scenes in all, 62 % of the time in the four labs).  **0 actions.**  Nearest misses: MandelbrotDeepZoom
 stood still for 16.0 s -- and its frame was flat, mean = peak = 0.6235 in every texel: the zoom inside the set, one
 colour, nothing to see; at 20 s the guard would have been right to act.  The next longest stillness was 7.6 s
-(LightPillarsCity), the longest dark streak 0 s.  [Calm presets: see below.]
+(LightPillarsCity), the longest dark streak 0 s.  Then the calm and the dark presets, where a still or a black
+picture is likeliest to be meant: Ambient, SpaceAmbient and Noir on the seven tracks and `structure128.wav` -- 2.5 h
+of music, 13.5 min of lock with a second job beside it, 103 scenes, armed 86 % of the time: **0 actions** again.
+Over all five presets (4.5 h, 175 scenes) the longest stillness is the flat Mandelbrot's 16.0 s, then 7.6, 5.6
+(ChordCathedralNave), 5.2 (RooftopRainTokyo); the longest dark streak 1.2 s (WireframeRidgeScan); the darkest
+sample while armed 0.0109 (OrbitalSunrise), 2.4 times `darkMean`.  Per scene: `.screen/guard_long/all.tsv`
+(gitignored; `guard_report.py --tsv`).
+
+*The default:* `pictureGuard` stays **off**.  The measurement found no false alarm, but a still picture can be meant
+(the flat Mandelbrot is one, if a poor one), and whether the guard acts on a user's show is the user's call -- the
+switch is in the menu and on the remote.
 
 *The app test* (two test shaders, black and frozen, in a hidden preset `Presets/ZZGuardTest.xml` -- gitignored, the
 shaders in `.screen/guardtest`; the screening groove, 910 s): 35 actions; each test scene was ended 26-28 s after it
@@ -161,6 +171,15 @@ back.
 - Snapshots (`scene_snapshots.py`, 12 entries): identical to `2026-11-26-base` -- once rendered with the user's
   settings file; without it (a worktree has none, the base was rendered with the main checkout's) 6 of 12 differed
   by 2.4-5.6, the settings, not the code: two renders of this build without it are identical too.
+- *The live app* (`-c Allround -w structure128.wav -t 18191`, a private empty settings file, driven over `/api` only):
+  `/api/toggle?k=calib` and `/api/set?k=latency&v=-0.25` (with `X-Kaleido: 1`; without it 403) -- `/api/state` says
+  `calib=1 latency=-0.25`, `/api/beat` gave phase 0.95 at 128.06 BPM (conf 0.66) from the loopback's own grid; the
+  page carries the ring and guard buttons, the tap pad and the slider from -500 ms.  The window with its overlays
+  (`KALEIDO_OVERLAY_SHOT`): `sheets/guard/calibration_ring_live_-250ms.jpg` -- ring, its flash on the close, the kick
+  dot, "Latenz: 250 ms Verzögerung" (the hint was hard to read on a busy scene: it has a dark band now).
+- *An export is never delayed:* the same export (Allround, structure128.wav, 640 x 360, KALEIDO_SEED, a fixed photo)
+  three times -- twice plain, once with `KALEIDO_LATENCY=-0.3`: `framemd5` identical in all 8,885 packets (video
+  and audio), the plain pair as well.
 - `temporal_budget.py` 0 errors, `shake_scan.py` 0 new, `cgvr_format.py --check` 3,512 same, `check_strings.py`,
   `check_build_lists.py` (the .pro lists the two new headers), `check_enum_tables.py`, `doc_shaders.py --check` 0.
 - *Not verified:* the calibration ring and the tap-along on a real phone and real headphones (the user's); the
