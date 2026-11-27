@@ -698,6 +698,7 @@
     <float name="speedP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
   </TextureShader>
   <TextureShader minTimeSolo="21" maxTimeSolo="55" interest="5" file="..\Scene2D\SilenceSnowfallHush.frag" type="normal" mood="calm,dark,dreamy" probability="0.45" complexity="1" gpuMs="0.43">
     <rig preset="flat"/>
@@ -1058,6 +1059,7 @@
     <float name="camDistP" minValue="6.5"  maxValue="9.0"></float>
     <expr name="glowP" formula="clamp(0.725 + 0.11*(seed2*2.0-1.0) + 0.2475*(0.6*kick+0.4*snare), 0.45, 1)"/>
     <float name="glowP"    minValue="0.45" maxValue="1.0"></float>
+    <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
   </TextureShader>
   <TextureShader minTimeSolo="17" maxTimeSolo="45" interest="5" file="..\\Scene3D\\PillarHall.frag" type="scene3d" geom="cubes" probability="0.45" mood="dark,dreamy" complexity="9" shadowExtent="60" gpuMs="0.46">
     <rig preset="procedural"/>
@@ -1209,6 +1211,7 @@
     <float name="camHP"   minValue="5.0" maxValue="14.0"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+    <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
   </TextureShader>
   <TextureShader minTimeSolo="88" maxTimeSolo="232" interest="8" file="..\Scene3D\AuroraBorealisOverFjord.frag" type="scene3d" geom="patches" probability="0.48" mood="calm,dreamy,bright,space" complexity="7" gpuMs="0.58">
     <rig preset="procedural"/>
@@ -1291,6 +1294,7 @@
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+    <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
   </TextureShader>
   <TextureShader minTimeSolo="17" maxTimeSolo="45" interest="5" file="..\Scene2D\MantleConvectionPlume.frag" type="normal" probability="0.5" mood="dark,aggressive" complexity="7" gpuMs="0.37">
     <rig preset="flat"/>
@@ -1324,6 +1328,7 @@
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
+    <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
   </TextureShader>
   <TextureShader minTimeSolo="26" maxTimeSolo="69" interest="6" file="..\Scene3D\OceanAbyssalBrinePool.frag" type="scene3d" geom="grid" probability="0.5" mood="calm,dark,dreamy" complexity="8" gpuMs="0.58">
     <rig preset="procedural"/>
