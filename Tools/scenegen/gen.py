@@ -513,6 +513,68 @@ void labWalk(float seed, ivec4 n, float period)
 }
 """
 
+# The voices of the music, each with a fixed role (plan 26.11.2026, I2): the same in every scene that calls
+# voiceRoles(, so the eye learns them.  All light on parts of the picture -- never the camera, the zoom, a turn or the
+# position of the whole picture -- and every signal a continuous envelope.  voiceP is the strength: 0 (a preset entry
+# without it) returns the colour untouched, the scene's old look bit for bit.  The uniforms it reads are declared by
+# assemble() (VOICE_AUDIO), so a scene that reads one of them itself does not declare it twice.
+VOICE_AUDIO = ["audioKick", "audioSnare", "audioHat", "audioMelodyPitch", "audioMelodyConf", "audioStereoBal",
+               "audioBuildUp", "audioBarPhase"]
+VOICE_LIB = r"""
+// ---- the voices of the music: one role each (plan 26.11.2026) ----
+uniform float voiceP; ///< Strength of the voices' roles, 0..1 (0: the scene as it was; set by an <expr> in the preset).
+
+/**  The voices of the music as light on parts of the picture, one role each, the same in every scene: the kick
+ * pulses the bright form, the snare lights a ring of the picture, the hi-hat a fine glitter on its light parts, the
+ * melody's height a soft band across it, the stereo balance the weight of left against right, the build-up the
+ * tension (contrast up, the light closing in), the bar phase a beam that wanders once round per bar.  Every role
+ * scales the picture's own colours -- no colour, line or edge of its own -- so the chain labs stay "only the photo"
+ * (the user's decision of 17.10.2026, chain_classes.PHOTO_ONLY).
+ *
+ * @param col  The scene's colour before the house finish. (in)
+ * @param p    The centred screen position (screenP()). (in)
+ *
+ * @return
+ *   The colour with the voices' light; col itself while voiceP is 0.
+ **/
+vec3 voiceRoles(vec3 col, vec2 p)
+{
+    if (voiceP <= 0.0) return col;
+    float k = clamp(voiceP, 0.0, 1.0);
+    float l = luma(max(col, 0.0));
+    float r = length(p);
+    // kick: the bright form pulses (the highlights more than the shadows)
+    col *= 1.0 + 0.12 * k * clamp(audioKick, 0.0, 1.0) * smoothstep(0.15, 0.7, l);
+    // snare: a ring of the picture lights up in its own colours; the ring wanders slowly with the music's advance
+    float rr = 0.27 + 0.05 * sin(0.21 * sceneAdvance + 0.4);
+    float ring = exp(-(r - rr) * (r - rr) / (0.035 * 0.035));
+    col *= 1.0 + 0.55 * k * clamp(audioSnare, 0.0, 1.0) * ring;
+    // hi-hat: a fine glitter -- the picture glints at round, jittered points (cells of 1/90 of the height), so it
+    // sparkles where it is light; every point with a weight of its own that changes slowly, the field drifting with
+    // the music's advance
+    vec2 g = p * 90.0 + vec2(0.37, 0.11) * sceneAdvance;
+    vec2 gc = floor(g);
+    vec2 gf = fract(g) - 0.5 - 0.5 * (hash22(gc) - 0.5);
+    float pt = step(0.84, hash21(gc + 17.0)) * smoothstep(0.24, 0.06, length(gf));
+    float tw = 0.5 + 0.5 * sin(6.2831853 * hash21(gc + 5.0) + 0.9 * sceneAdvance);
+    col *= 1.0 + 0.9 * k * clamp(audioHat, 0.0, 1.0) * pt * tw;
+    // melody: a soft band of light whose height follows the melody (high notes high), while a melody sounds
+    float by = mix(-0.32, 0.32, clamp(audioMelodyPitch, 0.0, 1.0));
+    float band = exp(-(p.y - by) * (p.y - by) / (0.09 * 0.09));
+    col *= 1.0 + 0.16 * k * clamp(audioMelodyConf, 0.0, 1.0) * band;
+    // stereo: the side the sound leans to is the heavier, brighter side (the balance is a second-long average)
+    float sx = clamp(p.x / (0.5 * resolution.x / resolution.y), -1.0, 1.0);
+    col *= 1.0 + 0.14 * k * clamp(audioStereoBal, -1.0, 1.0) * sx;
+    // build-up: the tension rises towards the drop -- more contrast, and the light closes in on the middle
+    float bu = k * clamp(audioBuildUp, 0.0, 1.0);
+    col = max(mix(vec3(0.3), col, 1.0 + 0.35 * bu), 0.0) * (1.0 - 0.3 * bu * smoothstep(0.2, 0.75, r));
+    // bar phase: a beam of light wanders once round the middle per bar (only while music plays)
+    float beam = pow(0.5 + 0.5 * cos(atan(p.y, p.x + 1e-6) - 6.2831853 * audioBarPhase), 8.0) * smoothstep(0.05, 0.35, r);
+    col *= 1.0 + 0.12 * k * beam * smoothstep(0.03, 0.2, audioLevel);
+    return col;
+}
+"""
+
 # Fractals filled with the photo (family D of docs/proposals-2026-10-23-flaechig-400.md): the orbit trap is the photo,
 # read at the iterates that fall into a window of the plane.  Appended for sources that call fracTrap(.
 FRAC_LIB = r"""
@@ -3662,6 +3724,8 @@ def assemble(name):
         audio += [a for a in ("audioSectionId", "audioSectionPrev", "audioSectionAge") if a not in audio]
     if re.search(r"\brhy(Beat|Bar|Phrase|Bump|Sec\w*)\s*\(", src):
         audio += [a for a in ("audioBeatPhase", "audioBarPhase", "audioPhrasePos", "audioSectionId", "audioSectionPrev", "audioSectionAge") if a not in audio]
+    if re.search(r"\bvoiceRoles\s*\(", src):
+        audio += [a for a in VOICE_AUDIO if a not in audio]
     for a in BASE_AUDIO + [a for a in audio if a not in BASE_AUDIO]:
         m = re.match(r"(\w+)\[(\d+)\]", a)
         if a in VEC3_AUDIO:
@@ -3708,9 +3772,11 @@ def assemble(name):
         out.append(FAMILY_LIB)
     if re.search(r"\blabWalk\s*\(", src):
         out.append(LAB_LIB)
+    if re.search(r"\bvoiceRoles\s*\(", src):
+        out.append(VOICE_LIB)
     if re.search(r"\bfracTrap\s*\(", src):
         out.append(FRAC_LIB)
-    late = []                                              # libraries that call a function the scene defines: after its helpers
+    late = []                                            # libraries that call a function the scene defines: after its helpers
     if re.search(r"\blicSmear\s*\(", src):
         late.append(LIC_LIB)
     if re.search(r"\bexpAccum\s*\(", src):

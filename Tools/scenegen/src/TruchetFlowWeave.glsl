@@ -13,6 +13,8 @@
  *   audioMode       -> the pulse colour warms in major
  *   audioKick       -> the pulses flare (light)
  *   audioSwell      -> the photo's share in the ribbons (slow)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: scaleP (tile size), weaveP (ribbon relief), flipP (how often tiles
  * turn), hueP.  (weaveP: how rounded the ribbons look)
@@ -63,5 +65,5 @@ void main()
         cols[k] = c;
     }
     vec3 col = mix(cols[0], cols[1], fade);
-    finish(col);
+    finish(voiceRoles(col, screenP()));
 }

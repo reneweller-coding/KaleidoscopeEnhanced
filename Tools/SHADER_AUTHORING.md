@@ -790,6 +790,23 @@ großer Gesamtänderung ein gemessenes `minFade="…"` (Sekunden); ruhige Preset
 setzen zusätzlich `timeSceneFadeMin` (Generator: `SCENE_FADE_MIN`). Nach jeder
 Transition-Änderung: `--transprofile` neu messen, Untergrenze nachziehen.
 
+### V14 — Stimmen der Musik: feste Rollen über `voiceRoles()` (26.11.2026)
+
+Jede Stimme hat überall dieselbe Rolle, damit das Auge sie lernt: Kick = die
+helle Form pulst, Snare = ein Ring des Bildes leuchtet, Hi-Hat = feines rundes
+Glitzern auf den hellen Stellen, Melodiehöhe = ein weiches Lichtband (hohe Töne
+oben), Stereo = die lautere Seite wird heller (`audioStereoBal`, -1 links .. +1
+rechts, über eine Sekunde gemittelt -- die Bandpegel `audioStereoL/R` folgen
+jedem Schlag), Aufbau = mehr Kontrast, das Licht zieht sich zur Mitte, Taktphase
+= ein Lichtstrahl läuft einmal je Takt herum. Alles nur Licht auf Teilen des
+Bildes, nie Kamera, Zoom, Drehung oder Lage des ganzen Bildes. Szenen aus
+`Tools/scenegen` bekommen das über `finish(voiceRoles(col, screenP()))`
+(gen.py `VOICE_LIB`; Patch: `Tools/scenegen/patch_voices.py`, Neubau ohne
+Generator-Drift: `Tools/scenegen/merge_regen.py`). Die Stärke ist der Knopf
+`voiceP`; ohne Eintrag im Preset ist er 0 und die Szene bitgleich wie vorher.
+Einschalten per `<expr name="voiceP" formula="1"/>` (zieht keine Zufallszahl).
+Messen: `python Tools/reactivity.py --voices` (je Stimme stumm gegen voll).
+
 ---
 
 ## Probe-Renders: IMMER mit echten Bildern (`--images`)

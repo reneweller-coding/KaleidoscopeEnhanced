@@ -1893,6 +1893,27 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             sm_ch( m_sStBand[ch][2], std::min( std::sqrt( acc_st_hi[ch] * inv ) * agc_gain, 1.f ) );
         }
     }
+    // ---- Stereo balance (plan 26.11.2026, I2): where the weight of the sound sits, -1 left .. +1 right ----
+    // The band levels above follow every hit (about 30 ms); a picture that leans left or right with them flickers.
+    // The balance averages the channels' energy difference and their sum over about a second, so a loud block
+    // weighs more than a quiet one, and in silence both fade together towards the centre.
+    {
+        const float el = ( acc_st_lo[0] + acc_st_mid[0] + acc_st_hi[0] ) * inv;
+        const float er = ( acc_st_lo[1] + acc_st_mid[1] + acc_st_hi[1] ) * inv;
+        const float k = 1.f
+                        - std::exp( -static_cast<float>( numFrames )
+                                    / static_cast<float>( std::max( sampleRate, 1 ) ) );
+        m_balNum += ( ( er - el ) - m_balNum ) * k;
+        m_balDen += ( ( er + el ) - m_balDen ) * k;
+        if ( m_balDen < 1e-20f ) // no denormals after a long silence
+            m_balNum = m_balDen = 0.f;
+        // A second, plain stage (about 0.6 s) on the ratio: when the drums come in 20 dB louder, the energy-weighted
+        // averages swing within one 50-ms step (measured: 0.37 on the screening music with the lead panned left).
+        const float k2 = 1.f
+                         - std::exp( -static_cast<float>( numFrames )
+                                     / ( 0.6f * static_cast<float>( std::max( sampleRate, 1 ) ) ) );
+        m_balSmooth += ( std::clamp( m_balNum / ( m_balDen + 1e-10f ), -1.f, 1.f ) - m_balSmooth ) * k2;
+    }
 
     // ---- Ambient / beat classification (content-based, HPSS-inspired) ----
     // The old test used the rolling loudness VARIANCE, which classified by
@@ -3674,6 +3695,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     m_features.stereoLowR = m_sStBand[1][0];
     m_features.stereoMidR = m_sStBand[1][1];
     m_features.stereoHighR = m_sStBand[1][2];
+    m_features.stereoBalance = m_balSmooth;
     m_features.deltaPitch = m_sDeltaPitch;
     m_features.musicPresence = m_sMusicPresence;
     m_features.timingScale = timing_scale;

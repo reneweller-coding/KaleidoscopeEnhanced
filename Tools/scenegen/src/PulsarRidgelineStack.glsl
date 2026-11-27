@@ -5,6 +5,8 @@
  * Audio Reactivity (structure, not only light):
  *   audioAdvance -> the phases of the rows glide (integrated)
  *   audioSwell   -> the height of the ridges
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: sizeP (the number of rows), hueP.
 //@params sizeP
@@ -32,5 +34,5 @@ void main()
         float ln = 1.0 - smoothstep(lw * 0.5, lw * 1.6, d);
         if (ln > 0.0) col = mix(col, mix(vec3(1.0), mix(vec3(luma(c)), c, 1.4), 0.5) * (0.7 + 0.7 * prof), ln);
     }
-    finish(col * 1.1);
+    finish(voiceRoles(col * 1.1, screenP()));
 }

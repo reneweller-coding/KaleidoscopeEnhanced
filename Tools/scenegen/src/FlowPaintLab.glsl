@@ -12,6 +12,8 @@
  *   audioPhase      -> the field's own motion (integrated)
  *   audioSectionId/Age -> a new section re-rolls every stage
  *
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  * Knobs: seedP (the walk's seed), lengthP (the base smear length), scaleP (the flow's scale), hueP.
 //@params seedP lengthP scaleP
 //@audio audioSwell
@@ -145,5 +147,5 @@ void main()
             ws += gLabW[i];
         }
     }
-    finish(max(col / max(ws, 1e-3), 0.0));
+    finish(voiceRoles(max(col / max(ws, 1e-3), 0.0), screenP()));
 }

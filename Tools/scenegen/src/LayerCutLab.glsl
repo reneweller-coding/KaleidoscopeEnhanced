@@ -12,6 +12,8 @@
  *   audioSpread     -> how soft the cut edges are
  *   audioPhase      -> the layers' drift and circling (integrated)
  *   audioSectionId/Age -> a new section re-rolls every stage (a new cutting rule)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: seedP (the walk's seed), partP (how far the layers part), edgeP (the base edge softness), hueP.
 //@params seedP partP edgeP
@@ -103,5 +105,5 @@ void main()
             ws += gLabW[i];
         }
     }
-    finish(max(col / max(ws, 1e-3), 0.0));
+    finish(voiceRoles(max(col / max(ws, 1e-3), 0.0), screenP()));
 }

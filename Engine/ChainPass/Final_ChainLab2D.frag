@@ -31,6 +31,15 @@ uniform float audioSpread;       ///< Spectral spread, 0..1.
 uniform float audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioMode;         ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioSnare;        ///< Snare envelope, 0..1.
+uniform float audioHat;          ///< Hi-hat / cymbal onset envelope, 0..1.
+uniform float audioMelodyPitch;  ///< Pitch of the melody, 0..1 over the tracked range.
+uniform float audioMelodyConf;   ///< How sure the analysis is that a melody sounds, 0..1 (0 for drums, noise and
+                                 ///< silence).
+uniform float audioStereoBal;    ///< Where the weight of the sound sits: -1 left .. 0 centre (and mono) .. +1 right, a
+                                 ///< second-long average.
+uniform float audioBuildUp;      ///< Build-up toward a drop, 0..1.
+uniform float audioBarPhase;     ///< Position within the current bar, 0..1.
 uniform float chainAP;           ///< Stage A class knob of the chain (global map), 0..1.
 uniform float chainBP;           ///< Stage B class knob (symmetry), 0..1.
 uniform float chainCP;           ///< Stage C class knob (second map), 0..1.
@@ -107,6 +116,19 @@ float hash21( vec2 p )
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
+}
+/**  Pseudo-random 2D vector (each 0..1) from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   Two pseudo-random numbers 0..1.
+ **/
+vec2 hash22( vec2 p )
+{
+    vec3 p3 = fract( vec3( p.xyx ) * vec3( 0.1031, 0.1030, 0.0973 ) );
+    p3 += dot( p3, p3.yzx + 33.33 );
+    return fract( ( p3.xx + p3.yz ) * p3.zy );
 }
 /**  Smooth 2D value noise, 0..1.
  *
@@ -241,6 +263,45 @@ vec4 imgDepthOff( vec2 uv, vec2 o0, vec2 o1, float lod )
 vec2 anchorOff( vec2 f, float conf, float amt )
 {
     return ( f - 0.5 ) * smoothstep( 0.45, 0.55, conf ) * amt;
+}
+uniform float voiceP; ///< Strength of the voices' roles, 0..1 (0: the scene as it was; set by an <expr> in the preset).
+vec3          voiceRoles( vec3 col, vec2 p )
+{
+    if ( voiceP <= 0.0 )
+        return col;
+    float k = clamp( voiceP, 0.0, 1.0 );
+    float l = luma( max( col, 0.0 ) );
+    float r = length( p );
+
+    col *= 1.0 + 0.12 * k * clamp( audioKick, 0.0, 1.0 ) * smoothstep( 0.15, 0.7, l );
+
+    float rr = 0.27 + 0.05 * sin( 0.21 * sceneAdvance + 0.4 );
+    float ring = exp( -( r - rr ) * ( r - rr ) / ( 0.035 * 0.035 ) );
+    col *= 1.0 + 0.55 * k * clamp( audioSnare, 0.0, 1.0 ) * ring;
+
+
+
+    vec2  g = p * 90.0 + vec2( 0.37, 0.11 ) * sceneAdvance;
+    vec2  gc = floor( g );
+    vec2  gf = fract( g ) - 0.5 - 0.5 * ( hash22( gc ) - 0.5 );
+    float pt = step( 0.84, hash21( gc + 17.0 ) ) * smoothstep( 0.24, 0.06, length( gf ) );
+    float tw = 0.5 + 0.5 * sin( 6.2831853 * hash21( gc + 5.0 ) + 0.9 * sceneAdvance );
+    col *= 1.0 + 0.9 * k * clamp( audioHat, 0.0, 1.0 ) * pt * tw;
+
+    float by = mix( -0.32, 0.32, clamp( audioMelodyPitch, 0.0, 1.0 ) );
+    float band = exp( -( p.y - by ) * ( p.y - by ) / ( 0.09 * 0.09 ) );
+    col *= 1.0 + 0.16 * k * clamp( audioMelodyConf, 0.0, 1.0 ) * band;
+
+    float sx = clamp( p.x / ( 0.5 * resolution.x / resolution.y ), -1.0, 1.0 );
+    col *= 1.0 + 0.14 * k * clamp( audioStereoBal, -1.0, 1.0 ) * sx;
+
+    float bu = k * clamp( audioBuildUp, 0.0, 1.0 );
+    col = max( mix( vec3( 0.3 ), col, 1.0 + 0.35 * bu ), 0.0 ) * ( 1.0 - 0.3 * bu * smoothstep( 0.2, 0.75, r ) );
+
+    float beam = pow( 0.5 + 0.5 * cos( atan( p.y, p.x + 1e-6 ) - 6.2831853 * audioBarPhase ), 8.0 )
+                 * smoothstep( 0.05, 0.35, r );
+    col *= 1.0 + 0.12 * k * beam * smoothstep( 0.03, 0.2, audioLevel );
+    return col;
 }
 /** @{ */
 vec2 gChainM, gChainDx, gChainDy; ///< gChainM: The mirrored chain coordinate of this pixel; gChainDx: Its screen
@@ -592,5 +653,5 @@ void main()
         col += gc * edge * kick * 0.55 * ( ( s0 <= 1 ? 1.0 - sf : 0.0 ) + ( s1 <= 1 ? sf : 0.0 ) );
     if ( walkHost < -1.0 )
         col += vec3( walkA.x + walkB.x + walkC.x + walkD.x + walkO.x ); // keeps the walk uniforms
-    finish( chainAfterglow( col ) );
+    finish( voiceRoles( chainAfterglow( col ), screenP() ) );
 }

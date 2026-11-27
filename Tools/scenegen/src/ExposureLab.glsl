@@ -10,6 +10,8 @@
  *   audioSwell      -> the exposure lengthens as the music swells
  *   audioPhase      -> the pivot wanders and the paths turn (integrated)
  *   audioSectionId/Age -> a new section re-rolls every stage
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: seedP (the walk's seed), lengthP (the exposure's base length), spreadP (how far the pivot wanders), hueP.
 //@params seedP lengthP spreadP
@@ -106,5 +108,5 @@ void main()
             ws += gLabW[i];
         }
     }
-    finish(max(col / max(ws, 1e-3), 0.0));
+    finish(voiceRoles(max(col / max(ws, 1e-3), 0.0), screenP()));
 }

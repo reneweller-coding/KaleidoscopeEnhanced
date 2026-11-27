@@ -6,6 +6,8 @@
  *   audioHarmAdvance -> the frequency ratio steps through simple ratios with the harmony (integrated)
  *   audioAdvance     -> the phase of the figure
  *   audioSwell       -> the brightness of the lines
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: sizeP (the line width), hueP.
 //@params sizeP
@@ -53,5 +55,5 @@ void main()
     float dens = mix(d0, d1, f);
     float gain = 0.9 + 0.6 * clamp(audioSwell, 0.0, 1.0);
     vec3 col = c * (0.18 + gain * dens * 0.9);
-    finish(col * 1.2);
+    finish(voiceRoles(col * 1.2, screenP()));
 }

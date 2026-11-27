@@ -56,6 +56,10 @@ def declared_names(body):
     functions, struct names, buffer-block members."""
     d = set()
     d |= set(re.findall(r'\buniform\s+\w+\s+(\w+)', body))
+    # "uniform sampler2D texChain0, texChain1, texChain2;" declares all three (Engine/ChainPass/Final_ChainLab3D.frag;
+    # the full run does not descend into Engine/ChainPass, --new does)
+    for names in re.findall(r'\buniform\s+\w+\s+(\w+(?:\s*\[\s*\w*\s*\])?(?:\s*,\s*\w+(?:\s*\[\s*\w*\s*\])?)+)\s*;', body):
+        d |= set(re.findall(r'([A-Za-z_]\w*)', names))
     d |= set(re.findall(r'\b(?:in|out|attribute|varying)\s+\w+\s+(\w+)', body))
     d |= set(re.findall(r'\b(?:float|int|uint|bool|double|vec[234]|ivec[234]|uvec[234]|bvec[234]|mat[234](?:x[234])?)\s+(\w+)\s*[=;,)\[]', body))
     d |= set(re.findall(r'\bstruct\s+(\w+)', body))

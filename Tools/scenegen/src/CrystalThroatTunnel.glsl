@@ -14,6 +14,8 @@
  *   audioKick       -> the facets glint (light)
  *   audioMode       -> the crystal: cool quartz in minor, citrine in major
  *   audioSwell      -> the light at the end (slow)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: facetP (facet size), tiltP (facet tilt), wallZoomP, hueP.
 //@params facetP tiltP wallZoomP
@@ -69,5 +71,5 @@ void main()
     vec3 light = mix(cr, vec3(1.0), 0.6) * (0.4 + 0.8 * swell);
     col = mix(light * 0.3, col, exp(-z * 0.1));
     col += light * exp(-r * 12.0) * 1.5;
-    finish(col);
+    finish(voiceRoles(col, screenP()));
 }

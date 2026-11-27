@@ -12,6 +12,8 @@
  *   audioKick       -> the edges flare (light)
  *   audioMode       -> the tint: cool in minor, warm in major
  *   audioSwell      -> the relief light (slow)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: styleP (photo / relief / glowing edges / contour lines), speedP (flow speed), detailP (texture sharpness), hueP.
  * chainPhotoOnly (chain_classes.PHOTO_ONLY, set since 17.10.2026): only the photo in its own colours -- styleP has no
@@ -67,5 +69,5 @@ void main()
         col *= mix(vec3(0.9, 0.97, 1.08), vec3(1.08, 0.98, 0.9), mode);
         col += glowColour(ph, p, hueP * 0.159) * edge * kick * 0.3 * (1.0 - smoothstep(1.0, 2.0, st));
     }
-    finish(col);
+    finish(voiceRoles(col, p));
 }

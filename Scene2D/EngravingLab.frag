@@ -21,6 +21,8 @@
  *    audioPhase      -> the field's turn and the waves' travel (integrated)
  *    audioSectionId/Age -> a new section re-rolls every stage
  *
+ *    voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                       build-up and bar phase each light a part of the picture of their own; 0 = as before
  *  Knobs: seedP (the walk's seed), densityP (lines per unit), weightP (the base line weight), hueP.
  *
  *  @author René Weller
@@ -46,6 +48,16 @@ uniform float audioSpread;      ///< Spectral spread, 0..1.
 uniform float audioSectionId; ///< Slot of the current song section in the analyzer's fingerprint store (-1: none yet).
 uniform float audioSectionPrev; ///< Slot of the previous song section.
 uniform float audioSectionAge;  ///< Seconds since the current song section began.
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSnare;       ///< Snare envelope, 0..1.
+uniform float audioHat;         ///< Hi-hat / cymbal onset envelope, 0..1.
+uniform float audioMelodyPitch; ///< Pitch of the melody, 0..1 over the tracked range.
+uniform float audioMelodyConf;  ///< How sure the analysis is that a melody sounds, 0..1 (0 for drums, noise and
+                                ///< silence).
+uniform float audioStereoBal;   ///< Where the weight of the sound sits: -1 left .. 0 centre (and mono) .. +1 right, a
+                                ///< second-long average.
+uniform float audioBuildUp;     ///< Build-up toward a drop, 0..1.
+uniform float audioBarPhase;    ///< Position within the current bar, 0..1.
 
 uniform float seedP;    ///< Seed knob: the walk's seed, 0..1.
 uniform float densityP; ///< Density knob, 0..1.
@@ -677,6 +689,63 @@ void labWalk( float seed, ivec4 n, float period )
     }
 }
 
+
+// ---- the voices of the music: one role each (plan 26.11.2026) ----
+uniform float voiceP; ///< Strength of the voices' roles, 0..1 (0: the scene as it was; set by an <expr> in the preset).
+
+/**  The voices of the music as light on parts of the picture, one role each, the same in every scene: the kick pulses
+ * the bright form, the snare lights a ring of the picture, the hi-hat a fine glitter on its light parts, the
+ * melody's height a soft band across it, the stereo balance the weight of left against right, the build-up the
+ * tension (contrast up, the light closing in), the bar phase a beam that wanders once round per bar.
+ *
+ * @param col  The scene's colour before the house finish. (in)
+ * @param p    The centred screen position (screenP()). (in)
+ *
+ * @return
+ *   The colour with the voices' light; col itself while voiceP is 0.
+ *
+ * Every role scales the picture's own colours -- no colour, line or edge of its own -- so the chain labs stay "only the
+ * photo" (the user's decision of 17.10.2026, chain_classes.PHOTO_ONLY).
+ **/
+vec3 voiceRoles( vec3 col, vec2 p )
+{
+    if ( voiceP <= 0.0 )
+        return col;
+    float k = clamp( voiceP, 0.0, 1.0 );
+    float l = luma( max( col, 0.0 ) );
+    float r = length( p );
+    // kick: the bright form pulses (the highlights more than the shadows)
+    col *= 1.0 + 0.12 * k * clamp( audioKick, 0.0, 1.0 ) * smoothstep( 0.15, 0.7, l );
+    // snare: a ring of the picture lights up in its own colours; the ring wanders slowly with the music's advance
+    float rr = 0.27 + 0.05 * sin( 0.21 * sceneAdvance + 0.4 );
+    float ring = exp( -( r - rr ) * ( r - rr ) / ( 0.035 * 0.035 ) );
+    col *= 1.0 + 0.55 * k * clamp( audioSnare, 0.0, 1.0 ) * ring;
+    // hi-hat: a fine glitter -- the picture glints at round, jittered points (cells of 1/90 of the height), so it
+    // sparkles where it is light; every point with a weight of its own that changes slowly, the field drifting with
+    // the music's advance
+    vec2  g = p * 90.0 + vec2( 0.37, 0.11 ) * sceneAdvance;
+    vec2  gc = floor( g );
+    vec2  gf = fract( g ) - 0.5 - 0.5 * ( hash22( gc ) - 0.5 );
+    float pt = step( 0.84, hash21( gc + 17.0 ) ) * smoothstep( 0.24, 0.06, length( gf ) );
+    float tw = 0.5 + 0.5 * sin( 6.2831853 * hash21( gc + 5.0 ) + 0.9 * sceneAdvance );
+    col *= 1.0 + 0.9 * k * clamp( audioHat, 0.0, 1.0 ) * pt * tw;
+    // melody: a soft band of light whose height follows the melody (high notes high), while a melody sounds
+    float by = mix( -0.32, 0.32, clamp( audioMelodyPitch, 0.0, 1.0 ) );
+    float band = exp( -( p.y - by ) * ( p.y - by ) / ( 0.09 * 0.09 ) );
+    col *= 1.0 + 0.16 * k * clamp( audioMelodyConf, 0.0, 1.0 ) * band;
+    // stereo: the side the sound leans to is the heavier, brighter side (the balance is a second-long average)
+    float sx = clamp( p.x / ( 0.5 * resolution.x / resolution.y ), -1.0, 1.0 );
+    col *= 1.0 + 0.14 * k * clamp( audioStereoBal, -1.0, 1.0 ) * sx;
+    // build-up: the tension rises towards the drop -- more contrast, and the light closes in on the middle
+    float bu = k * clamp( audioBuildUp, 0.0, 1.0 );
+    col = max( mix( vec3( 0.3 ), col, 1.0 + 0.35 * bu ), 0.0 ) * ( 1.0 - 0.3 * bu * smoothstep( 0.2, 0.75, r ) );
+    // bar phase: a beam of light wanders once round the middle per bar (only while music plays)
+    float beam = pow( 0.5 + 0.5 * cos( atan( p.y, p.x + 1e-6 ) - 6.2831853 * audioBarPhase ), 8.0 )
+                 * smoothstep( 0.05, 0.35, r );
+    col *= 1.0 + 0.12 * k * beam * smoothstep( 0.03, 0.2, audioLevel );
+    return col;
+}
+
 /**  A line at coordinate a: coverage of a soft line whose half width is w (in line spacings).
  *
  * @param a  The coordinate across the lines (one unit per line). (in)
@@ -827,5 +896,5 @@ void main()
             ws += gLabW[i];
         }
     }
-    finish( max( col / max( ws, 1e-3 ), 0.0 ) );
+    finish( voiceRoles( max( col / max( ws, 1e-3 ), 0.0 ), screenP() ) );
 }

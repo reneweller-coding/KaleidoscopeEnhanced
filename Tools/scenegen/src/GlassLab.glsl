@@ -11,6 +11,8 @@
  *   audioSwell      -> the glass's thickness breathes with it
  *   audioPhase      -> the pane's slide (integrated)
  *   audioSectionId/Age -> a new section re-rolls every stage (a new sort of glass)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: seedP (the walk's seed), gridP (how fine the glass's pattern is), thickP (the base thickness), hueP.
 //@params seedP gridP thickP
@@ -154,5 +156,5 @@ void main()
         }
     }
     photoDepthOut(dsum / max(ws, 1e-3));
-    finish(max(col / max(ws, 1e-3), 0.0));
+    finish(voiceRoles(max(col / max(ws, 1e-3), 0.0), screenP()));
 }

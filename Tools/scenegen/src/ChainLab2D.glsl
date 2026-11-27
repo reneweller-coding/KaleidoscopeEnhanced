@@ -26,6 +26,8 @@
  *   audioKick       -> the edges flare (light)
  *   audioMode       -> the tint and the palette: cool in minor, warm in major
  *   audioSwell      -> the relief light and the palette saturation (slow)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: chainAP / chainBP / chainCP / chainDP (the transform of each stage and
  * its sub-variant -- rolled once per start, so the chain never switches while it
@@ -643,5 +645,5 @@ void main()
     if (!chainPhotoOnly) col *= mix(vec3(0.9, 0.97, 1.08), vec3(1.08, 0.98, 0.9), mode);   // cool .. warm with the mode
     if (!chainPhotoOnly)                                     // kick glints on photo/relief: glowing edges
         col += gc * edge * kick * 0.55 * ((s0 <= 1 ? 1.0 - sf : 0.0) + (s1 <= 1 ? sf : 0.0));
-    finish(chainAfterglow(col));
+    finish(voiceRoles(chainAfterglow(col), screenP()));
 }

@@ -14,6 +14,8 @@
  *   audioSpread     -> the seams' depth
  *   audioSectionId/Age -> a new section re-rolls division, mapping, seam and motion
  *
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  * Knobs: seedP (the walk's seed), cellsP (how many cells), mixP (how different the cells' windows are), hueP.
 //@params seedP cellsP mixP
 //@audio audioSwell audioSpread
@@ -212,5 +214,6 @@ void main()
         }
     }
     photoDepthOut(dsum / max(ws, 1e-3));
-    finish(max(col / max(ws, 1e-3), 0.0));
+    finish(voiceRoles(max(col / max(ws, 1e-3), 0.0), screenP()));
+
 }

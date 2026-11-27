@@ -37,6 +37,8 @@ HEAD = r'''//@doc
  *   audioKick       -> the rims flare (light)
  *   audioMode       -> the light and the palette: cool in minor, warm in major
  *   audioSwell      -> the fog glow, the colour saturation and the width of the flight tube (slow)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: spaceP / coreP / bodyP (the 3D chain, rolled per start), solidP (the colour
  * chain projected on three planes, or as a solid texture with the depth as its
@@ -354,8 +356,14 @@ float reliefH(vec3 fq, vec3 n, float lod)
 }
 """
 MAIN = MAIN.replace("void main()", RELIEF + "\nvoid main()", 1)
-assert MAIN.rstrip().endswith("finish(col);\n}") or MAIN.rstrip().endswith("finish(col);\r\n}")
-MAIN = MAIN[:MAIN.rindex("finish(col);")] + "finish(chainAfterglow(col));" + MAIN[MAIN.rindex("finish(col);") + len("finish(col);"):]
+# The 3D chain scenes end in finish(voiceRoles(col, p)) since 26.11.2026 (the voices' roles, gen.py VOICE_LIB).  In
+# the lab the voices go onto col itself: Engine/ChainPass/Final_ChainLab3D.frag ends in a finish(col) of its own
+# (make_chainpass.py, write_3d), which would drop a role applied only inside the call.
+FIN = "finish(voiceRoles(col, p));" if "finish(voiceRoles(col, p));" in MAIN else "finish(col);"
+assert MAIN.rstrip().endswith(FIN + "\n}") or MAIN.rstrip().endswith(FIN + "\r\n}")
+LAB_FIN = ("col = voiceRoles(col, screenP());\n    finish(chainAfterglow(col));" if "voiceRoles" in FIN
+           else "finish(chainAfterglow(col));")
+MAIN = MAIN[:MAIN.rindex(FIN)] + LAB_FIN + MAIN[MAIN.rindex(FIN) + len(FIN):]
 MAIN = MAIN.replace("        vec3 tex = colour3(fp, n, lod, ", """        vec3 nGeo = n;                                          // texture on the geometric normal, light on the bumped one
         if (!chainPhotoOnly && reliefP > 0.3) {                 // a knob: every pixel takes the same branch
             vec3 t1 = normalize(cross(n, abs(n.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0))), t2 = cross(n, t1);

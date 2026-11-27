@@ -11,6 +11,8 @@
  *   audioSwell      -> how many moments the screen holds: the slices thicken as the music swells
  *   audioPhase      -> the photo's motion (integrated)
  *   audioSectionId/Age -> a new section re-rolls every stage (a new scanner)
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: seedP (the walk's seed), spanP (the base span of time on the screen), speedP (the photo's speed), hueP.
 //@params seedP spanP speedP
@@ -102,5 +104,5 @@ void main()
         }
     }
     photoDepthOut(dsum / max(ws, 1e-3));
-    finish(max(col / max(ws, 1e-3), 0.0));
+    finish(voiceRoles(max(col / max(ws, 1e-3), 0.0), screenP()));
 }

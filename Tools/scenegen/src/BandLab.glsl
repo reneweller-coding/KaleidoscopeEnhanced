@@ -13,6 +13,8 @@
  *   audioRoughness  -> the middle groups' ripple and shear
  *   audioPhase      -> the laws' clocks (integrated)
  *   audioSectionId/Age -> a new section re-rolls every group's law
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  *
  * Knobs: seedP (the walk's seed: where the lab starts), speedP (the laws' clock), reachP (how far the bands travel), hueP.
 //@params seedP speedP reachP
@@ -96,5 +98,5 @@ void main()
             ws += gLabW[i];
         }
     }
-    finish(max(col / max(ws, 1e-3), 0.0) * 1.05);
+    finish(voiceRoles(max(col / max(ws, 1e-3), 0.0) * 1.05, screenP()));
 }

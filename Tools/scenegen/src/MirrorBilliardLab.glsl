@@ -14,6 +14,8 @@
  *   audioSwell      -> how far the walls tilt away from a perfect room: the splinters open as the music swells
  *   audioSectionId/Age -> a new section re-rolls every stage (a new room)
  *
+ *   voiceP          -> the voices' roles (voiceRoles(), plan 26.11.2026): kick, snare, hi-hat, melody, stereo,
+ *                      build-up and bar phase each light a part of the picture of their own; 0 = as before
  * Knobs: seedP (the walk's seed), sizeP (the room's size), skewP (how far from a perfect room), hueP.
 //@params seedP sizeP skewP
 //@audio audioSwell audioHarmAdvance
@@ -133,5 +135,6 @@ void main()
         }
     }
     photoDepthOut(dsum / max(ws, 1e-3));
-    finish(max(col / max(ws, 1e-3), 0.0));
+    finish(voiceRoles(max(col / max(ws, 1e-3), 0.0), screenP()));
+
 }
