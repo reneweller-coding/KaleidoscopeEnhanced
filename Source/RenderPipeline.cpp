@@ -72,8 +72,6 @@ float RenderPipeline::M_RenderScaleMax = 1.0f; // no supersampling unless asked 
 bool  RenderPipeline::M_RenderScaleFromCli = false;
 float RenderPipeline::M_LightShow = 0.0f;      // corner lamps / light-show OFF by default
 bool  RenderPipeline::M_StrictLight = false;   // strict light protection (ini lightProtectionStrict)
-bool  RenderPipeline::M_HdrBuffers = DefaultHdrBuffers; // 16-bit intermediates (ini hdrBuffers), on since 27.11.
-bool  RenderPipeline::M_PictureGuard = DefaultPictureGuard; // the picture guard (ini pictureGuard), on since 27.11.
 bool  RenderPipeline::M_SpoutEnabled = false;  // Spout sender (CLI -o)
 bool  RenderPipeline::M_SpoutClean = false;    // Spout sends the displayed frame, not the raw render
 float RenderPipeline::M_DisplayHz = 60.f;      // the panel rate (glwidget sets it)
@@ -104,6 +102,10 @@ float RenderPipeline::featureDelay()
     return -M_LatencyLead;
 }
 
+// The two defaults the user switched on on 27.11.2026 (ini hdrBuffers, pictureGuard).
+bool RenderPipeline::M_HdrBuffers = DefaultHdrBuffers;
+bool RenderPipeline::M_PictureGuard = DefaultPictureGuard;
+
 bool RenderPipeline::hdrBuffers()
 {
     // Latched at the first call (the first pipeline's constructor, after loadSettings()): a change of the setting
@@ -122,11 +124,13 @@ bool RenderPipeline::hdrBuffersFor( const QByteArray &env, bool setting )
     return setting;
 }
 
-// ---------------------------------------------------------------------------
-// Whether this driver gives complete, renderable RGBA16F targets with mipmaps (the intermediates need all three).
-// Probed once with a small texture; a GL 3.3 driver must support them, but Mesa builds and old drivers have been
-// seen without float render targets.  No: the pipelines fall back to 8 bit, with one log line.
-// ---------------------------------------------------------------------------
+/**  Whether this driver gives complete, renderable RGBA16F targets with mipmaps (the intermediates need all three).
+ * Probed once with a small texture; a GL 3.3 driver must support them, but Mesa builds and old drivers have been seen
+ * without float render targets.  If not, the pipelines fall back to 8 bit (reinit()), with one log line.
+ *
+ * @return
+ *   True if a 16-bit target is complete and drew no GL error.
+ **/
 static bool hdrTargetsComplete()
 {
     static int Result = -1;
@@ -156,7 +160,8 @@ static bool hdrTargetsComplete()
     Result = ( status == GL_FRAMEBUFFER_COMPLETE && err == GL_NO_ERROR ) ? 1 : 0;
     if ( !Result )
         fprintf( stderr, "Intermediate pictures: RGBA16F targets incomplete on this driver (status 0x%x, error 0x%x) "
-                         "-- 8 bit (RGBA8) instead\n", status, err );
+                         "-- 8 bit (RGBA8) instead\n",
+                 status, err );
     return Result == 1;
 }
 bool                    RenderPipeline::M_Pinned = false;         // VJ pin ('u')
@@ -3066,9 +3071,9 @@ void RenderPipeline::capSceneLight( EffectShader *e, GLuint fbo )
     extern GLuint fullscreenVAO();
     // GL_MIN ignores the blend factors: every channel becomes min( the scene's, the cap ); the alpha is far above
     // any value.  No depth test or write, no clear: the frame and its depth stay as the scene left them.
-    GLint            prev_fbo = 0, prev_eq = GL_FUNC_ADD;
-    const GLboolean  blend = glIsEnabled( GL_BLEND ), depth = glIsEnabled( GL_DEPTH_TEST );
-    GLboolean        depth_mask = GL_TRUE;
+    GLint           prev_fbo = 0, prev_eq = GL_FUNC_ADD;
+    const GLboolean blend = glIsEnabled( GL_BLEND ), depth = glIsEnabled( GL_DEPTH_TEST );
+    GLboolean       depth_mask = GL_TRUE;
     glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prev_fbo );
     glGetIntegerv( GL_BLEND_EQUATION_RGB, &prev_eq );
     glGetBooleanv( GL_DEPTH_WRITEMASK, &depth_mask );

@@ -196,6 +196,13 @@ colours, a bright patch of the photo stands in its sky), `_2.jpg` (the other Chr
 `_3.jpg` (the mesh scenes -- MeshZoetrope shows the shadow beside its base most clearly -- and the three labs with a
 depth look).
 
+*release_check* (`--skip snapshots`, alone, 24.8 min, with A, B and C): selftest 182/0, schedule 20 plans 0
+violations, rules, build lists, analyzer, transitions (210/210), shadercheck (3,224 files, 0/0), shaderdoc, chain
+(0 of 12 differ) and perf green -- ChainLab2D 120 fps, GPU p90 1.06 ms; ChainLabTunnel 1.54; ChainLab3D 3.61;
+ChainSlice3D 2.55; the seven named chains 0.78..2.38, all 120 fps.  Layout and Doxygen were red on two lines of my own
+(a static block the formatter would have realigned, an undocumented probe function); both fixed, and the two steps
+rerun green (3,516 files same; C++ 0, shaders 0 warnings), self test 182/0 again after the rebuild.
+
 ### For the user
 
 - QuantumQubitArray still flashes 1.5 times a second with 16 bit against 0.5 with 8 bit (cap 1.2; under the limit of
