@@ -544,6 +544,14 @@ public:
      * program, so a hot reload is seen.
      **/
     bool writesDepth();
+    /**  The light cap of this scene with 16-bit intermediates: a line `// @hdrcap <X>` in its fragment source.
+     *
+     * @return
+     *   X (above 0) for such a scene: the host keeps every pixel of its finished frame at most X
+     *   (RenderPipeline::capSceneLight(), Engine/HdrCap.frag); 0 for every other scene.  An 8-bit frame is never
+     *   touched.  Read with writesDepth()'s scan, cached per program.
+     **/
+    float hdrCap();
     /**  Whether this scene shows a loaded model -- a single recognisable solid object rather than an abstract field.
      *
      * @return
@@ -1118,6 +1126,7 @@ protected:
     void             stepState();
     bool             m_writesDepth = false;    ///< writesDepth() for m_writesDepthProg.
     GLuint           m_writesDepthProg = 0;    ///< Program m_writesDepth belongs to (0: not yet read).
+    float            m_hdrCap = 0.f;           ///< hdrCap() for m_writesDepthProg.
     int              m_usesState = -1;         ///< -1 not yet known, 0 no state, 1 the shader carries a state.
     GLuint           m_stateUsesProg = 0;      ///< Program m_usesState and the locations below belong to.
     GLuint           m_stateTex[2] = { 0, 0 }; ///< The ping-pong pair (RGBA16F, repeat, linear).

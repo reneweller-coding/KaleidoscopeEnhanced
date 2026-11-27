@@ -106,6 +106,7 @@ GLC_DEF( glClearBufferfv )
 GLC_DEF( glTexImage3D )
 GLC_DEF( glFramebufferTextureLayer )
 GLC_DEF( glBlitFramebuffer )
+GLC_DEF( glBlendEquation )
 GLC_DEF( glTexImage2DMultisample )
 /** @} */
 
@@ -448,6 +449,7 @@ int glcoreInit( void )
     GLC_LOAD_OPT( glTexImage3D )
     GLC_LOAD_OPT( glFramebufferTextureLayer )
     GLC_LOAD_OPT( glBlitFramebuffer )
+    GLC_LOAD_OPT( glBlendEquation ) // the light cap of 16-bit frames (optional: without it no cap)
     // MSAA for 3D scenes (optional: without it, scenes just render unaliased
     // as before -- see RenderPipeline::ensureMsaaTargets()).
     GLC_LOAD_OPT( glTexImage2DMultisample )

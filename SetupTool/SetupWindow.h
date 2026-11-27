@@ -116,6 +116,7 @@ private:
     QSpinBox  *m_idleMinutes = nullptr; ///< Rest after this many minutes of digital silence (ini idleMinutes), 0 = off.
     QCheckBox *m_idleDisplayOff = nullptr; ///< Let the display sleep at rest (ini idleDisplayOff); off by default.
     QCheckBox *m_strictLight = nullptr;    ///< Strict light protection (ini lightProtectionStrict); off by default.
+    QCheckBox *m_hdrBuffers = nullptr;     ///< 16-bit intermediates (ini hdrBuffers); on by default.
 
     /** @name Extra-content downloader
      *  The photo library and the 3D models are published as release assets

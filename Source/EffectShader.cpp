@@ -600,6 +600,7 @@ bool EffectShader::writesDepth()
         return m_writesDepth;
     m_writesDepthProg = m_shProgId;
     m_writesDepth = false;
+    m_hdrCap = 0.f;
     const char *file = fragmentFile(); // null for a program built from source in memory (no file to read)
     if ( !file )
         return false;
@@ -609,12 +610,17 @@ bool EffectShader::writesDepth()
         while ( !line.empty() && ( line.back() == '\r' || line.back() == ' ' || line.back() == '\t' ) )
             line.pop_back();
         if ( line == "// @depth" )
-        {
             m_writesDepth = true;
-            break;
-        }
+        else if ( line.rfind( "// @hdrcap ", 0 ) == 0 ) // the light cap with 16-bit intermediates (hdrCap())
+            m_hdrCap = std::max( 0.f, static_cast<float>( std::atof( line.c_str() + 11 ) ) );
     }
     return m_writesDepth;
+}
+
+float EffectShader::hdrCap()
+{
+    writesDepth(); // one read of the source fills both
+    return m_hdrCap;
 }
 
 

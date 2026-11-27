@@ -100,7 +100,9 @@ void PresentPass::setup( int renderW, int renderH,
     updateFinalTexture( renderW, renderH, internalFmt, fmt, type );
     // 16-bit intermediates (RenderPipeline::hdrBuffers()): Present.frag rolls the light above 1 off (hdrBuffers).
     if ( !m_hdr && internalFmt == GL_RGBA16F )
-        fprintf( stderr, "Intermediate pictures: RGBA16F (KALEIDO_HDR_BUFFERS)\n" );
+        fprintf( stderr, "Intermediate pictures: RGBA16F (setting hdrBuffers / KALEIDO_HDR_BUFFERS)\n" );
+    else if ( m_fboFinal == 0 && internalFmt != GL_RGBA16F )
+        fprintf( stderr, "Intermediate pictures: RGBA8\n" );
     m_hdr = internalFmt == GL_RGBA16F;
 
     if ( m_fboFinal == 0 )

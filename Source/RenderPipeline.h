@@ -906,14 +906,39 @@ public:
      *   The frozen scene time, or a negative value when unset.
      **/
     static float freezeTime();
-    /**  KALEIDO_HDR_BUFFERS=1: the intermediate pictures (the scene, FX and transition targets, the final frame, the
-     * trails, the bloom, the stereo targets, the MSAA colour -- everything that follows m_texInternalFormat) are
-     * RGBA16F instead of RGBA8, so light above 1 survives to the present pass (docs/engine-internals-69-light.md).
+    /**  16-bit intermediates for this session: the intermediate pictures (the scene, FX and transition targets, the
+     * final frame, the trails, the bloom, the stereo targets, the MSAA colour -- everything that follows
+     * m_texInternalFormat) are RGBA16F instead of RGBA8, so light above 1 survives to the present pass
+     * (docs/engine-internals.md (69) L1, (70)).  The setting hdrBuffers (default DefaultHdrBuffers), with
+     * KALEIDO_HDR_BUFFERS=0|1 deciding first; read once at the first call, so a change of the setting applies at the
+     * next start.  A pipeline whose 16-bit targets turn out incomplete falls back to 8 bit (reinit()).
      *
      * @return
-     *   True if the switch is set; read once.
+     *   True if this session renders its intermediates at 16 bit.
      **/
     static bool hdrBuffers();
+    /**  hdrBuffers() from its inputs (the self test passes its own).
+     *
+     * @param env      The value of KALEIDO_HDR_BUFFERS ("0" or "1" decide; anything else, or empty, does not). (in)
+     * @param setting  The setting hdrBuffers. (in)
+     *
+     * @return
+     *   True for 16-bit intermediates.
+     **/
+    static bool hdrBuffersFor( const QByteArray &env, bool setting );
+    /// The default of the setting hdrBuffers (the user's decision of 27.11.2026: on).
+    static constexpr bool DefaultHdrBuffers = true;
+    /**  The setting hdrBuffers (the menu, the remote, the Setup tool): what the NEXT start renders with.
+     *
+     * @return
+     *   The setting; hdrBuffers() says what this session renders with.
+     **/
+    static bool hdrBuffersSetting() { return M_HdrBuffers; }
+    /**  Changes the setting hdrBuffers; the targets keep their format until the next start.
+     *
+     * @param on  16-bit intermediates from the next start. (in)
+     **/
+    static void setHdrBuffers( bool on ) { M_HdrBuffers = on; }
     // Pin (key 'u'): keep the CURRENT effect/combine on screen — scheduled and
     // forced switches (section/drop/novelty) are suppressed until unpinned.
     /**  Toggles VJ pin (suppresses scheduled/forced effect and combine switches; key 'u').
@@ -1456,6 +1481,14 @@ private:
      * for a 3D scene, black for none).  Not for eye-packed frames.
      **/
     void renderDepthViews();
+    /**  The light cap of a scene marked `// @hdrcap <X>` (EffectShader::hdrCap()): with 16-bit intermediates every
+     * pixel of its finished frame is kept at most X (Engine/HdrCap.frag, blended with GL_MIN after the MSAA resolve).
+     * Nothing for any other scene or with 8-bit intermediates.
+     *
+     * @param e    The scene that has just drawn. (in)
+     * @param fbo  The framebuffer holding its frame. (in)
+     **/
+    void capSceneLight( EffectShader *e, GLuint fbo );
     /**  Uploads the pending next photo (m_nextImage, filled by ImageLoader) into @p texID.
      *
      * @param texID  Destination texture id (m_actTex or m_nextTex after a swap). (in,out)
@@ -2176,6 +2209,7 @@ private:
     static float M_MoodStrength;     ///< global mood-grade strength (default 1.0).
     static float M_LightShow;        ///< 0 = corner lamps/light-show off (default), 1 = on.
     static bool  M_StrictLight;      ///< Strict light protection (ini lightProtectionStrict).
+    static bool  M_HdrBuffers;       ///< The setting hdrBuffers: 16-bit intermediates from the next start.
     static bool  M_PictureGuard;     ///< The picture guard (ini pictureGuard; pictureGuard()).
     static float M_LatencyLead;      ///< latency in seconds (default 0.05): > 0 phase lead, < 0 delay of all features.
     static bool  M_Blackout; ///< VJ blackout target (smoothed per instance) — actual fade is smoothed in PresentPass.
@@ -2428,6 +2462,8 @@ private:
     // KALEIDO_SHOW_DEPTH (plan T2): the depth view's program and framebuffer.
     GLuint m_depthViewProg = 0; ///< Engine/DepthView.frag, built on first use.
     GLuint m_depthViewFbo = 0;  ///< Framebuffer with only a scene's colour texture attached (the depth is sampled).
+    GLuint m_hdrCapProg = 0;    ///< Engine/HdrCap.frag, built on first use (capSceneLight()).
+    GLint  m_hdrCapUni = -1;    ///< Its uniform "capLight".
 
     // ---- The second photo (17.10.2026) ----
     // Scenes that set two pictures against each other (imgB() in Tools/scenegen) get the photo shown BEFORE the

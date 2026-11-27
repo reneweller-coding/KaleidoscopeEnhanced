@@ -348,6 +348,8 @@ void SetupWindow::buildContent()
     f_start->addRow( QString(), m_idleDisplayOff );
     m_strictLight = new QCheckBox( uiString( S_SETUP_STRICTLIGHT ) );
     f_start->addRow( QString(), m_strictLight );
+    m_hdrBuffers = new QCheckBox( uiString( S_SETUP_HDR ) );
+    f_start->addRow( QString(), m_hdrBuffers );
 
     // Photo source. Empty means "whatever the preset says", which is the
     // bundled Images folder -- deliberately NOT a path written into the presets,
@@ -583,6 +585,7 @@ void SetupWindow::loadFromIni()
     m_idleMinutes->setValue( s.value( "idleMinutes", 0 ).toInt() );
     m_idleDisplayOff->setChecked( s.value( "idleDisplayOff", false ).toBool() );
     m_strictLight->setChecked( s.value( "lightProtectionStrict", false ).toBool() );
+    m_hdrBuffers->setChecked( s.value( "hdrBuffers", true ).toBool() ); // RenderPipeline::DefaultHdrBuffers
     m_imageDir->setText( s.value( "imageDirectory", QString() ).toString() );
 
     m_lyricsMode->setCurrentIndex( qBound( 0, s.value( "lyricsMode", 2 ).toInt(), 2 ) );
@@ -648,6 +651,7 @@ void SetupWindow::saveToIni()
     s.setValue( "idleMinutes", m_idleMinutes->value() );
     s.setValue( "idleDisplayOff", m_idleDisplayOff->isChecked() );
     s.setValue( "lightProtectionStrict", m_strictLight->isChecked() );
+    s.setValue( "hdrBuffers", m_hdrBuffers->isChecked() );
     s.setValue( "imageDirectory", m_imageDir->text().trimmed() );
 
     s.setValue( "lyricsMode", m_lyricsMode->currentIndex() );

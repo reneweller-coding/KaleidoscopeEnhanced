@@ -274,6 +274,9 @@ static const char *kPageTemplate = R"HTML(<!DOCTYPE html>
   <button id="autoscale" onclick="cmd('/api/toggle?k=autoscale')">@@AUTOSCALE@@</button>
   <button id="autoconfig" onclick="cmd('/api/toggle?k=autoconfig')">@@AUTOPRESET@@</button>
  </div>
+ <div class="row">
+  <button id="hdr" onclick="cmd('/api/toggle?k=hdr')">@@HDR@@</button>
+ </div>
 </div>
 
 <div class="panel" id="p-info">
@@ -396,6 +399,7 @@ function refresh(){ if(Date.now()<hold) return;
   setCls('freeze',s.frozen);       setCls('pin',s.pinned);
   setCls('shaderinfo',s.shaderInfo); setCls('features',s.featureOverlay);
   setCls('calib',s.calib);         setCls('guard',s.guard);
+  setCls('hdr',s.hdr);
   setCls('record',s.recording);
   document.getElementById('record').innerHTML=
     (s.recording?'⏹ @@RECORDSTOP@@':'⏺ @@RECORDSTART@@');
@@ -534,6 +538,7 @@ static QByteArray buildPage()
     sub( "@@TAPRESULT@@", S_WR_TAPALONG_RESULT );
     sub( "@@TAPNOBEAT@@", S_WR_TAPALONG_NOBEAT );
     sub( "@@GUARD@@", S_WR_GUARD );
+    sub( "@@HDR@@", S_WR_HDR ); // 16-bit intermediates (27.11.2026): the setting, applied at the next start
     sub( "@@LIGHTSHOW@@", S_WR_LIGHTSHOW );
     sub( "@@AUTOPRESET@@", S_WR_AUTOPRESET );
     sub( "@@AUTOSCALE@@", S_WR_AUTOSCALE );
@@ -900,6 +905,7 @@ void WebRemote::handleConnection()
                                  + ",\"featureOverlay\":" + flag( m_widget->featureOverlayVisible() )
                                  + ",\"calib\":" + flag( m_widget->calibrationVisible() )
                                  + ",\"guard\":" + flag( RenderPipeline::pictureGuard() )
+                                 + ",\"hdr\":" + flag( RenderPipeline::hdrBuffersSetting() )
                                  + ",\"stereoMode\":" + QString::number( RenderPipeline::stereoMode() )
                                  + ",\"stereoDepth\":" + num( RenderPipeline::stereoDepth() )
                                  + ",\"shaders\":\"" + jsonEscape( m_widget->remoteShaderInfo() ) + "\""
@@ -1074,6 +1080,8 @@ void WebRemote::handleConnection()
                             m_widget->setCalibrationVisible( !m_widget->calibrationVisible() );
                         else if ( k == "guard" )
                             RenderPipeline::setPictureGuard( !RenderPipeline::pictureGuard() );
+                        else if ( k == "hdr" )
+                            RenderPipeline::setHdrBuffers( !RenderPipeline::hdrBuffersSetting() );
                         else if ( k == "autoconfig" )
                             m_widget->setAutoConfigEnabled( !m_widget->autoConfigEnabled() );
                         else if ( k == "autoscale" )

@@ -140,5 +140,7 @@ void main()
     // Faint image backdrop so the picture reads even in the dark gaps.
     col += img( uv0 * 0.5 + 0.5 ) * 0.05 * ( 0.4 + 0.6 * audioLevel );
 
-    fragColor = vec4( col, 1.0 );
+    // At most 3 (27.11.2026): the rings' pow( 0.01 / d, 1.2 ) has no upper bound, and with 16-bit intermediates the
+    // bloom took all of it -- the median frame went from 0.15 to 0.41 luma.  An 8-bit target holds 1 either way.
+    fragColor = vec4( min( col, vec3( 3.0 ) ), 1.0 );
 }

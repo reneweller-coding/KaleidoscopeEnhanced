@@ -11,7 +11,7 @@ The scene is rendered alone by the video export on the frame clock (60 fps by de
 the command line (NAME=VALUE), so the same scene can be counted with and without a switch:
 
     python Tools/flash_count.py VolumetricFire                          # 20 s at 60 fps, 960 x 540
-    python Tools/flash_count.py VolumetricFire KALEIDO_HDR_BUFFERS=1    # the same with 16-bit intermediates
+    python Tools/flash_count.py VolumetricFire KALEIDO_HDR_BUFFERS=0    # the same with 8-bit intermediates
     python Tools/flash_count.py --video some.mp4                         # count a video that exists
 
 Prints the flashes per second (the worst second of the worst window), the share of seconds above 3, and the mean
