@@ -13826,3 +13826,30 @@ probability 0.004).
   21:00 at the user's wish for speed: 19 -> 34 scenes a minute): 2,690 scenes, 0 failed, 0 with errors in the log,
   2 unstable.  Against the set of 26.11. (the old default picture): 888 changed -- the 16-bit intermediates, the
   looks and every new preset line, which shifts its scene's rolls -- 24 black, none of them newly black.
+
+#### The black snapshots: not broken, but blind -- a fixed state of music
+
+The user asked whether the 24 black frames of the new baseline (mean below 3 of 255) could be fixed.  None of them is
+a broken scene: 23 are 2D scenes that live on the music (BuildUpPressureChamber, HarmonicChangeLightning,
+MelodyKaleidoscope, SpectrogramKaleidoscope, ShepardPitchHelix ...), one is ModalVibration with its model, dim rather
+than empty.  With music (`kaleido-wt\lead_music_bright.py`: one export each with Tools/review128.wav, the frames
+from 4 s on) all 22 shaders are lit: mean 13 to 50 of 255, 15 of them never below 3; seven have short dark moments
+(2-9 % of the frames below 3, mostly in the same quiet bar of the track) -- the way they are built.
+
+What was wrong is the test: a comparison run is silent (`glwidget.cpp`: `audio = AudioFeatures()` when
+KALEIDO_FREEZE_TIME is set), and a black reference cannot show a change, so these 24 scenes could break unnoticed.
+Now:
+
+- `KALEIDO_FREEZE_MUSIC=1` gives a comparison run a fixed state of music instead of silence (`frozenMusic()` in
+  `glwidget.cpp`: every band at a middle level with a falling spectrum, kick, snare and hat half way through their
+  envelopes, a held C-major chord and a melody note, 128 BPM, a quarter into the beat and the bar; no events).  The
+  same numbers every frame, so the frame stands still like a silent one.
+- `Tools/scene_snapshots.py render` shoots a scene whose silent frame is black once more with that state;
+  `index.tsv` says `music` (or `music-unstable`).  Every other scene keeps its silent frame, so the 2,666 other
+  references of `2026-11-27-evening` stay valid; its 24 black frames were replaced this way.
+- Two runs of the 24 (`2026-11-27-evening` against `2026-11-27-music-control`, tolerance 0): 21 identical, the three
+  entries of ModalVibration (a model scene) within 0.06..0.14 of 255 -- below the comparison's tolerance of 1.0.
+  The new frames: mean 3.2 (CrystalAsteroidField) to 58 (SelfSimilarityMandala); the set has no black frame left.
+
+A regression that makes such a scene black even with music still shows as newly black; one that makes a lit scene
+dark only in silence now shows as changed (its music frame against the old silent one).

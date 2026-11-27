@@ -653,6 +653,64 @@ void GLwidget::remoteForceScene( int idx )
         m_actConfiguration->renderPipeline()->forceScene( idx );
 }
 
+/**  A fixed state of music for a comparison run (KALEIDO_FREEZE_MUSIC=1, Tools/scene_snapshots.py).
+ *
+ * @return
+ *   Features as a groove in full swing might give them at one moment: every band at a middle level with a falling
+ *   spectrum, a kick, a snare and a hat half way through their envelopes, a held C-major chord with a melody note,
+ *   the tempo 128 BPM, a quarter of the way into the beat and the bar.
+ *
+ * A frozen frame of a scene that lives on the music is black in silence, and a black reference cannot show a change
+ * (27.11.2026: 24 of 2,690 scenes; with music all of them are lit).  This state is as reproducible as silence: the
+ * same numbers every frame, so the frozen frame stands still and two runs agree.  Events (isBeat, trackChange) stay
+ * off -- a frame must not depend on which of the fixed steps one fell on.
+ **/
+static AudioFeatures frozenMusic()
+{
+    AudioFeatures a;
+    a.subBassLevel = 0.45f;
+    a.bassLevel = 0.55f;
+    a.lowMidLevel = 0.45f;
+    a.midLevel = 0.40f;
+    a.upperMidLevel = 0.30f;
+    a.highLevel = 0.25f;
+    a.overallLevel = 0.50f;
+    a.rawLevel = 0.50f;
+    for ( int i = 0; i < AudioFeatures::SpectrumBands; ++i )
+        a.spectrum[i] = 0.65f * powf( 0.93f, static_cast<float>( i ) ) + 0.05f;
+    for ( int i = 0; i < AudioFeatures::WavePoints; ++i )
+        a.wave[i] = 0.45f * sinf( 6.2831853f * 3.f * i / AudioFeatures::WavePoints );
+    a.beatStrength = 0.6f;
+    a.beatDecay = 0.5f;
+    a.onsetStrength = 0.5f;
+    a.onsetPeak = 0.6f;
+    a.spectralFlux = 0.35f;
+    a.spectralCentroid = 0.45f;
+    a.estimatedBPM = ( 128.f - 40.f ) / 160.f; // the features' scale: 40 + 160 x estimatedBPM
+    a.keyClarity = 0.6f;
+    a.harmonicChange = 0.3f;
+    a.rhythmStrength = 0.6f;
+    a.beatPhase = 0.25f;
+    a.musicPresence = 1.f;
+    a.arousal = 0.6f;
+    a.chroma[0] = 1.f; // C, E, G
+    a.chroma[4] = 0.8f;
+    a.chroma[7] = 0.9f;
+    a.chromaHue = 0.f;
+    a.dominantPitch = 0.4f;
+    a.melodyPitch = 0.55f;
+    a.melodyConf = 0.8f;
+    a.melodyNote = 0.55f;
+    for ( int i = 0; i < AudioFeatures::MelodyLen; ++i )
+        a.melody[i] = 0.5f + 0.15f * sinf( 6.2831853f * 2.f * i / AudioFeatures::MelodyLen );
+    a.onsetKick = 0.6f;
+    a.onsetSnare = 0.35f;
+    a.onsetHat = 0.4f;
+    a.swell = 0.5f;
+    a.barPhase = 0.25f;
+    return a;
+}
+
 /**  On-disk thumbnail cache path for one (config, scene) pair.
  *
  * @param config  Configuration (preset) name, used as the sub-folder. (in)
@@ -1930,7 +1988,12 @@ void GLwidget::draw()
         audio = m_audioAnalyzer->getFeatures();
     }
     if ( RenderPipeline::freezeTime() >= 0.f ) // a comparison run: silence, whatever is playing
-        audio = AudioFeatures();
+    {
+        // KALEIDO_FREEZE_MUSIC=1: a fixed state of music instead (frozenMusic(); the snapshot tool takes it for the
+        // scenes that are black in silence).
+        static const bool FrozenMusic = qEnvironmentVariableIntValue( "KALEIDO_FREEZE_MUSIC" ) != 0;
+        audio = FrozenMusic ? frozenMusic() : AudioFeatures();
+    }
     m_eventLatch.apply( audio ); // the beats, onsets and track changes since the last frame, none lost
     updateRest( audio );
 

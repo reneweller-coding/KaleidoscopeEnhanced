@@ -4,7 +4,9 @@
   render   every TextureShader entry of Presets/Komplett.xml alone in a hidden
            preset, frozen (KALEIDO_FREEZE_TIME: 600 fixed steps, then the frame
            stands), one fixed photo (KALEIDO_FIXED_PHOTO), fixed rolls
-           (KALEIDO_SEED), silent audio.  The frame is taken when the app
+           (KALEIDO_SEED), silent audio -- a scene whose silent frame is
+           black (it lives on the music) is shot again with a fixed state of
+           music (KALEIDO_FREEZE_MUSIC; index.tsv says "music").  The frame is taken when the app
            says "FREEZE engaged" -- it is final then, so two renders of
            unchanged code are identical -- from the web remote's preview
            (/api/snapshot, 640x360).  --jobs runs several app instances at
@@ -54,7 +56,7 @@ PS = None  # the private settings of this run (render())
 ERRORS = ("Expr [", "OpenGL ERROR", "FAILED")   # lines of a run's stderr that are a defect, not a remark
 
 
-def shoot(block, fx, out, photo, timeout, slot=0):
+def shoot(block, fx, out, photo, timeout, slot=0, music=False):
     """One scene in its own app run (preset _snap<slot>).
     Returns "ok", "unstable" (the frame never stood still after the freeze -- a
     simulation or a clock of its own; the last one is saved, compare it loosely)
@@ -70,7 +72,7 @@ def shoot(block, fx, out, photo, timeout, slot=0):
         os.remove(out)
     env = PS.env(dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(timeout + 15), KALEIDO_NO_ACTIVATE="1",
                       KALEIDO_FREEZE_TIME="20", KALEIDO_FIXED_PHOTO=photo, KALEIDO_SEED="7",
-                      KALEIDO_NO_VSYNC="1", KALEIDO_FREEZE_SHOT=out,
+                      KALEIDO_NO_VSYNC="1", KALEIDO_FREEZE_SHOT=out, KALEIDO_FREEZE_MUSIC="1" if music else "0",
                       # the machine's media session stays out: the app weaves what the system plays (NowPlaying:
                       # title, lyrics, artist) into the picture; a scripted session that never names a track keeps
                       # the real one from being asked (20.11.2026, B2: half of a snapshot set carried the title)
@@ -105,6 +107,13 @@ def shoot(block, fx, out, photo, timeout, slot=0):
     if not m or not os.path.exists(out):
         return ""
     return "ok" if m.group(1) == "stable" else "unstable"
+
+
+def dark(path):
+    """Whether a frame is black in compare()'s sense (mean below 3 of 255)."""
+    from PIL import Image
+    import numpy as np
+    return float(np.asarray(Image.open(path).convert("RGB")).astype(float).mean()) < 3.0
 
 
 def render(label, only, photo, timeout, jobs=1):
@@ -144,6 +153,11 @@ def render(label, only, photo, timeout, jobs=1):
                 name, block = todo.pop(0)
             t = time.time()
             r = shoot(block, fx, os.path.join(out, name + ".jpg"), photo, timeout, slot)
+            # Black in silence (mean below 3 of 255, what compare() calls black): a scene that lives on the music.
+            # Its reference would be blind -- shoot it again with a fixed state of music (27.11.2026: 24 scenes).
+            if r and dark(os.path.join(out, name + ".jpg")):
+                r2 = shoot(block, fx, os.path.join(out, name + ".jpg"), photo, timeout, slot, music=True)
+                r = ("music" if r2 == "ok" else "music-" + r2) if r2 else ""
             errs = os.path.exists(os.path.join(out, name + ".err.txt"))
             with lock:
                 count["ok" if r else "bad"] += 1
@@ -189,7 +203,7 @@ def compare(a, b, tol):
                 f = l.split("\t")
                 if len(f) >= 2:
                     st[f[0]] = f[1]
-        return {n for n, v in st.items() if v == "unstable"}
+        return {n for n, v in st.items() if v in ("unstable", "music-unstable")}
     loose = unstable_in(da) | unstable_in(db)               # never stood still: a change there says little
     changed = [r for r in rows if r[0] > tol and r[1] not in loose]
     wobbly = [r for r in rows if r[1] in loose]
