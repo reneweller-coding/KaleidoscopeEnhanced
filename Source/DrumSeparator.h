@@ -122,7 +122,13 @@ public:
      **/
     float activation( int d ) const { return m_act[d]; }
 
-    /** @return Whether a drum's envelope was set by a hit in this block. */
+    /**  Whether a drum hit in this block (for the trace).
+     *
+     * @param d  0 kick, 1 snare, 2 hat. (in)
+     *
+     * @return
+     *   True when the drum's envelope was set by a hit in this block.
+     **/
     bool hit( int d ) const { return m_hit[d]; }
 
     /** @return The number of log bands of the current layout. */
