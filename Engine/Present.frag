@@ -362,7 +362,9 @@ const float RaysReach = 0.6;  ///< The longest march, in frame heights.
 const float RaysFar = 0.5; ///< Farness (1 - the photo's depth) from which a sample lets light through (all of it from
                            ///< 0.85).
 const float RaysLum = 0.35;   ///< Luminance from which a far sample counts as light (all of it from 0.8).
-const float RaysGain = 1.5;   ///< The shafts' strength at raysP 1.
+const float RaysGain = 3.2;   ///< The shafts' strength at raysP 1.
+const float RaysOver = 0.3;   ///< How much brighter than the pixel a sample must be to light it fully.
+const float RaysNear = 0.15;  ///< What of the light a near pixel takes: the subject stays a silhouette in the shafts.
 const float RaysDecay = 0.93; ///< Weight of a sample against the one before it (the light thins along the march).
 
 /**  Light shafts through the photo's depth (crepuscular rays): the far, bright part of the picture shines toward the
@@ -374,7 +376,10 @@ const float RaysDecay = 0.93; ///< Weight of a sample against the one before it 
  *   The light to add (screen blend), 0..1 per channel, tinted by what shines.
  *
  * From the pixel a march of RaysTaps samples toward the light point; a sample counts where the photo is far
- * (RaysFar) and the frame bright (RaysLum), a near sample counts nothing -- so a shaft ends at a silhouette.  The
+ * (RaysFar) and the frame bright (RaysLum), a near sample counts nothing -- so a shaft ends at a silhouette.  A
+ * sample lights the pixel only as far as it is brighter than the pixel (RaysOver): light shows against the dark, and
+ * a picture that is bright all over is not washed out (the first constants, gain 1.5 without that rule, were too
+ * faint to see on dark pictures and a grey veil over bright ones at three times the gain -- sheets of 27.11.2026).  The
  * start of the march is jittered per pixel with an interleaved gradient noise that never changes (no time in it): no
  * bands, no flicker.  The light point rests in the upper middle and drifts on two slow sines (periods 2.6 and 3.6
  * minutes): it never jumps, also not on a photo change (the frame and its depth cross-fade under it).  The strength
@@ -389,6 +394,7 @@ vec3 raysLight( vec2 puv )
     float ign = fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );
     vec3  acc = vec3( 0.0 );
     float wgt = 1.0, sum = 0.0;
+    float y0 = dot( clamp( textureLod( tex, puv, 0.0 ).rgb, 0.0, 1.0 ), vec3( 0.299, 0.587, 0.114 ) );
     for ( int i = 0; i < RaysTaps; ++i )
     {
         vec2  q = clamp( puv + stp * ( float( i ) + ign ), 0.0, 1.0 );
@@ -396,7 +402,9 @@ vec3 raysLight( vec2 puv )
         float fr = 1.0 - clamp( ( z - photoDepthWin.y ) / ( photoDepthWin.x - photoDepthWin.y ), 0.0, 1.0 );
         vec3  s = clamp( textureLod( tex, q, 0.0 ).rgb, 0.0, 1.0 );
         float y = dot( s, vec3( 0.299, 0.587, 0.114 ) );
-        acc += s * ( smoothstep( RaysFar, 0.85, fr ) * smoothstep( RaysLum, 0.8, y ) * wgt );
+        acc += s
+               * ( smoothstep( RaysFar, 0.85, fr ) * smoothstep( RaysLum, 0.8, y ) * smoothstep( 0.0, RaysOver, y - y0 )
+                   * wgt );
         sum += wgt;
         wgt *= RaysDecay;
     }
@@ -405,7 +413,12 @@ vec3 raysLight( vec2 puv )
     acc = mix( vec3( dot( acc, vec3( 0.299, 0.587, 0.114 ) ) ), acc, 0.67 );
     float fall = 1.0 - 0.8 * smoothstep( 0.25, 1.2, dist );
     float env = 0.65 + 0.35 * clamp( audioSwell, 0.0, 1.0 );
-    return clamp( acc * ( RaysGain * raysP * env * fall ), 0.0, 1.0 );
+    // The pixel's own depth: what is near takes little of the light (the second sheet of 27.11.2026: without this
+    // the dark subject in front of a bright background was filled with light and lost its shape).
+    float z0 = textureLod( sceneDepth, puv, 0.0 ).r;
+    float fr0 = 1.0 - clamp( ( z0 - photoDepthWin.y ) / ( photoDepthWin.x - photoDepthWin.y ), 0.0, 1.0 );
+    float recv = mix( RaysNear, 1.0, smoothstep( 0.15, 0.6, fr0 ) );
+    return clamp( acc * ( RaysGain * raysP * env * fall * recv ), 0.0, 1.0 );
 }
 // ---- rays -- END ----
 
