@@ -96,6 +96,7 @@ void main()
     // ---- Texture sample ----
     vec4 col = interpolation * texture( tex0, uv )
                + ( 1.0 - interpolation ) * texture( tex1, uv );
+    col.a = 1.0; // the photo's alpha holds its depth since 26.11.2026 (Source/PhotoDepth.h): 1 as before
 
     // ---- Spectral centroid: colour temperature ----
     // centroid = 0 → void-blue  (Thomas Köner / Lustmord sub-bass void)

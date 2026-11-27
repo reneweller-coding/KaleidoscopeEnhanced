@@ -117,6 +117,7 @@ void main()
     p = r * vec2( cos( a ), sin( a ) );
 
     vec4 col = interpolation * texture( tex0, p + 0.5 ) + ( 1.0 - interpolation ) * texture( tex1, p + 0.5 );
+    col.a = 1.0; // the photo's alpha holds its depth since 26.11.2026 (Source/PhotoDepth.h): 1 as before
 
     // --- Beat: a VERY subtle radial breath only ---
     // The strong beat zoom/brightness flash was tiring on the eyes; the rhythmic
@@ -129,6 +130,7 @@ void main()
     vec2  p_zoomed = p / zoom_k;
     vec4  col_zoomed = interpolation * texture( tex0, p_zoomed + 0.5 )
                        + ( 1.0 - interpolation ) * texture( tex1, p_zoomed + 0.5 );
+    col_zoomed.a = 1.0; // the photo's alpha holds its depth since 26.11.2026 (Source/PhotoDepth.h): 1 as before
     col = mix( col, col_zoomed, min( audioBeat * 0.18 + hcdf * 0.30, 0.45 ) );
 
     // Mood colour / saturation / loudness-brightness are applied GLOBALLY in the

@@ -231,6 +231,9 @@ float                         EffectShader::M_FreezeTime = -1.f;
 bool                          EffectShader::M_Frozen = false;
 float                         EffectShader::M_FixedDt = -1.f;
 float                         EffectShader::M_PhotoBMix = 0.f;
+float                         EffectShader::M_PhotoDepthAmt[2] = { 0.f, 0.f };
+float                         EffectShader::M_PhotoFocus[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
+float                         EffectShader::M_PhotoSubject[4] = { 1.f, 0.f, 1.f, 0.f };
 std::map<std::string, float>  EffectShader::M_ClassTaste;
 std::map<std::string, double> EffectShader::M_ClassSeen;
 std::set<std::string>         EffectShader::M_ClassSeenDirty;
@@ -843,6 +846,10 @@ enum AudioLocE
     AL_TEXPHOTOB0,
     AL_TEXPHOTOB1,
     AL_PHOTOBMIX,
+    // The photo's depth and subject (26.11.2026, PhotoDepth.h): the map rides in the photos' alpha channel.
+    AL_PHOTODEPTHAMT,
+    AL_PHOTOFOCUS,
+    AL_PHOTOSUBJECT,
     AL_COUNT
 };
 /** The audio uniforms' names, indexed by AudioLocE (the order must match). */
@@ -870,11 +877,14 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioPhrasePos", "audioPhraseLeft",
     "audioSectionId", "audioSectionPrev", "audioSectionAge", "audioSectionKnown", "audioSectionCount",
     "audioMelodyPhase", "audioHarmAdvance", "audioMelodyConf",
-    "texPhotoB0", "texPhotoB1", "photoBMix" };
+    "texPhotoB0", "texPhotoB1", "photoBMix",
+    "photoDepthAmt", "photoFocus", "photoSubject" };
 }
 
 void EffectShader::applyAudioFeatures( const AudioFeatures &features )
 {
+    // The location cache must hold every AL_ entry: at 96 slots the photo depth's uniforms (26.11.2026) overran it.
+    static_assert( AL_COUNT <= sizeof( AudioLocCache::L ) / sizeof( GLint ), "AudioLocCache::L is too small" );
     // The music's accumulators relative to this activation (see m_clockT0): exact, and small however long the show.
     if ( m_clockA0 < -1.0e299 )
     {
@@ -1093,6 +1103,14 @@ void EffectShader::applyAudioFeatures( const AudioFeatures &features )
         glUniform1i( locs[AL_TEXPHOTOB1], PhotoBUnit + 1 );
     if ( locs[AL_PHOTOBMIX] >= 0 )
         glUniform1f( locs[AL_PHOTOBMIX], M_PhotoBMix );
+    // The photo's depth (alpha of tex0/tex1) and subject, per slot (RenderPipeline::updateImageState()).
+    if ( locs[AL_PHOTODEPTHAMT] >= 0 )
+        glUniform2f( locs[AL_PHOTODEPTHAMT], M_PhotoDepthAmt[0], M_PhotoDepthAmt[1] );
+    if ( locs[AL_PHOTOFOCUS] >= 0 )
+        glUniform4f( locs[AL_PHOTOFOCUS], M_PhotoFocus[0], M_PhotoFocus[1], M_PhotoFocus[2], M_PhotoFocus[3] );
+    if ( locs[AL_PHOTOSUBJECT] >= 0 )
+        glUniform4f( locs[AL_PHOTOSUBJECT], M_PhotoSubject[0], M_PhotoSubject[1], M_PhotoSubject[2],
+                     M_PhotoSubject[3] );
     // The two scene depth buffers, as the combine stage sees them.  depthValid
     // says whether each one actually holds a 3D scene's geometry — a 2D effect
     // leaves the far plane there, and a depth-driven combine has to know the

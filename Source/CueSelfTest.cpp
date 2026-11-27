@@ -26,6 +26,7 @@
 #include "QrCode.h"
 #include "AudioAnalyzer.h"
 #include "AudioConditioner.h"
+#include "PhotoDepth.h"
 #include "RenderPipeline.h"
 #include "SettingsFile.h"
 #include "Strings.h"
@@ -1825,6 +1826,168 @@ void guardChecks()
     check( held.first < 0.f, "and a pin holds it" );
 }
 
+/**  The photo's depth (PhotoDepth.h, plan T1): a photo with a map, one without, one the table marks flat; the map in
+ * the alpha channel, mirrored and stretched like the colour, the colour untouched; the table's columns; the
+ * switches KALEIDO_DEPTH_DIR and KALEIDO_NO_DEPTH.
+ **/
+void depthChecks()
+{
+    printf( "\nthe photo's depth (PhotoDepth.h)\n" );
+    QTemporaryDir tmp;
+    if ( !tmp.isValid() )
+    {
+        check( false, "a temporary folder for the depth checks" );
+        return;
+    }
+    const QString root = tmp.path(), ddir = root + "/.depth", env_dir = root + "/flat";
+    QDir().mkpath( ddir );
+    QDir().mkpath( env_dir );
+    // Photos 64 x 32 (PNG: exact colours), red falling from the top row to the bottom one; maps 32 x 16 with the
+    // same fall in grey (255 = near at the top): wherever the colour lands after prepareImage(), the depth must too.
+    auto ramp = []( int w, int h, bool grey )
+    {
+        QImage im( w, h, QImage::Format_RGB32 );
+        for ( int y = 0; y < h; ++y )
+            for ( int x = 0; x < w; ++x )
+            {
+                const int v = 255 - ( 255 * y ) / ( h - 1 );
+                im.setPixel( x, y, grey ? qRgb( v, v, v ) : qRgb( v, 40, 200 ) );
+            }
+        return im;
+    };
+    for ( const char *name : { "withmap", "nomap", "flatone" } )
+        ramp( 64, 32, false ).save( root + "/" + name + ".png" );
+    ramp( 32, 16, true ).save( ddir + "/withmap.png" );
+    ramp( 32, 16, true ).save( ddir + "/flatone.png" );
+    {
+        QFile f( ddir + "/photo_info.tsv" );
+        if ( !f.open( QIODevice::WriteOnly ) )
+        {
+            check( false, "the depth checks' photo_info.tsv can be written" );
+            return;
+        }
+        f.write( "file\trelief\tslope\tflat\tfx\tfy\tthr\tconf\tmodel\n"
+                 "withmap.png\t0.2\t0.3\t0\t0.25\t0.2\t0.6\t0.8\tdav2s\n"
+                 "flatone.png\t0.01\t0.0\t1\t-\t-\t-\t-\tdav2s\n" );
+    }
+    qunsetenv( "KALEIDO_NO_DEPTH" );
+    qunsetenv( "KALEIDO_DEPTH_DIR" );
+
+    const QImage     plain = prepareImage( QImage( root + "/withmap.png" ) );
+    QImage           with = plain;
+    PhotoDepth::Info d = PhotoDepth::applyToAlpha( with, root + "/withmap.png" );
+    check( d.map && with.size() == QSize( 1024, 1024 ), "a photo with a map: the map goes into the alpha channel" );
+    bool rgb_same = true, alpha_follows = true;
+    int  worst = 0;
+    for ( int y = 0; y < 1024; y += 7 )
+        for ( int x = 0; x < 1024; x += 13 )
+        {
+            const QRgb a = plain.pixel( x, y ), b = with.pixel( x, y );
+            rgb_same = rgb_same && ( a & 0xffffffu ) == ( b & 0xffffffu );
+            // prepareImage() swapped red and blue: the photo's red ramp is the blue byte now
+            worst = std::max( worst, std::abs( qAlpha( b ) - qBlue( b ) ) );
+        }
+    alpha_follows = worst <= 12; // two ramps of different size (32 and 16 rows), each smoothed by its own stretch
+    check( rgb_same, "and the colour bytes stay exactly what prepareImage() made" );
+    check( alpha_follows, "and the depth is mirrored and stretched like the colour (alpha follows the red ramp)",
+           "worst difference " + std::to_string( worst ) + " of 255" );
+    check( qAlpha( with.pixel( 512, 1023 ) ) > 240 && qAlpha( with.pixel( 512, 0 ) ) < 15,
+           "and the near top of the picture is the last row of the mirrored upload (texture v = 1)" );
+    check( std::fabs( d.focusU - 0.25f ) < 1e-6f && std::fabs( d.focusV - 0.8f ) < 1e-6f,
+           "the table's subject centre (x 0.25, y 0.2 down) becomes texture coordinates (0.25, 0.8)" );
+    check( std::fabs( d.thr - 0.6f ) < 1e-6f && std::fabs( d.conf - 0.8f ) < 1e-6f,
+           "and its threshold and confidence pass through" );
+
+    QImage no = prepareImage( QImage( root + "/nomap.png" ) );
+    d = PhotoDepth::applyToAlpha( no, root + "/nomap.png" );
+    bool opaque = true;
+    for ( int y = 0; y < 1024; y += 31 )
+        for ( int x = 0; x < 1024; x += 31 )
+            opaque = opaque && qAlpha( no.pixel( x, y ) ) == 255;
+    check( !d.map && opaque && d.focusU == 0.5f && d.focusV == 0.5f && d.conf == 0.f,
+           "a photo without a map: alpha stays 255, no depth, the subject in the centre with no confidence" );
+
+    QImage fl = prepareImage( QImage( root + "/flatone.png" ) );
+    d = PhotoDepth::applyToAlpha( fl, root + "/flatone.png" );
+    check( !d.map && qAlpha( fl.pixel( 512, 1023 ) ) == 255, "a photo the table marks flat gets no depth" );
+
+    // KALEIDO_DEPTH_DIR: the same files flat, before the photo's folder
+    {
+        QImage c( 8, 8, QImage::Format_RGB32 );
+        c.fill( qRgb( 77, 77, 77 ) );
+        c.save( env_dir + "/withmap.png" );
+    }
+    qputenv( "KALEIDO_DEPTH_DIR", env_dir.toUtf8() );
+    QImage e = prepareImage( QImage( root + "/withmap.png" ) );
+    d = PhotoDepth::applyToAlpha( e, root + "/withmap.png" );
+    check( d.map && qAlpha( e.pixel( 300, 700 ) ) == 77 && d.conf == 0.f,
+           "KALEIDO_DEPTH_DIR comes first (its map, and its table: none there, so no subject)" );
+    qunsetenv( "KALEIDO_DEPTH_DIR" );
+
+    qputenv( "KALEIDO_NO_DEPTH", "1" );
+    QImage off = prepareImage( QImage( root + "/withmap.png" ) );
+    d = PhotoDepth::applyToAlpha( off, root + "/withmap.png" );
+    check( !d.map && off == plain, "KALEIDO_NO_DEPTH=1: the photo is what it was before the depth" );
+    qunsetenv( "KALEIDO_NO_DEPTH" );
+
+    // The editor's loader keeps RGBA8888 and the photo's own size.
+    QImage ed = QImage( root + "/withmap.png" ).convertToFormat( QImage::Format_RGBA8888 ).mirrored( false, true );
+    d = PhotoDepth::applyToAlpha( ed, root + "/withmap.png" );
+    check( d.map && ed.size() == QSize( 64, 32 ) && ed.constBits()[3] < 15
+               && ed.constScanLine( 31 )[4 * 10 + 3] > 240,
+           "the editor's RGBA8888 image gets the same depth at its own size" );
+
+    const QHash<QString, PhotoDepth::Row> t = PhotoDepth::parseTable(
+        "model\tconf\tfile\tfx\tthr\tfy\tflat\tmask\n-\t0.5\tA.JPG\t0.1\t0.7\t0.9\tyes\t0.75\n\tx\tb.jpg\t\t\t\t0\n" );
+    check( t.size() == 2 && t.value( "a.jpg" ).flat && t.value( "a.jpg" ).hasFocus && t.value( "a.jpg" ).fy == 0.9f
+               && t.value( "a.jpg" ).mask == 0.75f && !t.value( "b.jpg" ).flat && !t.value( "b.jpg" ).hasFocus
+               && !t.value( "b.jpg" ).hasSubject && t.value( "b.jpg" ).mask == 0.f,
+           "photo_info.tsv: columns by their names (mask last, or missing), file names without case, '-'/empty/text "
+           "are no numbers" );
+    check( PhotoDepth::isDepthFolder( ".depth" ) && QFileInfo( ddir ).baseName().isEmpty(),
+           "the photo walk skips .depth by name (before, only because its baseName is empty)" );
+
+    // KALEIDO_DEPTH_BENCH=<photo folder>|<maps folder>: the loader's time per photo, without and with its map (plan
+    // T1: load time before and after) -- the first 40 photos of the folder that have a map, each loaded three times.
+    if ( const char *bench = getenv( "KALEIDO_DEPTH_BENCH" ) )
+    {
+        const QStringList parts = QString::fromLocal8Bit( bench ).split( QLatin1Char( '|' ) );
+        if ( parts.size() == 2 )
+        {
+            qputenv( "KALEIDO_DEPTH_DIR", parts[1].toLocal8Bit() );
+            QStringList photos;
+            for ( const QFileInfo &fi : QDir( parts[0] ).entryInfoList( { "*.jpg" }, QDir::Files, QDir::Name ) )
+            {
+                PhotoDepth::Row r;
+                const bool      flat = PhotoDepth::row( parts[1], fi.fileName(), r ) && r.flat;
+                if ( photos.size() < 40 && !flat && !PhotoDepth::mapPath( fi.absoluteFilePath() ).isEmpty() )
+                    photos << fi.absoluteFilePath();
+            }
+            double        plain_ms = 0.0, depth_ms = 0.0;
+            int           with_map = 0;
+            QElapsedTimer clock;
+            for ( int rep = 0; rep < 3; ++rep )
+                for ( const QString &p : photos )
+                {
+                    clock.start();
+                    QImage a = prepareImage( QImage( p ) );
+                    plain_ms += clock.nsecsElapsed() * 1e-6;
+                    clock.start();
+                    QImage           b = prepareImage( QImage( p ) );
+                    PhotoDepth::Info i = PhotoDepth::applyToAlpha( b, p );
+                    depth_ms += clock.nsecsElapsed() * 1e-6;
+                    with_map += i.map ? 1 : 0;
+                }
+            const int n = 3 * static_cast<int>( photos.size() );
+            printf( "  depth bench: %d loads of %d photos, %d with a map: %.1f ms without, %.1f ms with the map "
+                    "(per photo)\n",
+                    n, static_cast<int>( photos.size() ), with_map, n ? plain_ms / n : 0.0,
+                    n ? depth_ms / n : 0.0 );
+            qunsetenv( "KALEIDO_DEPTH_DIR" );
+        }
+    }
+}
+
 } // namespace
 
 int runCueSelfTest()
@@ -2156,6 +2319,7 @@ int runCueSelfTest()
     runUpChecks();
     delayChecks();
     guardChecks();
+    depthChecks();
 
     printf( "\n%d passed, %d failed\n", g_passed, g_failed );
     return g_failed == 0 ? 0 : 1;

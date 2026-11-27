@@ -32,6 +32,7 @@
 
 #include "../Source/AudioFeatures.h"
 #include "../Source/CfxTypes.h"
+#include "../Source/PhotoDepth.h"
 #include "ComputeFXPreview.h"
 #include "Scene3DPreview.h"
 
@@ -313,6 +314,12 @@ private:
      *           own attribs). (in)
      **/
     void drawFullscreenQuad( QOpenGLShaderProgram *p );
+    /**  Sets the photo-depth uniforms (photoDepthAmt, photoFocus, photoSubject) from the sample images' depth, as
+     * the app does per photo slot (Source/PhotoDepth.h).
+     *
+     * @param p  Bound program. (in)
+     **/
+    void setDepthUniforms( QOpenGLShaderProgram *p );
     /**  (Re)create the tex0/tex1 sample textures #m_img0/#m_img1 from #m_imageDir.
      *
      * Deletes any previous textures, then takes the first two image files
@@ -324,12 +331,14 @@ private:
     void loadImages(); // (re)create m_img0/m_img1 (GL thread)
     /**  Load an image file into a GL texture, or synthesize a colourful gradient if it can't be loaded.
      *
-     * @param path  Image file path; empty or unloadable falls back to the procedural gradient. (in)
+     * @param path   Image file path; empty or unloadable falls back to the procedural gradient. (in)
+     * @param depth  What the texture knows about its depth: the photo's depth map goes into its alpha channel exactly
+     *               as in the app (Source/PhotoDepth.h). (out)
      *
      * @return
      *   The newly created texture's GL object name.
      **/
-    GLuint makeTexture( const QString &path ); // from file, or gradient fallback
+    GLuint makeTexture( const QString &path, PhotoDepth::Info &depth ); // from file, or gradient fallback
     // A synthetic AudioFeatures snapshot at time t, matching the same Beat/
     // Drone math applyCommonUniforms already uses for the 2D path -- kept as
     // an independent small copy rather than a shared refactor of the proven
@@ -400,6 +409,8 @@ private:
      **/
     GLuint m_img0 = 0, m_img1 = 0; ///< tex1 sample image texture (GL object name, owned); the same image as #m_img0
                                    ///< when the directory holds only one file.
+    PhotoDepth::Info m_img0Depth;  ///< #m_img0's depth (photoDepthAmt.x, photoFocus.xy, photoSubject.xy).
+    PhotoDepth::Info m_img1Depth;  ///< #m_img1's depth (photoDepthAmt.y, photoFocus.zw, photoSubject.zw).
     GLuint                    m_vbo = 0;           ///< Fullscreen-quad vertex buffer (NDC positions).
     QOpenGLVertexArrayObject *m_quadVAO = nullptr; ///< Vertex array object with the quad's aPos attribute baked in (a
                                                    ///< core-profile context needs a bound VAO to draw); owned, created

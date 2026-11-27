@@ -687,6 +687,19 @@ public:
      **/
     static float     M_PhotoBMix;
     static const int PhotoBUnit = 38; ///< Units of the second photo's slots: texPhotoB0 here, texPhotoB1 one up.
+    /** The photo's depth (26.11.2026, PhotoDepth.h; set by RenderPipeline::updateImageState()): `photoDepthAmt`,
+     * 1 where the photo in tex0 (x) / tex1 (y) carries a depth map in its alpha channel, else 0 (alpha is 255 then).
+     * A shader mixes it with `interpolation` like the colour.
+     **/
+    static float M_PhotoDepthAmt[2];
+    /** `photoFocus`: the subject centre of the photo in tex0 (xy) and tex1 (zw), texture coordinates; the picture's
+     * centre (0.5, 0.5) where it was not measured.
+     **/
+    static float M_PhotoFocus[4];
+    /** `photoSubject`: depth threshold (subject = depth >= it) and confidence 0..1 of the photo in tex0 (xy) and
+     * tex1 (zw); (1, 0) where not measured.
+     **/
+    static float M_PhotoSubject[4];
     /** Score cues live this frame (set by RenderPipeline, CueReceiver.h): the chain walk takes the generator's
      * section and drop counters (M_CueSections, M_CueDrops) instead of the analyser's.
      **/
@@ -1449,8 +1462,9 @@ protected:
     struct AudioLocCache
     {
         GLuint progId = 0; /**< Program id the locations were resolved for; 0 = never resolved. */
-        GLint  L[96];      /**< Uniform location per AudioLocE enum value (index AL_*), -1 where the program lacks that
-                              uniform; only the first AL_COUNT entries are filled. */
+        GLint  L[128];     /**< Uniform location per AudioLocE enum value (index AL_*), -1 where the program lacks that
+                              uniform; only the first AL_COUNT entries are filled (EffectShader.cpp asserts it fits:
+                              at 96 the photo depth's uniforms of 26.11.2026 ran past the end). */
     };
     AudioLocCache m_audioLocs; ///< applyAudioFeatures()'s location cache; auto-refreshes when m_shProgId changes
                                ///< (recompile/hot reload).

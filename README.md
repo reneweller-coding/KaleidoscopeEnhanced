@@ -144,6 +144,14 @@ What actually suits this program — format, tone, contrast, composition — is
 written down in **[docs/photo-set-spec.md](docs/photo-set-spec.md)**, with a
 checker that scores any folder against it (`Tools/check_image_set.py`).
 
+**A photo's depth (in the works, November 2026).** Beside a photo folder, a
+folder `.depth` may hold one grey depth map per photo (`<photo name>.png`,
+white = near) and a table `photo_info.tsv`; `Tools/depth_maps.py` makes them.
+The program loads a map with its photo (the walk never takes the maps for
+photos) and hands it to the scenes; without maps everything looks as before.
+For comparisons: `KALEIDO_NO_DEPTH=1` ignores all maps, `KALEIDO_DEPTH_DIR=<folder>`
+takes the maps (and their `photo_info.tsv`) from one flat folder first.
+
 Building the packs yourself, from folders you have filled:
 
 ```powershell

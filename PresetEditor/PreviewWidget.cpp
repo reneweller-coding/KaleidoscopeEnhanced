@@ -19,6 +19,7 @@
 #include <QtGui/QImage>
 #include <QtGui/QVector2D>
 #include <QtGui/QVector3D>
+#include <QtGui/QVector4D>
 #include <QtCore/QFile>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
@@ -256,11 +257,12 @@ QOpenGLShaderProgram *PreviewWidget::compile( const QString &fileName, QString &
     return nullptr;
 }
 
-GLuint PreviewWidget::makeTexture( const QString &path )
+GLuint PreviewWidget::makeTexture( const QString &path, PhotoDepth::Info &depth )
 {
     QImage img;
     if ( !path.isEmpty() )
         img.load( path );
+    const bool photo = !img.isNull();
     if ( img.isNull() )
     {
         // Procedural fallback: a colourful gradient so shaders show something.
@@ -280,6 +282,9 @@ GLuint PreviewWidget::makeTexture( const QString &path )
     // texture (s,t)=(0,0) samples the BOTTOM-left texel -- without this the
     // image would upload upside down relative to every shader's uv origin.
     img = img.convertToFormat( QImage::Format_RGBA8888 ).mirrored( false, true );
+    // The photo's depth map into the alpha channel, the same code as the app's loader (stretched to this image's
+    // size, which the app's prepareImage() makes 1024 x 1024): a probe render reads the depth the app reads.
+    depth = photo ? PhotoDepth::applyToAlpha( img, path ) : PhotoDepth::Info();
 
     GLuint id = 0;
     glGenTextures( 1, &id );
@@ -297,6 +302,14 @@ GLuint PreviewWidget::makeTexture( const QString &path )
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT );
     glBindTexture( GL_TEXTURE_2D, 0 );
     return id;
+}
+
+void PreviewWidget::setDepthUniforms( QOpenGLShaderProgram *p )
+{
+    const PhotoDepth::Info &a = m_img0Depth, &b = m_img1Depth;
+    p->setUniformValue( "photoDepthAmt", QVector2D( a.map ? 1.f : 0.f, b.map ? 1.f : 0.f ) );
+    p->setUniformValue( "photoFocus", QVector4D( a.focusU, a.focusV, b.focusU, b.focusV ) );
+    p->setUniformValue( "photoSubject", QVector4D( a.thr, a.conf, b.thr, b.conf ) );
 }
 
 void PreviewWidget::loadImages()
@@ -321,8 +334,8 @@ void PreviewWidget::loadImages()
         for ( QString &s : files )
             s = d.filePath( s );
     }
-    m_img0 = makeTexture( files.value( 0 ) );
-    m_img1 = makeTexture( files.value( files.size() > 1 ? 1 : 0 ) );
+    m_img0 = makeTexture( files.value( 0 ), m_img0Depth );
+    m_img1 = makeTexture( files.value( files.size() > 1 ? 1 : 0 ), m_img1Depth );
     m_imagesDirty = false;
 }
 
@@ -531,6 +544,7 @@ void PreviewWidget::applyCommonUniforms( QOpenGLShaderProgram *p )
         p->setUniformValue( "texPhotoB0", 38 );
         p->setUniformValue( "texPhotoB1", 39 );
         p->setUniformValue( "photoBMix", 0.f );
+        setDepthUniforms( p );
 
         p->setUniformValue( "audioBeat", m_tlBeat );
         p->setUniformValue( "audioOnset", m_tlOnset );
@@ -613,6 +627,7 @@ void PreviewWidget::applyCommonUniforms( QOpenGLShaderProgram *p )
     p->setUniformValue( "texPhotoB0", 38 ); // the second photo: the second sample image in both slots
     p->setUniformValue( "texPhotoB1", 39 );
     p->setUniformValue( "photoBMix", 0.f );
+    setDepthUniforms( p );
 
     p->setUniformValue( "audioBeat", beat );
     p->setUniformValue( "audioOnset", onset );

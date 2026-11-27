@@ -107,6 +107,7 @@ void main()
     uv.y = ( a / Pi );
 
     vec4 col = interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv );
+    col.a = 1.0; // the photo's alpha holds its depth since 26.11.2026 (Source/PhotoDepth.h): 1 as before
 
     // The 2-6 kHz metallic band splits red and blue apart along the scroll axis:
     // scraping, industrial material puts a chromatic-aberration sheen on the
