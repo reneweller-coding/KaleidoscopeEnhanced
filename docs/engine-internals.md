@@ -13821,3 +13821,8 @@ probability 0.004).
 - Section (72) as assembled carried the fluid part's own headings at levels 1 and 2, and (71) one of P8a: demoted.
 - The pages workflow: a re-run of a failed deploy finds two artefacts and fails again -- start it anew instead
   (`gh workflow run Pages --ref master`), as `.github/workflows/pages.yml` says.
+- A new snapshot baseline, `2026-11-27-evening` (Tools/snapshot_baseline.txt; before: `2026-11-10-all`), rendered
+  from 6ed34bf1 by `kaleido-wt\snap_chunks.py` (one app instance while the user was at the machine, two after
+  21:00 at the user's wish for speed: 19 -> 34 scenes a minute): 2,690 scenes, 0 failed, 0 with errors in the log,
+  2 unstable.  Against the set of 26.11. (the old default picture): 888 changed -- the 16-bit intermediates, the
+  looks and every new preset line, which shifts its scene's rolls -- 24 black, none of them newly black.
