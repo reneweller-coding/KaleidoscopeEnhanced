@@ -526,7 +526,8 @@ void finish( vec3 col )
 
 
 // ---- the voices of the music: one role each (plan 26.11.2026) ----
-uniform float voiceP; ///< Strength of the voices' roles, 0..1 (0: the scene as it was; set by an <expr> in the preset).
+uniform float voiceP; ///< Strength of the voices' roles, 0..1 (0: the scene as it was; set by an expr element in the
+                      ///< preset).
 
 /**  The voices of the music as light on parts of the picture, one role each, the same in every scene: the kick pulses
  * the bright form, the snare lights a ring of the picture, the hi-hat a fine glitter on its light parts, the

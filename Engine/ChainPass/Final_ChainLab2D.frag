@@ -264,8 +264,18 @@ vec2 anchorOff( vec2 f, float conf, float amt )
 {
     return ( f - 0.5 ) * smoothstep( 0.45, 0.55, conf ) * amt;
 }
-uniform float voiceP; ///< Strength of the voices' roles, 0..1 (0: the scene as it was; set by an <expr> in the preset).
-vec3          voiceRoles( vec3 col, vec2 p )
+uniform float voiceP; ///< Strength of the voices' roles, 0..1 (0: the scene as it was; set by an expr element in the
+                      ///< preset).
+/**  The voices' roles (plan 26.11.2026): kick, snare, hi-hat, melody, stereo, build-up and bar scale the picture's
+ * own colours, by voiceP (0: unchanged).
+ *
+ * @param col  The colour so far. (in)
+ * @param p    The pixel's position (screenP()). (in)
+ *
+ * @return
+ *   The colour with the voices' roles applied (unchanged at voiceP 0).
+ **/
+vec3 voiceRoles( vec3 col, vec2 p )
 {
     if ( voiceP <= 0.0 )
         return col;

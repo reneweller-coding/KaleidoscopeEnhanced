@@ -58,6 +58,8 @@ def T( brief=None, **params ):
 
 
 FUNC_DOCS = {
+    "voiceRoles": { "params": { "col": "The colour so far.", "p": "The pixel's position (screenP())." },
+                    "return": "The colour with the voices' roles applied (unchanged at voiceP 0)." },
     # ---- the photo
     "img": { "params": { "uv": "Coordinate in the photo, 0..1." }, "return": "The cross-faded photo colour (RGB)." },
     "imgLod": { "params": { "uv": "Coordinate in the photo (mirror-repeated outside 0..1)." },

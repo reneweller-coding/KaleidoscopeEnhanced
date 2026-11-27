@@ -597,10 +597,10 @@ private:
     GLuint m_measureProg = 0; ///< measureTexture(): Engine/LightMeasure.frag (0 = not built; the source is read).
     bool   m_measureTried = false;     ///< measureTexture(): the program was asked for (once).
     /** Width m_measureTex was allocated at. */
-    int m_measureW = 0, m_measureH = 0; ///< Height m_measureTex was allocated at.
-    GLint m_presentPhParUni = -1;      ///< Uniform location: parallax strength on a photo's depth ("depthParPhoto").
-    GLint m_presentPhStereoUni = -1;   ///< Uniform location: the photo's depth's share in the stereo ("stereoPhoto").
-    GLint m_presentPhWinUni = -1;      ///< Uniform location: the photo's near/far window depths ("photoDepthWin").
+    int   m_measureW = 0, m_measureH = 0; ///< Height m_measureTex was allocated at.
+    GLint m_presentPhParUni = -1;         ///< Uniform location: parallax strength on a photo's depth ("depthParPhoto").
+    GLint m_presentPhStereoUni = -1; ///< Uniform location: the photo's depth's share in the stereo ("stereoPhoto").
+    GLint m_presentPhWinUni = -1;         ///< Uniform location: the photo's near/far window depths ("photoDepthWin").
 
     // ---- Lyrics / artist image ----
     GLuint m_lyricsTex = 0;               ///< Uploaded lyrics overlay texture.

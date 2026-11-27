@@ -186,8 +186,18 @@ void finish( vec3 col )
     t /= 1.0 + 0.35 * max( t.r, max( t.g, t.b ) );
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
-uniform float voiceP; ///< Strength of the voices' roles, 0..1 (0: the scene as it was; set by an <expr> in the preset).
-vec3          voiceRoles( vec3 col, vec2 p )
+uniform float voiceP; ///< Strength of the voices' roles, 0..1 (0: the scene as it was; set by an expr element in the
+                      ///< preset).
+/**  The voices' roles (plan 26.11.2026): kick, snare, hi-hat, melody, stereo, build-up and bar scale the picture's
+ * own colours, by voiceP (0: unchanged).
+ *
+ * @param col  The colour so far. (in)
+ * @param p    The pixel's position (screenP()). (in)
+ *
+ * @return
+ *   The colour with the voices' roles applied (unchanged at voiceP 0).
+ **/
+vec3 voiceRoles( vec3 col, vec2 p )
 {
     if ( voiceP <= 0.0 )
         return col;

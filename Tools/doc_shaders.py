@@ -220,6 +220,7 @@ FUNCS = {
     "neonOf": "A colour normalised to its maximum and raised to a power: a saturated neon of it.",
     "finish": "Writes the pixel: loudness brightness and a soft highlight roll-off.",
     "screenP": "The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).",
+    "voiceRoles": "The voices' roles (plan 26.11.2026): kick, snare, hi-hat, melody, stereo, build-up and bar scale the picture's own colours, by voiceP (0: unchanged).",
     "mirrorUV": "Mirrored repeat of a coordinate into 0..1 (seamless at every edge).",
     "imgScroll": "The photo along an endless scroll in y, without visible mirror seams.",
     "texHeight": "The photo's luma as a height, blended between a broad and a finer mip level.",

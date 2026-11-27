@@ -219,7 +219,7 @@ inline bool row( const QString &dir, const QString &file, Row &out )
  * @param tableDir  The folder the map was found in, which holds its photo_info.tsv. (out, may be null)
  *
  * @return
- *   KALEIDO_DEPTH_DIR\<name>.png if that exists, else <photo folder>\.depth\<name>.png if that exists, else an
+ *   KALEIDO_DEPTH_DIR\<name>.png if that exists, else \<photo folder\>\.depth\<name>.png if that exists, else an
  *   empty string (name = the photo's file name without its last extension).
  **/
 inline QString mapPath( const QString &photo, QString *tableDir = nullptr )

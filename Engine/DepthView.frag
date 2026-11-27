@@ -19,7 +19,7 @@ out vec4          fragColor;     ///< The pixel's colour (output).
 uniform sampler2D texDepth;      ///< The scene's depth buffer (window depth, 0..1).
 uniform vec2      photoDepthWin; ///< Window depth of the photo's near end (x, depth 1) and far end (y, depth 0).
 uniform vec2      nearFar;       ///< Near and far clip distances.
-uniform int       depthKind;     ///< 0: no depth, 1: the photo's depth (a 2D scene with @depth), 2: a 3D scene's.
+uniform int       depthKind;     ///< 0: no depth, 1: the photo's depth (a 2D scene marked for depth), 2: a 3D scene's.
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
