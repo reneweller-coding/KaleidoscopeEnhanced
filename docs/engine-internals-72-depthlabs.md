@@ -58,7 +58,12 @@ means moving them into gen.py first (not done).
   its subject; with a subject this near the photo's edge the edge's mirror repeat comes into the middle of the screen
   (see the open decisions).
 - Look 0, the old shader (cdab7da3) against the new one, same preset text with `depthLook=0` pinned:
-  CONTROL_RESULT
+  three app starts in a row (depthlabs_control.py, wait 40 s): old | new | new again.  Old (start 1) against new
+  (start 3): **0 pixels differ**.  New (start 2) against new (start 3), the same shader file: 7975 pixels 1 of 255
+  apart (mean 0.0006) -- and old (start 1) against new (start 2) the same 7975.  So the difference lies between
+  the starts, not between the shaders: the second of three starts differs from the first and the third, whatever
+  shader they run (the first run, wait 25 s, old | new | look 4, showed the same 7975 between its starts 1 and 2).
+  The cause of that start-to-start difference was not looked for (one photo, one seed, one frame).
 - `PresetEditor.exe --roundtrip Presets/Komplett.xml`: ok, 2937 entries, the knob survives.
   `PresetEditor.exe --validate`: 6 missing parameters -- exactly StripLab's `depthLook` in the generated presets that
   hold StripLab; they go when the lead runs make_genre_configs.py.
