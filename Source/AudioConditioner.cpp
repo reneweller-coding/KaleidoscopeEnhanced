@@ -620,6 +620,7 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
         static const bool BreathDrop = !getenv( "KALEIDO_BREATH_DROP" )
                                        || atoi( getenv( "KALEIDO_BREATH_DROP" ) ) != 0;
         float             breath_target = b_target;
+        float             drop_open = 1.f; // 1 = held; 0 in the window after a drop
         if ( BreathDrop )
         {
             const float p = audio_fx.dropPulse;
@@ -627,18 +628,26 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
             float       lo = std::max( 0.f, std::min( 1.f, ( p - 0.0005f ) / 0.0295f ) );
             hi = hi * hi * ( 3.f - 2.f * hi ); // smoothstep( 0.45, 0.8, p )
             lo = lo * lo * ( 3.f - 2.f * lo ); // smoothstep( 0.0005, 0.03, p )
-            breath_target *= 1.f - ( 1.f - hi ) * lo;
+            drop_open = 1.f - ( 1.f - hi ) * lo;
+            breath_target *= drop_open;
         }
         m_breathSm = slewToward( m_breathSm, breath_target, 2.5f, dt );
 
         // CinemaScope letterbox: the bars CREEP in during the build-up
         // (0.8/s - one notices only late that the picture narrows) and tear
-        // open abruptly on the drop (12/s).
+        // open abruptly on the drop (12/s).  Until 27.11.2026 they did not: the target was the build-up alone, which
+        // is still high at the hit, so the bars stayed for the second the build-up takes to fall.  Now the target
+        // takes the breath's drop envelope (the user's decision of 27.11.2026) and the fast rate holds as long as
+        // that envelope does.  KALEIDO_LETTER_DROP=0: the target as before.
         {
+            static const bool LetterDrop = !getenv( "KALEIDO_LETTER_DROP" ) || atoi( getenv( "KALEIDO_LETTER_DROP" ) ) != 0;
+            const float       lb_open = LetterDrop ? drop_open : 1.f;
+            const float       lb_target = b_target * lb_open;
             // calmMotion: the bars never snap, they only creep (2/s).
-            float lb_rate = ( audio_fx.dropPulse > 0.4f && !ctx.calm ) ? 12.f
-                                                                       : ( b_target > m_letterSm ? 0.8f : 2.0f );
-            m_letterSm = slewToward( m_letterSm, b_target, lb_rate, dt );
+            float lb_rate = ( ( audio_fx.dropPulse > 0.4f || lb_open < 0.999f ) && !ctx.calm )
+                                ? 12.f
+                                : ( lb_target > m_letterSm ? 0.8f : 2.0f );
+            m_letterSm = slewToward( m_letterSm, lb_target, lb_rate, dt );
         }
 
         // Bass shockwave: every strong kick starts a distortion ring in the

@@ -362,6 +362,9 @@ void Configuration::readConfiguration( const QString &filenameIn )
     m_imageDirectory = doc_elem.attribute( "ImageDirectory" );
     m_configurationName = doc_elem.attribute( "ConfigurationName" );
     m_hidden = doc_elem.attribute( "hidden" ).compare( "true", Qt::CaseInsensitive ) == 0;
+    // buildUp="new": this preset's music is EDM, where the second build-up signal of 27.11.2026 is the better one
+    // (the GLwidget hands the choice to the analyser when the preset becomes active).
+    m_newBuildUp = doc_elem.attribute( "buildUp" ).compare( "new", Qt::CaseInsensitive ) == 0;
     // Only read here; GLwidget decides whether to use it, because the audio
     // thread is a process-wide thing that starts once and every preset gets
     // parsed at launch, active or not.

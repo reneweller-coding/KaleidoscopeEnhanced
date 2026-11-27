@@ -73,6 +73,13 @@ public:
      **/
     bool isHidden() const { return m_hidden; }
 
+    /**
+     * @brief Whether the preset asks for the second build-up signal (root attribute buildUp="new"; the EDM presets).
+     *
+     * @return True for the new signal, false for the one of before 27.11.2026.
+     **/
+    bool newBuildUp() const { return m_newBuildUp; }
+
     /**  Audio file this preset wants analysed instead of the live input.
      *
      * @return
@@ -153,6 +160,7 @@ private:
     QString m_configurationName; ///< Preset display name (root element's ConfigurationName attribute); also used as the
                                  ///< taste-learning namespace.
     QString m_sourceFile;        ///< The file the preset was read from (for messages).
+    bool    m_newBuildUp = false; ///< True when the root element has buildUp="new" (see newBuildUp()).
     bool    m_hidden = false;    ///< True when the root element has hidden="true" (excluded from user-facing preset
                                  ///< selection).
     QString m_audioFile;         ///< Optional AudioFile="..." from the root element; see audioFile().

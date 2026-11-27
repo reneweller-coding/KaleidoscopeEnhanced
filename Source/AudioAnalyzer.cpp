@@ -204,6 +204,7 @@ AudioAnalyzer::AudioAnalyzer( QObject *parent )
     // demos but not on every demo (the Cinematic and Ritual crescendos, two breakdowns), so it waits for the user.
     {
         constexpr bool NewByDefault = false;
+        m_buildUpEnv = qEnvironmentVariableIsSet( "KALEIDO_OLD_BUILDUP" );
         m_oldBuildUp = qEnvironmentVariableIsSet( "KALEIDO_OLD_BUILDUP" )
                            ? qEnvironmentVariableIntValue( "KALEIDO_OLD_BUILDUP" ) != 0
                            : !NewByDefault;
@@ -3836,7 +3837,21 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         }
         fwrite( rec, sizeof( float ), 16, M_DrumTrace );
     }
-    m_features.buildUp = m_oldBuildUp ? m_sBuildUp : m_sBuildUpNew;
+    // Which build-up goes out: the environment's choice, else the active preset's for an analyser that follows it
+    // (the EDM presets ask for the new one), else the old one.  A change of the preset cross-fades in a second (a
+    // block is 10 ms); at the ends exactly one of the two signals is published, bit for bit.
+    {
+        const bool  want_new = m_buildUpEnv ? !m_oldBuildUp
+                                            : ( m_followPresetBuildUp.load() ? M_PresetBuildUpNew.load() : !m_oldBuildUp );
+        const float target = want_new ? 1.f : 0.f;
+        if ( m_buildUpMix < 0.f )
+            m_buildUpMix = target;
+        else
+            m_buildUpMix += std::max( -0.01f, std::min( 0.01f, target - m_buildUpMix ) );
+        m_features.buildUp = m_buildUpMix <= 0.f   ? m_sBuildUp
+                             : m_buildUpMix >= 1.f ? m_sBuildUpNew
+                                                   : m_sBuildUp + ( m_sBuildUpNew - m_sBuildUp ) * m_buildUpMix;
+    }
     m_features.dropPulse = m_dropPulse;
     m_features.dropCount = m_dropCount;
     m_features.breakHold = m_stopActive ? 1.f : 0.f;

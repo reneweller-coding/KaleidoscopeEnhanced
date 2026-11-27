@@ -294,6 +294,25 @@ public:
      **/
     static QString M_OfflineWav;
 
+    /**
+     * @brief The active preset's choice of the build-up signal (root attribute buildUp="new" in the preset).
+     *
+     * The second build-up of 27.11.2026 is far better on EDM builds and worse on crescendos, so the EDM genre presets
+     * ask for it and the others keep the old one.  Process-wide, set by the GLwidget when a preset becomes active;
+     * only analysers that called followPresetBuildUp() read it (the live one and the export's), so the offline
+     * analyses of the self test keep the default.  KALEIDO_OLD_BUILDUP overrides it.
+     *
+     * @param on True: publish the new build-up.
+     **/
+    static void setPresetBuildUpNew( bool on ) { M_PresetBuildUpNew.store( on ); }
+
+    /**
+     * @brief Let this analyser publish the build-up the active preset asks for (see setPresetBuildUpNew()).
+     *
+     * A change of the preset cross-fades the two signals over about a second, so that the feature never steps.
+     **/
+    void followPresetBuildUp() { m_followPresetBuildUp.store( true ); }
+
 protected:
     /**  QThread entry point: runs the WASAPI loopback capture loop (or, if M_OfflineWav is set, the offline analysis
      * pass).
@@ -665,6 +684,10 @@ private:
     bool  m_bldNewInit = false; ///< The averages above start at the first non-silent block.
     float m_sBuildUpNew = 0.f;  ///< The new build-up, smoothed (published with KALEIDO_OLD_BUILDUP=0).
     bool  m_oldBuildUp = true;  ///< Publish #m_sBuildUp, the build-up of before 27.11.2026 (the default for now).
+    bool  m_buildUpEnv = false; ///< KALEIDO_OLD_BUILDUP is set: #m_oldBuildUp stands, whatever the preset asks for.
+    float m_buildUpMix = -1.f;  ///< 0 = #m_sBuildUp, 1 = #m_sBuildUpNew is published; below 0: not started yet.
+    std::atomic<bool>        m_followPresetBuildUp{ false }; ///< Read #M_PresetBuildUpNew (followPresetBuildUp()).
+    static inline std::atomic<bool> M_PresetBuildUpNew{ false }; ///< The active preset asks for the new build-up.
     // ---- the drop: the bass back at its groove level (see processBlock) ----
     static const int DropSlots = 90;              ///< Half-second slots of the groove level's 45-s memory.
     float            m_dropBassP = 0.f;           ///< This block's bass power, the 32 bands' lowest eight (40..180 Hz).
