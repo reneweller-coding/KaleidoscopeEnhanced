@@ -97,6 +97,7 @@
     <rig preset="flat"/>
     <int name="sidesP" minValue="0" maxValue="9"></int>
     <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
+    <float name="fluidDepthP" minValue="0.0" maxValue="0.0"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\FractalBloom.frag" type="normal" probability="0.4" mood="bright" complexity="10" gpuMs="0.44">
@@ -1399,6 +1400,7 @@
     <float name="sidesP" minValue="6" maxValue="10"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="fluidDepthP" minValue="0.0" maxValue="0.0"></float>
   </TextureShader>
 
   <TextureShader file="..\Scene2D\SectionMemoryHalls.frag" type="normal" mood="calm,dreamy,dark" probability="0.45" complexity="7" gpuMs="0.35">
@@ -3582,6 +3584,7 @@
     <int name="sidesP" minValue="0" maxValue="8"></int>
     <float name="strengthP" minValue="0.6" maxValue="1.8"></float>
     <float name="rainbowP" minValue="0.0" maxValue="1.0"></float>
+    <float name="fluidDepthP" minValue="0.0" maxValue="0.0"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene3D\\SpiralArray.frag" type="scene3d" geom="points" mood="dark,dreamy" probability="0.3" complexity="10" gpuMs="0.42">
