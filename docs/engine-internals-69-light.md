@@ -230,6 +230,10 @@ white wall and a lamp give the same glow.  But most scenes cut their own output 
   Lines 0.0 / 0.0, SteelWoolSpiralSparks 0.0 / 0.0, MayflyStreetLamps 0.0 / 0.0, VolcanicLightningAshColumn 0.5 /
   0.5; the limiter never acted (scale 1.000 throughout, no hazard), the exposure's median gain unchanged (1.05 / 1.01,
   1.51 / 1.51, 1.01 / 1.01, 1.02 / 1.01).  Mean luminance 0.023 -> 0.026, 0.023 -> 0.026, 0.027 -> 0.025, 0.066 -> 0.072.
+- *Screening* (`Tools/screen.py --scenes` the 93, 1080p over the screening music, once off and once on): 0 of 93
+  flagged either way (empty, frozen, strobe); the strobe measure median 1.89 -> 1.86, max 7.3 -> 7.5 (FusorStarMode;
+  the flag is at 12); white-clipped share max 1.3 % -> 1.3 %; median luma 0.027 -> 0.027; loud/quiet ratio median
+  1.29 -> 1.31.  Unremarkable, as the plan asks.
 - *GPU time* (`perf_labs`, 18 s live, median, off -> on with lift): LaserCausticLines 0.68 -> 0.85 ms,
   SteelWoolSpiralSparks 0.92 -> 1.07, MayflyStreetLamps 1.25 -> 1.38, VolcanicLightningAshColumn 0.54 -> 0.71 --
   +0.13..0.17 ms, the 16-bit targets and the measure pass (the lift itself costs nothing); 120 fps throughout.
