@@ -72,7 +72,7 @@ float RenderPipeline::M_RenderScaleMax = 1.0f; // no supersampling unless asked 
 bool  RenderPipeline::M_RenderScaleFromCli = false;
 float RenderPipeline::M_LightShow = 0.0f;      // corner lamps / light-show OFF by default
 bool  RenderPipeline::M_StrictLight = false;   // strict light protection (ini lightProtectionStrict)
-bool  RenderPipeline::M_PictureGuard = false;  // the picture guard (ini pictureGuard)
+bool  RenderPipeline::M_PictureGuard = DefaultPictureGuard; // the picture guard (ini pictureGuard), on since 27.11.
 bool  RenderPipeline::M_SpoutEnabled = false;  // Spout sender (CLI -o)
 bool  RenderPipeline::M_SpoutClean = false;    // Spout sends the displayed frame, not the raw render
 float RenderPipeline::M_DisplayHz = 60.f;      // the panel rate (glwidget sets it)
@@ -2837,14 +2837,20 @@ void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
 // ---------------------------------------------------------------------------
 int RenderPipeline::guardMode()
 {
-    static const QByteArray Env = qgetenv( "KALEIDO_GUARD" ).trimmed().toLower();
-    if ( Env == "0" || Env == "off" )
+    static const QByteArray Env = qgetenv( "KALEIDO_GUARD" );
+    return guardModeFor( Env, M_PictureGuard, scriptedRun() );
+}
+
+int RenderPipeline::guardModeFor( const QByteArray &env, bool setting, bool scripted )
+{
+    const QByteArray e = env.trimmed().toLower();
+    if ( e == "0" || e == "off" )
         return 0;
-    if ( Env == "log" )
+    if ( e == "log" )
         return 2;
-    if ( Env == "1" || Env == "on" )
+    if ( e == "1" || e == "on" )
         return 1;
-    return M_PictureGuard && !scriptedRun() ? 1 : 0;
+    return setting && !scripted ? 1 : 0;
 }
 
 void RenderPipeline::updateGuard( const AudioFeatures &audio, const AudioFeatures &audioFx, float dtWall )

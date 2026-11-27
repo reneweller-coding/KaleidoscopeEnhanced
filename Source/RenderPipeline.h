@@ -727,8 +727,10 @@ public:
      * @param on  On or off. (in)
      **/
     static void setStrictLight( bool on ) { M_StrictLight = on; }
-    /**  Whether the picture guard is on (PictureGuard.h, ini pictureGuard): while music plays and the picture stays
-     * black or stands still, first a new photo, then an early scene change on the phrase.
+    /// The picture guard's default (the user's decision of 27.11.2026: on; off in scripted runs, see guardMode()).
+    static constexpr bool DefaultPictureGuard = true;
+    /**  Whether the picture guard is on (PictureGuard.h, ini pictureGuard, default DefaultPictureGuard): while music
+     * plays and the picture stays black or stands still, first a new photo, then an early scene change on the phrase.
      *
      * @return
      *   True when it is on.
@@ -739,6 +741,16 @@ public:
      * @param on  On or off. (in)
      **/
     static void setPictureGuard( bool on ) { M_PictureGuard = on; }
+    /**  The guard's mode from its inputs (guardMode() passes this run's; the self test its own).
+     *
+     * @param env       The value of KALEIDO_GUARD (0/off, 1/on, log; empty = not set). (in)
+     * @param setting   The setting pictureGuard. (in)
+     * @param scripted  Whether the run is scripted (fixed seed, frozen clock, sweep, frame steps). (in)
+     *
+     * @return
+     *   0 off, 1 on, 2 watching only: the environment if it names a mode, else the setting -- off when scripted.
+     **/
+    static int guardModeFor( const QByteArray &env, bool setting, bool scripted );
 
     // ---- Stereoscopic output (CLI -3 sbs|tb|ana|fsbs|ftb; key 'z' cycles, c/m depth) --
     // The mono frame is DEPTH-REPROJECTED in the present pass: a pseudo-depth

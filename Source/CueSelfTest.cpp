@@ -1657,6 +1657,14 @@ void delayChecks()
 void guardChecks()
 {
     printf( "\nthe picture guard (PictureGuard.h)\n" );
+    // The default (the user's decision of 27.11.2026): on in a show, off in a scripted run, KALEIDO_GUARD first.
+    check( RenderPipeline::DefaultPictureGuard
+               && RenderPipeline::guardModeFor( QByteArray(), RenderPipeline::DefaultPictureGuard, false ) == 1
+               && RenderPipeline::guardModeFor( QByteArray(), RenderPipeline::DefaultPictureGuard, true ) == 0
+               && RenderPipeline::guardModeFor( " On ", false, true ) == 1
+               && RenderPipeline::guardModeFor( "log", true, false ) == 2
+               && RenderPipeline::guardModeFor( "0", true, false ) == 0,
+           "the guard is on by default, off in scripted runs; KALEIDO_GUARD=0|1|log decides first" );
     const int          n = 15 * 8; // the mip of a 1080p frame
     std::vector<float> black( 3 * n, 0.f ), still( 3 * n ), dim( 3 * n, 0.004f ), lit( 3 * n );
     for ( int i = 0; i < 3 * n; ++i )

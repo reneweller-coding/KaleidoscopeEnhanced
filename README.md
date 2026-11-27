@@ -265,15 +265,16 @@ each other never showed -- the picture dims to 60 % until it stops. The strict
 mode (menu, Setup tool, `lightProtectionStrict=true`) halves the rise and takes
 the beat flashes out of the stage lamps and the title.
 
-**Picture guard.** Switched on (menu Picture & overlays, the remote's Display
-tab, `pictureGuard=true` in the ini), it watches for a picture that stays black
+**Picture guard.** On by default (since 27.11.2026; switch it off in the menu
+Picture & overlays, on the remote's Display tab or with `pictureGuard=false` in
+the ini), it watches for a picture that stays black
 or stands still while music plays: 20 seconds of it and the next photo fades in
 (within 4 s; a dark photo is the usual cause), 15 more and the scene ends early
 -- on the phrase where the beat grid is known, with the preset's own fade. It
 never acts during a blackout, a freeze or a pin, a DJ stop, a scene fade, a
 song's fade-out, the rest mode or silence, and not on the rating walk. The
 darkest scenes by design stay well above its threshold (see
-docs/engine-internals-69-guard.md for the measurement). What it did is counted
+docs/engine-internals.md, section (69), for the measurement). What it did is counted
 per scene and per photo in `kaleidoscope_guard.tsv` beside the settings file
 -- it does not change the taste; whether the counts should steer the choice is
 up to you. Each action is one log line (`GUARD photo dark scene=...`), which
