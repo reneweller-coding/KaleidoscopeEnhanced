@@ -295,12 +295,16 @@ void main()
     vec3 B = depthPhoto.y > 0.5 ? litPhoto( tex1, texDepth1, uv, depthValid.y, px, keyDir, keyCol, sharp )
                                 : lit( tex1, texDepth1, uv, depthValid.y, px, keyDir, keyCol, fillDir, fillCol, sharp );
     vec3 col = mix( B, A, clamp( interpolation, 0.0, 1.0 ) );
-    if ( arcP > 0.0 ) // the light itself: a little fainter in the build-up, flaring at the drop
+    if ( arcP > 0.0 ) // the light itself: a little fainter in the build-up, its kick held back, flaring at the drop
     {
-        // The flare is modest (x 1.4): the rim pulses with the kick, and a stronger gain doubled that pulse into more
-        // flashes (ostgut 1.5 -> 2.0 a second at x 2 with a wider rim; plan P2, 27.11.2026).
-        vec3 base = mix( texture( tex1, uv ).rgb, texture( tex0, uv ).rgb, clamp( interpolation, 0.0, 1.0 ) );
-        col = base + ( col - base ) * ( ( 1.0 - 0.3 * arc.x * s ) * ( 1.0 + 0.4 * arc.y * s ) );
+        // The rim pulses with the kick ( 0.55 + 0.9 audioKick + 0.35 audioLevel in lit() ): the build-up holds that
+        // pulse back (to 0.4 of it at full tension), and the flare is modest (x 1.4) -- a flare of x 2 doubled the
+        // pulse, and even the plain 5 % dimming of the build-up tipped a scene's own beat flicker over one more
+        // flash a second (ostgut, 1.5 -> 2.0; plan P2, 27.11.2026).
+        float pulse = 0.55 + 0.9 * audioKick + 0.35 * audioLevel;
+        float held = ( pulse - 0.9 * audioKick * 0.6 * arc.x * s ) / pulse;
+        vec3  base = mix( texture( tex1, uv ).rgb, texture( tex0, uv ).rgb, clamp( interpolation, 0.0, 1.0 ) );
+        col = base + ( col - base ) * ( ( 1.0 - 0.3 * arc.x * s ) * held * ( 1.0 + 0.4 * arc.y * s ) );
     }
 
     col *= 1.0 + 0.12 * audioBeat + 0.10 * audioSubBass;
