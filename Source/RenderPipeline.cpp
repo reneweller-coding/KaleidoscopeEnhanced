@@ -4152,7 +4152,8 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
             FILE       *f = e ? fopen( e, "w" ) : nullptr;
             if ( f )
                 fputs( "t,pitch,dpitch,buildUp,dropPulse,dropCount,barPhase,beatPhase,bpm,"
-                       "sectionCount,sectionId,presence,level,swell,flux,hcdf,phrasePos,phraseLeft,melody,hue\n",
+                       "sectionCount,sectionId,presence,level,swell,flux,hcdf,phrasePos,phraseLeft,melody,hue,"
+                       "dropFx,breath\n",
                        f );
             return f;
         }();
@@ -4160,12 +4161,13 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
         {
             static unsigned n = 0;
             fprintf( flog,
-                     "%.3f,%.4f,%.4f,%.3f,%.3f,%d,%.3f,%.3f,%.1f,%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.4f,%.4f\n",
+                     "%.3f,%.4f,%.4f,%.3f,%.3f,%d,%.3f,%.3f,%.1f,%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.4f,%.4f,"
+                     "%.4f,%.4f\n",
                      m_globaltime, audio.dominantPitch, audio.deltaPitch, audio.buildUp, audio.dropPulse,
                      audio.dropCount, audio_fx.barPhase, audio_fx.beatPhase, 40.f + 160.f * audio.estimatedBPM,
                      audio.sectionCount, audio.sectionId, audio.musicPresence, audio.overallLevel, audio_fx.swell,
                      audio.spectralFlux, audio.harmonicChange, audio_fx.phrasePos, audio_fx.phraseSecsLeft,
-                     audio.melodyPitch, audio_fx.chromaHue );
+                     audio.melodyPitch, audio_fx.chromaHue, audio_fx.dropPulse, m_audioConditioner.breath() );
             if ( ( ++n & 63u ) == 0 )
                 fflush( flog );
         }

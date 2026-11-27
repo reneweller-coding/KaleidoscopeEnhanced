@@ -619,6 +619,13 @@ band-group onsets by default -- the separator's kick and snare did better on syn
 kit. `KALEIDO_OLD_DRUMS` chooses: `1` all three as before, `0` all three from the separator, or the drums named
 (`kick,snare` is the default). Details: docs/engine-internals-70-analyzer.md.
 
+### The held breath at a drop
+
+In a build-up the whole picture holds its breath: it pales, dims a little and darkens toward the edges. Since
+27.11.2026 the drop lets it go a quarter to half a second after the hit, together with the depth effects' tension
+(before, it waited until the build-up had died away, a second or more). `KALEIDO_BREATH_DROP=0` brings back the old
+breath for one run (for comparisons). Details: docs/engine-internals-71-fixes.md.
+
 ---
 
 ## Stereo 3D in a headset

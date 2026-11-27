@@ -608,7 +608,28 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
         float b_target = std::max( 0.f, std::min( 1.f,
                                                   ( audio.buildUp - 0.5f ) * 2.2f ) )
                          * gate;
-        m_breathSm = slewToward( m_breathSm, b_target, 2.5f, dt );
+        // ... and the drop lets it go (the user's decision of 27.11.2026).
+        // The depth effects' tension arc (tensionArc() in FX/FxDepth*.frag
+        // and the three others) clears 0.25-0.5 s after the hit with an
+        // envelope read off the decaying drop pulse; the breath's target takes
+        // the same envelope, so the whole picture opens with the depth instead
+        // of a second later, when the build-up has fallen.  The pulse jumps
+        // 0 -> 1 at the hit and the envelope maps both to 0: no step.  The
+        // slew (2.5/s) still bounds how fast the picture brightens.
+        // KALEIDO_BREATH_DROP=0: the breath follows the build-up alone.
+        static const bool BreathDrop = !getenv( "KALEIDO_BREATH_DROP" )
+                                       || atoi( getenv( "KALEIDO_BREATH_DROP" ) ) != 0;
+        float             breath_target = b_target;
+        if ( BreathDrop )
+        {
+            const float p = audio_fx.dropPulse;
+            float       hi = std::max( 0.f, std::min( 1.f, ( p - 0.45f ) / 0.35f ) );
+            float       lo = std::max( 0.f, std::min( 1.f, ( p - 0.0005f ) / 0.0295f ) );
+            hi = hi * hi * ( 3.f - 2.f * hi ); // smoothstep( 0.45, 0.8, p )
+            lo = lo * lo * ( 3.f - 2.f * lo ); // smoothstep( 0.0005, 0.03, p )
+            breath_target *= 1.f - ( 1.f - hi ) * lo;
+        }
+        m_breathSm = slewToward( m_breathSm, breath_target, 2.5f, dt );
 
         // CinemaScope letterbox: the bars CREEP in during the build-up
         // (0.8/s - one notices only late that the picture narrows) and tear
