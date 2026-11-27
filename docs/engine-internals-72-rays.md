@@ -6,8 +6,8 @@ nearer (crepuscular rays) -- one more depth effect, but in the present pass, so 
 scheduler drew.  Knob `raysP`; 0 = the old code path behind an `if`.  **Not in any preset**: the user decides after
 seeing it.
 
-**State at the time of writing (keep this paragraph true): the code is committed UNBUILT (c51db561 + the formatting
-commit after it).  Nothing below was rendered or looked at unless the section "Verified" says so.**
+**State (16:35): built (one build, rc 0), knob 0 compared on two scenes, one sheet with the knob on looked at -- the
+effect works but is FAINT at these constants (see "Verified"); the constants were not tuned.**
 
 #### What it does
 
@@ -58,13 +58,31 @@ objects to a knob the scene's shader does not declare.
 - Light checks after the change: `Tools/cgvr_format.py --check Engine/Present.frag` (formatted), `Tools/doc_shaders.py
   --check` (0), `Tools/temporal_budget.py` (0 errors, 4 warnings as before), `Tools/shake_scan.py --summary --baseline
   Tools/shake_baseline.tsv` (0 new hits).
-- (build, knob-0 snapshot, a picture with the knob on: see the report / the lines added below if they happened.)
+- *Build*: `build.cmd ... p2 app`, rc 0 (4.9 min, a full rebuild: EffectShader.h and RenderPipeline.h changed).  The
+  frozen shots ran without error lines in the app's log (Present.frag compiles on the driver).
+- *Knob 0* (Tools/scene_snapshots.py, frozen frames of ChainLab2D and ChainDrosteKaleido, both `// @depth`; sets
+  `wt-rays-before`, `-beforeb` = the old exe (kept as Release\Kaleidoscope_before.exe) with cdab7da3's Present.frag;
+  `wt-rays-knob0`, `-knob0b` = the new exe and shader; `wt-rays-new-oldfrag`, `wt-rays-old-newfrag` = the two crossed).
+  **Each scene's frozen frame has TWO states from run to run, whatever the code** (they differ in ~4 % of the pixels,
+  mean 0.04..0.05 of 255, max 15..17 after JPEG): ChainLab2D gave A A B B A B over before, knob0, knob0b, beforeb,
+  new-oldfrag, old-newfrag -- the old pair differs from itself (before A, beforeb B) and so does the new pair; in
+  each state old and new are identical in every pixel (before = knob0, beforeb = knob0b).  ChainDrosteKaleido gave
+  A A for the two old runs and B for the four others -- including old exe + new shader AND new exe + old shader, so
+  neither the shader nor the C++ alone explains B; with the two-state behaviour seen directly on ChainLab2D I read it
+  as the same run-to-run pair, but an old+old run in state B was not seen for this scene.  So: knob 0 identical on
+  ChainLab2D (twice, max difference 0); on ChainDrosteKaleido not shown, not refuted.  The two states themselves are
+  not from this change (the old exe with the old shader shows them) and were not looked into.
+- *Knob on* (`KALEIDO_RAYS=1`, set `wt-rays-on`, sheet C:\Users\Rene\Desktop\kaleido-wt\sheets\rays\rays_knob0_on_diff.jpg:
+  knob 0 | on | difference x4): the light is there and radiates from the light point in the upper middle, cut into
+  thin streaks -- but faint: mean change +0.39 of 255 (ChainLab2D, max 89) and +0.20 (ChainDrosteKaleido, max 22) on
+  frames of mean brightness 35 and 44.  In the sheet the two pictures are hard to tell apart.  Both frames are dark
+  kaleidoscope pictures with little that is far AND brighter than 0.35; a bright photo scene was not rendered.
 
-#### NOT verified (as of the WIP commit)
+#### NOT verified
 
-- That the C++ compiles and that Present.frag compiles on the driver.
-- That a frozen snapshot with `raysP` 0 is unchanged.
-- The look with the knob on (strength, thresholds, whether the jitter shows as grain at 16 taps), on any photo.
+- The look on a bright photo, the right strength (`RaysGain`, `RaysLum`, `RaysFar` were set once and not tuned),
+  whether the jitter shows as grain, the look in motion (only frozen frames).
+- Knob 0 on ChainDrosteKaleido beyond the reading above; the cause of the two run-to-run states.
 - The GPU time: 16 x 2 texture reads per output pixel while on (the depth read is the unfiltered full-size depth
   texture, the colour read is level 0 of the frame); nothing while off.
 - Stereo modes: the march runs in the eye's frame coordinates after the stereo shift; not looked at.
