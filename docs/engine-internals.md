@@ -10584,3 +10584,2208 @@ C:\Users\Rene\Desktop\kaleido-wt\sheets\env3d\u2_shadow_before_off_on.jpg):
   absent.
 - Not measured: the depth pass's GPU cost per scene; more photos.  The old ChromeForm crossfade and the tex0-only
   reflections stay as they were in the old look (for the user to decide).
+
+## 27.11.2026 (70): the user's decisions of the morning, and a drum separator
+
+The user decided on the open points of (69): only the 289 clean photos of the depth set into the pack (1,266 photos,
+707 with relief, installed locally with their maps in Images\.depth); the picture guard on by default; 16-bit
+intermediates as a setting, on by default; the depth looks, the voice roles, the environment light and the shadows
+switched on in the presets; and the analyser's kick/snare/hat to follow their instruments.  Built by two agents
+(worktrees `kaleido-wt\defaults`, `kaleido-wt\analyzer`).
+
+### The user's decisions: the guard on, 16-bit intermediates as a setting, the new looks in the presets
+
+On 27.11. the user decided on the open points of section (69) (translated): "2. yes, please switch everything on.
+3. please switch on. 4. yes, please add and switch on."  Three packages, in this order, by agent "defaults" (branch
+`wt-defaults` from b0017f84).  Every number below was measured on the reference machine (RTX 5090, panel 2880 x
+1620, 120 Hz), each app run through the heavy-job lock (timing runs alone).
+
+| package | what | result |
+|---|---|---|
+| A | the picture guard on by default | `DefaultPictureGuard = true`; still off in scripted runs; self test 181/0, scene plans 0 violations |
+| B | 16-bit intermediates as a setting (`hdrBuffers`), on by default | menu, remote, Setup tool, applies at the next start; 8-bit fallback; 307 scenes screened off/on: 0 new flags, three white-card scenes capped (`// @hdrcap`), one 2D scene bounded; +0.1..0.27 ms |
+| C | voice roles, depth looks, environment light and shadow maps switched on in the presets | 102 entries of Komplett.xml (75 voiceP, 3 depthLook, 20 envP, 7 shadowMapP), genre presets regenerated; cost 0..+0.18 ms; nothing left out |
+
+#### A -- the picture guard on by default
+
+- `RenderPipeline::DefaultPictureGuard = true` (`M_PictureGuard` starts with it; the ini key `pictureGuard` still
+  wins).  The user's settings file has no `pictureGuard` key, so the new default reaches the user's show.
+- Scripted runs (KALEIDO_SEED, KALEIDO_FREEZE_TIME, the sweeps, frame steps -- the snapshots, the screening, the
+  exports) keep it off as built; `KALEIDO_GUARD=0|1|log` decides before both.  `guardMode()` now hands its three
+  inputs to a static `guardModeFor( env, setting, scripted )`, so the self test checks the rule itself: on by
+  default, off when scripted, KALEIDO_GUARD first (`on` in any case and spacing).
+- README: the guard paragraph says it is on and how to switch it off (menu, remote, `pictureGuard=false`); its link
+  to the no longer existing `docs/engine-internals-69-guard.md` now points at section (69).
+- Checks: self test 181 passed, 0 failed (the new case among them); `check_schedule.py --quick` 20 plans, 0
+  violations (the scene plan is a scripted run, the guard never acts there); `check_strings.py` OK.
+- Not changed: the menu and remote labels (they show the state, which is now "on"); the Setup tool never listed the
+  guard.
+
+#### B -- 16-bit intermediates as a setting, on by default
+
+*The setting.*  Until now `RenderPipeline::hdrBuffers()` read only `KALEIDO_HDR_BUFFERS=1` (section (69), L1).  Now:
+
+- ini key `hdrBuffers` (default `DefaultHdrBuffers = true`), written back at the exit like the other look settings
+  (`lookSettings()`), switchable in the menu (Picture & overlays, "16-bit intermediates (from the next start)"), on the
+  remote (Image & 3D, "16-bit light (next start)", `/api/toggle?k=hdr`, state field `hdr`) and in the Setup tool (a
+  checkbox below the strict light protection, with what it costs).  Strings DE + EN.
+- `KALEIDO_HDR_BUFFERS=0|1` stays and decides first (`hdrBuffersFor( env, setting )`, self-tested); anything else in
+  the variable is ignored.
+- *Applied at the next start.*  The targets are made in `reinit()`; `resize()` reallocates the scene, FX,
+  transition, final, bloom and trail targets with the current format, but the MSAA colour, the rig scratch targets,
+  the eye-packed stereo targets, the measure frame and PresentPass's `m_hdr` would each need their own re-creation,
+  and a format mismatch between an MSAA target and its resolve target is a GL error.  So `hdrBuffers()` latches the
+  value at its first call (the first pipeline's constructor, after `loadSettings()`), the menu and the remote change
+  the setting only, and their labels say "from the next start".
+- *The fallback.*  `reinit()` probes once (a 64 x 64 RGBA16F texture with mipmaps in a framebuffer): if it is not
+  complete or GL reports an error, the pipeline goes back to RGBA8 and the log says `Intermediate pictures: RGBA16F
+  targets incomplete on this driver ... -- 8 bit (RGBA8) instead`.  Every pipeline's present pass logs the format it
+  got (`Intermediate pictures: RGBA16F (setting hdrBuffers / KALEIDO_HDR_BUFFERS)` or `RGBA8`).  The fallback could
+  not be tried here (the RTX 5090 has the targets); Mesa/Linux will show in the CI.
+- Tools: `Tools/light_stats.py` reads light above 1 through RGBA8 targets on purpose (a quarter of the colour, decoded
+  x4), so it now sets `KALEIDO_HDR_BUFFERS=0` unless the caller sets it.  `flash_count.py`'s example names `=0`.
+- Checked in the app: a settings copy with `hdrBuffers=false` logs RGBA8, with `true` RGBA16F, and the key stays in
+  the file; `KALEIDO_HDR_BUFFERS=0` gives RGBA8.
+
+*What the default changes -- the screening.*  The 214 scenes `Tools/scene_light.tsv` lists as open (no final clamp)
+with light above 1 at times (`some` or `strong`), and the 93 `//@light` scenes of L2: 307 scenes, `Tools/screen.py`
+(1080p, the screening music, seed 1) once with `KALEIDO_HDR_BUFFERS=0` and once with `=1`, eight chunks, 40-50 s each
+(the old exe in a copy, ReleaseScreen, so builds could go on).
+
+| measure (307 scenes) | 8 bit | 16 bit |
+|---|---|---|
+| flagged (empty, frozen, strobe) | 2 (OrbitalShells, VolcanicLightningPlume) | 1 (VolcanicLightningPlume) |
+| strobe median / max | 1.83 / 12.7 | 1.88 / 13.4 |
+| white-clipped share max | 1.33 % | 1.47 % |
+| median luma, median of scenes | 0.046 | 0.046 |
+| brightest frame (luma_max), median / max | 0.212 / 0.523 | 0.225 / 0.810 |
+
+VolcanicLightningPlume was flagged as a strobe with 8 bit already (12.7, the flag at 12); its WCAG flash count
+(below) even falls.  The scenes that moved most, then counted with `Tools/flash_count.py` (20 s at 60 fps, the
+worst second of the nine quarter windows; three flashes a second is the limit):
+
+| scene | screening luma median off -> on | flashes/s off -> on | mean luminance off -> on | verdict |
+|---|---|---|---|---|
+| CymaticsPlate (additive points) | 0.000 -> 0.071, white-clipped 0 -> 1.5 % | 0.0 -> 1.0 | 0.030 -> 0.285 | white card: capped (1.5) |
+| ChladniAcousticPlate (additive points) | 0.175 -> 0.301 | 2.5 -> 2.5 | 0.163 -> 0.181 | a white mass: capped (2) |
+| QuantumQubitArray (solid 3D, open) | 0.197 -> 0.375 | 0.5 -> 2.5 | 0.097 -> 0.136 | rises clearly: capped (1.2) |
+| FractalBloom (2D, open) | 0.149 -> 0.405 | 1.0 -> 1.0 | 0.031 -> 0.033 | output bounded at 3 in the scene |
+| HarmonicChangeLightning | strobe 2.74 -> 4.04 | 1.5 -> 1.5 | 0.022 -> 0.021 | left |
+| PrismExplode | strobe 6.08 -> 7.62 | 0.5 -> 0.5 | 0.056 -> 0.056 | left |
+| VolcanicLightningPlume | strobe 12.7 -> 13.4 | 3.0 -> 2.5 | 0.052 -> 0.068 | left (flagged with 8 bit too) |
+| FeatherStorm | 0.120 -> 0.200 | 1.0 -> 1.0 | 0.031 -> 0.031 | left |
+| ParticleGalaxy | strobe 4.49 -> 5.51 | 0.0 -> 0.5 | 0.010 -> 0.010 | left |
+
+No second above 3 anywhere.  Sheet (frames at 12 s, 8 bit left, 16 bit right, before the caps):
+`C:\Users\Rene\Desktop\kaleido-wt\sheets\defaults\b_flagged_off_on_12s.jpg` -- CymaticsPlate's sand lines become broad
+white bars with a halo, ChladniAcousticPlate's lower half a soft white mass; QuantumQubitArray and FractalBloom look
+alike in that frame (their change is in the pulses).
+
+*The fix, inside the scene, restrained -- `// @hdrcap <X>`.*  An additive particle scene cannot bound its own sum:
+each sprite is bounded (`cat_tone / (1 + 0.35 max)`), the blending happens after the fragment stage, and an 8-bit
+target held each sum at 1 while a 16-bit one holds 20 or 50, all of which the bloom turns into glow.  So a scene may
+carry a line `// @hdrcap <X>`: `EffectShader::hdrCap()` reads it with `writesDepth()`'s scan of the source (cached
+per program), and `RenderPipeline::capSceneLight()` draws one full-screen triangle over the scene's finished frame
+(after the MSAA resolve, before the OIT pass) with `glBlendEquation( GL_MIN )` and the colour (X, X, X, 65000)
+(Engine/HdrCap.frag): every channel becomes min( itself, X ), the alpha stays.  Only with 16-bit targets -- an 8-bit
+frame is never touched, so the old picture stays bit for bit -- and never on eye-packed stereo frames.
+`glBlendEquation` came into `glcore` as an optional entry point (without it: no cap).  Cost: one draw of a constant
+colour, not measurable next to the scene.  The limiter is not touched.
+
+After the caps (screening on, flash count on; 8 bit unchanged):
+
+| scene | cap | luma median (8 bit / 16 bit / capped) | brightest frame | flashes/s (8 bit / capped) | mean luminance (8 bit / capped) |
+|---|---|---|---|---|---|
+| CymaticsPlate | 1.5 | 0.000 / 0.071 / 0.000 | 0.079 / 0.368 / 0.088 | 0.0 / 0.0 | 0.030 / 0.040 |
+| ChladniAcousticPlate | 2 | 0.175 / 0.301 / 0.193 | 0.313 / 0.423 / 0.379 | 2.5 / 2.5 | 0.163 / 0.154 |
+| QuantumQubitArray | 1.2 (2: 2.5 flashes/s) | 0.197 / 0.375 / 0.115 | 0.332 / 0.475 / 0.418 | 0.5 / 1.5 | 0.097 / 0.068 |
+| FractalBloom (in-scene `min( col, 3 )`) | 3 | 0.149 / 0.405 / 0.104 | 0.457 / 0.810 / 0.647 | 1.0 / 1.0 | 0.031 / 0.033 |
+
+The capped scenes keep a brighter core than with 8 bit and the median falls a little below the 8-bit one: the
+exposure sees the brighter highlights and takes the frame down.  QuantumQubitArray still flashes 1.5 times a second
+against 0.5 with 8 bit (under the limit); FractalBloom's rings (`pow( 0.01 / d, 1.2 )`, unbounded) got the house
+bound of L2 in the shader itself (`min( col, 3 )`, an identity for an 8-bit target).
+
+*GPU time* (`Tools/perf_labs.py` with the review music, 25 s a scene, alone on the machine; median / p90 ms, 8 bit ->
+16 bit): ChainLab2D 0.81 / 0.91 -> 1.01 / 1.07, ChainLabTunnel 1.18 / 1.23 -> 1.35 / 1.37, ChainLab3D 3.39 / 3.89 ->
+3.30 / 3.66, ChainSlice3D 2.00 / 2.40 -> 2.19 / 2.54, the five Chain3D scenes +0.12..0.17 median, ChainP4mSpiralKaleidoWarp
+0.61 -> 0.77, ChainWaveDrosteHex 0.57 -> 0.73.  120 fps in every scene both ways (min 110 once, ChainSlice3D); every p90
+within release_check's budgets (ChainLab2D 1.5, ChainLabTunnel 2.0, ChainLab3D 8.0, ChainSlice3D 4.5, else 6.0).
++0.1..0.27 ms, as L1 measured.  GPU memory: +330 MB from L1's soak (not measured again).
+
+*Readbacks.*  The snapshot tool's frozen frame (the web remote's `/api/snapshot`, a readback of the presented
+picture) works with the default: 10 scenes off and on, 0 failed; with `KALEIDO_HDR_BUFFERS=0` 9 of 10 identical to
+2026-11-26-base (LightningStorm differs as it does between two runs of the old code, a GPU simulation).  The video
+export works with 16 bit (every flash count above is an export).  Not run again: the recorder and the screenshot key
+(both read the presented 8-bit picture, code unchanged).
+
+*Soak* (`Tools/soak.py --shuffle 1 --minutes 30`, at HEAD with A, B and C, the default settings, alone; one piece of
+30 min, it cannot be split): 301 scene changes, 0 GL errors, private memory -13.4 MB an hour after minute 10, GPU
+memory 2,584..3,214 MB after the warm-up and falling (-597 MB an hour) -- nothing grows.  The tool's "F1: NOT met" is
+its rule of at least 600 scene changes (an hour), as in L1.  The rewind history ring stays 8 bit
+(known).
+
+*Self test* 182 passed, 0 failed with the default and with `KALEIDO_HDR_BUFFERS=0`.
+
+*Snapshots.*  With B the default picture changes; the lead renders a new whole-catalogue baseline after the merge.
+`Tools/snapshot_baseline.txt` is not changed.
+
+#### C -- the new looks in the presets
+
+*What was switched on, in Presets/Komplett.xml* (the master; then `python Tools/make_genre_configs.py`, which only
+added the same lines to the ten genre presets -- 579 lines added, none changed or removed):
+
+| knob | entries | form | effect |
+|---|---|---|---|
+| `voiceP` | 75: the 20 labs, the 4 chain labs, the 41 Chain*/Chain3D* scenes, the ten I3 scenes (every Scene2D/Scene3D file that declares it) | `<expr name="voiceP" formula="1"/>` | the voices' roles (section (69), I2) at full strength |
+| `depthLook` + `depthVar` | ChainLab2D | `<float name="depthLook" minValue="-1.17" maxValue="5.49">`, depthVar 0..99.49 | rolled per activation; the shader takes `int( x + 0.5 )` above 0.5: look 0 (the old picture) about 25 %, each of the five looks about 15 %, the variant 0..99 |
+| `depthLook` | TimeChainLab, MirrorBilliardLab | 2.83..5.49 | the subject anchor (> 3.5) about 75 %, off 25 % |
+| `envP` | 20: SpectralOrb, SpectralTorus, JellyBody, the 11 ChromeForm entries, MetaSculpt, BloomSculpt, Detonation, Ocean, ChromeFlow, MirrorShardKaleidoscope | 0.5..1 | always on, strength rolled |
+| `shadowMapP` | 7: MeshTuningForks, MeshDominoWave, MeshMetronomes, MeshSeismograph, MeshZoetrope, MeshFoundryPour, MeshPendulumWave | 0.6..1 | the lamp's shadow map, always on |
+
+Look 0 stays one outcome in four on purpose: the looks show only on photos with a depth map (418 of 977), the anchor
+only on the 53 with a sure subject.  The ranges are rolled like the labs' other knobs (a `<float>` range per
+activation; the variant number as in the variant round of 23.10.).
+
+*Cost first* (`perfwrap.py` of agent env3d: Tools/perf_labs.py's run with the knob appended at the end of the entry,
+the same rolls for 0 and 1, 20-25 s a scene live at 2880 x 1620, alone on the machine, 16-bit intermediates on; GPU
+median / p90 ms, knob 0 -> 1):
+
+| scene | 0 | 1 |
+|---|---|---|
+| SpectralOrb (envP) | 0.77 / 0.78 | 0.76 / 0.78 |
+| SpectralTorus | 0.90 / 0.92 | 0.77 / 0.78 |
+| JellyBody | 0.88 / 0.91 | 0.84 / 0.87 |
+| ChromeForm | 0.85 / 1.08 | 0.84 / 1.09 |
+| MetaSculpt | 1.86 / 2.16 | 1.89 / 1.92 |
+| BloomSculpt | 0.90 / 0.92 | 0.93 / 0.99 |
+| Detonation | 0.77 / 0.79 | 0.89 / 0.97 |
+| Ocean | 0.90 / 0.99 | 0.77 / 0.80 |
+| ChromeFlow | 0.92 / 0.99 | 0.95 / 1.02 |
+| MirrorShardKaleidoscope | 0.99 / 1.00 | 1.00 / 1.01 |
+| MeshTuningForks (shadowMapP) | 0.93 / 0.94 | 0.99 / 1.00 |
+| MeshDominoWave | 1.07 / 1.08 | 1.25 / 1.27 |
+| MeshMetronomes | 1.11 / 1.12 | 1.25 / 1.26 |
+| MeshSeismograph | 0.95 / 0.96 | 1.08 / 1.09 |
+| MeshZoetrope | 0.97 / 0.98 | 1.02 / 1.05 |
+| MeshFoundryPour | 1.01 / 1.01 | 1.16 / 1.17 |
+| MeshPendulumWave | 0.94 / 0.95 | 0.99 / 1.00 |
+| ChainLab2D (voiceP) | 1.09 / 1.10 | 1.09 / 1.10 |
+| FoldLab | 0.95 / 1.22 | 0.96 / 0.97 |
+| MirrorBilliardLab | 0.99 / 1.09 | 0.99 / 1.12 |
+| EngravingLab | 0.93 / 0.94 | 0.95 / 1.06 |
+
+envP costs nothing measurable (-0.13..+0.12 ms, the noise of single runs; Detonation +0.12 with its fixed-mip
+lookup); the shadow pass +0.05..0.18 ms (a second, depth-only draw of the model into the 2048 x 2048 map); the roles
+0..+0.02 ms (these runs were silent, the roles' arithmetic runs regardless).  120 fps in every run; every p90 far under
+the 6 ms budget.  **Nothing was left out.**  (The depth looks' cost was measured in (69), T4: +0.01..0.04 ms.)
+
+*Checks.*  `PresetEditor --roundtrip` of every preset: all load and save (Komplett and Allround 2,930 entries each);
+`--validate`: all 12 files complete against Komplett.xml.  `Tools/check_schedule.py --quick`: 20 plans, 0 violations
+(labs 26.3..49.3 % against their shares).  Snapshots of the 102 changed entries (frozen, silent, the user's settings,
+`KALEIDO_HDR_BUFFERS=0` so that only C shows) against 2026-11-26-base: 30 entries changed by more than 1 of 255 --
+the 20 envP entries, five mesh scenes, ChainLab2D, TimeChainLab, MirrorBilliardLab; the 72 other voice entries stay
+within the tolerance of 1 of 255 (the roles answer the music, and the snapshot is silent).  A trap (section (69), T4 and U2): an entry with an
+added knob rolls its other knobs differently, so the frames differ in framing and colour as well as in the look --
+the sheets show the look's character, not a pure difference.  MeshSeismograph and MeshFoundryPour came out black, as
+in every frozen set since 26.11. 00:45 with the old code as well (the frame is taken before their large models load).
+
+Sheets (base | new | difference x4): `C:\Users\Rene\Desktop\kaleido-wt\sheets\defaults\c_changed_vs_base_1.jpg`
+(the envP scenes: the orb, the torus and the jelly mirror the photo; ChromeForm's room and figure take the photo's
+colours, a bright patch of the photo stands in its sky), `_2.jpg` (the other ChromeForm entries, two mesh scenes),
+`_3.jpg` (the mesh scenes -- MeshZoetrope shows the shadow beside its base most clearly -- and the three labs with a
+depth look).
+
+*release_check* (`--skip snapshots`, alone, 24.8 min, with A, B and C): selftest 182/0, schedule 20 plans 0
+violations, rules, build lists, analyzer, transitions (210/210), shadercheck (3,224 files, 0/0), shaderdoc, chain
+(0 of 12 differ) and perf green -- ChainLab2D 120 fps, GPU p90 1.06 ms; ChainLabTunnel 1.54; ChainLab3D 3.61;
+ChainSlice3D 2.55; the seven named chains 0.78..2.38, all 120 fps.  Layout and Doxygen were red on two lines of my own
+(a static block the formatter would have realigned, an undocumented probe function); both fixed, and the two steps
+rerun green (3,516 files same; C++ 0, shaders 0 warnings), self test 182/0 again after the rebuild.
+
+#### For the user
+
+- QuantumQubitArray still flashes 1.5 times a second with 16 bit against 0.5 with 8 bit (cap 1.2; under the limit of
+  3).  A lower cap or the old 8-bit picture for this scene is a choice.
+- The caps' values (1.5, 2, 1.2, 3) are first measurements on one photo and one piece of music.
+- The roles, looks, environment light and shadows are on everywhere they exist; the sheets show them frozen and
+  silent.  How they feel with music and over hours is the user's to see.
+
+#### Not verified
+
+- The 8-bit fallback on a driver without RGBA16F targets (Mesa/Linux: the CI).
+- The recorder and the screenshot key with 16 bit (unchanged code, reading the presented 8-bit picture); a soak of an
+  hour or more.
+- GPU memory with the default (L1 measured +330 MB).
+- The depth looks over many photos in the app (only the snapshot photo).
+
+### The drum separator: the hi-hat follows the hi-hat
+
+27.11.2026, agent "analyzer", branch `wt-analyzer` (from b0017f84).  The user, on reading I1's finding (section (69)):
+"build that in".
+
+**Shipped:** the hat from the separator; the kick and the snare keep the band groups by default (they won on the
+synthetic music but not on every measure of the real kit -- see "The decision").  The numbers below compare the
+band groups with the separator for all three.
+
+| what | band groups -> separator |
+|---|---|
+| screening music, onset F-measure of the envelope's hits (+-30 ms) | kick 0.85 -> 0.88, snare 0.39 -> 0.68, hat 0.14 -> 0.86 |
+| screening music, leak (envelope at the instrument's hits with it muted / with it) | kick 1.00 -> 1.00, snare 1.00 -> 0.33, hat 0.99 -> 0.38 |
+| a sampled breakbeat kit with MIDI truth, F / leak (drums muted) | kick 0.53 / 0.83 -> 0.59 / 0.57; snare 0.47 / 0.55 -> 0.34 / 0.44 |
+| 41 files (the user's 7 tracks, 34 generator demos): hits per second | kick 1.53 -> 1.42, snare 1.60 -> 1.79, hat 2.10 -> 1.71 |
+| kick hits on the demos' beat grid | 43 % -> 46 % |
+| everything else the analyser computes (tempo, beat, bar, drops, build-up, sections, scheduler) | bit for bit (52 WAVs, all other feature columns; three scene plans byte-identical) |
+| cost per 10-ms block | see "Cost" |
+
+`KALEIDO_OLD_DRUMS` chooses per drum which keeps the band group: unset = `kick,snare` (the default), `1` all three
+(the separator is then skipped), `0` none (all three from the separator), or any of kick/snare/hat by name.
+
+#### The finding
+
+The shaders' `audioKick`, `audioSnare`, `audioHat` (AudioFeatures::onsetKick/Snare/Hat) were onsets of three band
+groups of the analyser's 32 log bands (40-180 Hz, 180-1690 Hz, above 1690 Hz): per group the rise of every band over
+its peak-hold reference, summed and divided by the group's reference, a spike test against the group's running average
+(x 2.2 + 0.06), the strength `odf / (2.2 avg) - 1` clipped to 1, a 120-ms cooldown, a decay of 0.93 per block.  I1
+(section (69)) measured on the screening music that none follows its instrument: the bass line drives the kick group,
+the lead's sixteenths the snare and hat groups (with the snare muted `snare_c` read 0.304 against 0.303).  The lab
+below confirms it on the analyser's own spectra and adds two properties of the design:
+
+- *It hears whatever rises in its band.*  On the screening music the old hat's envelope at its hits keeps 99 % with the
+  hat muted; at the lead's notes it reads 84 % of its own hits' level.  The old snare keeps 100 % with the snare muted.
+- *Its strength is relative to its own average.*  The hits saturate: on the user's tracks and the demos the median
+  strength of a hit is 1.00 for all three groups (p90 1.00).  A group with nothing of its instrument in it still fires
+  at full strength on whatever is left -- on an ambient demo without any drum the old hat fires 2.5 times a second.
+- *And it is deaf after silence.*  The reference is read before the block it divides: a hit out of silence reads its
+  rise over 1e-6, the running average jumps to 10^4 and decays by 0.95 a block -- the detector misses the next
+  seconds.  On a test signal of clean kicks every 0.5 s the old kick group found 53 % of them.
+
+#### Who reads the three envelopes
+
+| reader | gets | why |
+|---|---|---|
+| shaders: `audioKick`/`audioSnare`/`audioHat` (EffectShader.cpp, Scene3DShader.cpp, the chain patch `Tools/patch_chain3d.py`), the formula variables `kick`/`snare`/`hat` (ExprVars) -- 1,469 files read `audioKick`, 100 `audioSnare`, 91 `audioHat` (grep over Scene2D, Scene3D, FX, Engine) | the published envelope (by default: hat new, kick and snare old) | what the task is about |
+| AudioConditioner (peak hold, slew, music and drum gate) and through it everything that reads `audio_fx.onsetKick/Snare/Hat`: ComputeFX (particle strikes, ring waves), GpuSims, RenderPipeline's calibration readout, the conditioner's own kick shake amplitude and the kick shockwave ring (`m_kickSmooth`) | the published envelope | all are pictures reacting to a drum hit |
+| PresetEditor: `--features` columns kick_c/snare_c/hat_c, the preview's timeline | the published envelope | they show what the shaders get |
+| the section detector's frame (`m_secOnsAcc`, only into `M_SectionTrace`) and the build-up's snare roll (`m_bldSnareRoll` -> buildUp -> drops, scheduler) | old (the band groups, `m_onsetEnvGrp`, unchanged) | the brief: tempo, beat, bar, drops, build-up, sections and the scheduler keep their inputs bit for bit |
+| TempoTracker, the beat tracker, the drop detector | neither (they never read them: SuperFlux, the bass beat detector, the bass power) | -- |
+| CueSelfTest's determinism check (`x.onsetKick == y.onsetKick`) | the published envelope | compares two runs of the same code |
+
+The band groups are therefore still computed every block and the separator runs beside them; `KALEIDO_OLD_DRUMS=1`
+skips it.
+
+#### The method (Source/DrumSeparator.{h,cpp}, Tools/drum_lab.py)
+
+Per 10-ms block, on the magnitudes of the analyser's own 2048-point Hann FFT of the mono mix (no FFT of its own, no
+look-ahead, nothing but this block and the past):
+
+1. *A percussive spectrum: the median across frequency.*  Above 250 Hz every bin is replaced by the median of the 17
+   bins around it -- the percussion-enhancing half of harmonic/percussive separation by median filtering (FitzGerald
+   2010; the separation factor of Driedger, Mueller & Disch 2014 is the same comparison made binary).  A tone's
+   partial is a peak a few bins wide and falls out; the noise of a snare or a hat is broad and stays.  The other half,
+   the median across time, needs future frames to call a note harmonic -- causally a new note has no past and is
+   called percussive; measured, the causal time median changed the lead's onset rise by +8 % (it did nothing).  Below
+   250 Hz a 21.5-Hz bin cannot tell a partial from a noise band (a 55-Hz sawtooth's harmonics are 2.6 bins apart);
+   there the templates decide.
+2. *The onset spectrum.*  34 log bands (four per octave, 30 Hz-16 kHz, the bottom ones merged where they share bins),
+   RMS of their bins in amplitude units; per band the rise -- positive spectral flux (Bello et al. 2005).  Above 250
+   Hz the rise over the previous block; below it the rise over the band's recent peak (release 0.95 a block, ~0.2 s):
+   the reference of the old kick group and of SuperFlux's maximum filter (Boeck & Widmer 2013), here across time --
+   a wobbling or beating bass stays under its own recent maximum, a kick rises above it.  Sustained energy never
+   enters this spectrum, so a held bass cannot sit in the kick's activation (in a decomposition of the magnitude
+   spectrum it did: the kick's activation followed the bass gate at 400 against 35 between notes).
+3. *Its decomposition onto fixed templates* by the KL multiplicative updates of NMF with the bases held (Lee & Seung
+   2001; fixed-template drum NMF as in Dittmar & Gaertner 2014), 30 iterations from a flat start, every block on its
+   own.  Five templates over the bands: kick (a plateau 35-200 Hz and a faint 3-kHz click), snare (a shell around
+   200 Hz and noise 0.9-9 kHz), hat (noise above 6.5 kHz), and two absorbers for what is no drum -- the free components
+   of partially fixed NMF (Wu & Lerch 2015), held fixed here: a bass note's onset (the same low plateau plus
+   harmonics 250 Hz-3 kHz falling as 1/f, half the low part's mass) and a tonal mid bump (around 1.2 kHz).  Parametric
+   shapes from the instruments' acoustics, not learned from a data set (no downloads; the only drum recordings on
+   this machine with a truth are the test sets below).
+4. *Per drum an onset function and the old peak picking.*  The drum's activation times its template's mass in its
+   own band (kick 35-200 Hz, snare 1-8 kHz, hat 6-17 kHz), divided by that band's level (the bands' peak-hold, 0.985
+   a block, INCLUDING this block -- the old reference read before the block made a hit out of silence infinite).
+   Then the old rule: a hit when the ODF exceeds `max(average, 0.03) * k + 0.06` (k 2.2 for kick and hat, 3.0 for the
+   snare), strength `odf / (max(average, 0.03) k) - 1` clipped to 1, cooldown 12 blocks, decay 0.93 a block.  The
+   floor of 0.03 under the running average is the one change in the rule: without it a crumb of activation in music
+   that lacks the drum is compared with a near-zero average and fires at full strength.
+
+The output keeps the old envelope's form (a hit sets the strength, 0.93 a block after it), so the conditioner and
+every scene see the same kind of signal.
+
+#### The lab and the C++
+
+`Tools/drum_lab.py` computes the analyser's spectra exactly as the C++ does (ring of the newest 2048 samples per
+480-sample block, Hann with N-1, k = 0..1024), ports the old detector line by line and runs the new one; `PresetEditor
+--features in.wav out.csv --drum-trace FILE` writes per block 16 float32 (time, the old envelopes, the new envelopes,
+ODFs, activations, hits).  `python Tools/drum_lab.py --check FILE in.wav` compares: on the screening music the old
+port and the C++ agree to 0.0000, the new to 0.0001, with every hit in the same block -- the final build on the
+screening music 72 kick, 52 snare, 128 hat hits, on the breakbeat kit 340, 542, 225 (the activations within 0.24 % at
+p99).  The trace carries the separator's envelopes whatever the default publishes.
+
+`--set screen,break` scores old against new on the truth sets, `--stats real,cues` gives the level statistics,
+`--same OLD_EXE` runs two editors over every WAV of the lab and compares every feature column but the three drums,
+`--write` writes the sets' mixes as WAVs.  The method's knobs are parameters of `New` (the dropped variants stay
+reachable there for re-measuring, see "Tried and dropped").
+
+#### Ground truth
+
+- *screen*: the screening music (Tools/screen.py) rebuilt from its stems by `reactivity.voice_stems()` -- kick on
+  the quarters, snare on 2 and 4, hat on the eighths, a sawtooth bass gated in eighths, the lead in sixteenths, a
+  chord bed -- 64 s, seven mixes (full, each voice muted).  The drums' onset times come from the synthesis (only in
+  the loud halves, where the drums play).
+- *break*: the BreakbeatGenerator's track "x" (`G:\Tools\VRAudio\BreakbeatGenerator\work\x_stems`: drums, bass,
+  hooks, keys, riffs; 188 s; float WAVs mixed here) and its MIDI file: 209 kick and 259 snare onsets.  Sampled drums,
+  a real kit.  But the drums stem also holds a sliced break (91 slice notes, no labels): its kicks and snares are true
+  hits the truth does not list, so precision on this set is a lower bound.  The leak (drums stem muted) is clean.
+- The 43 cue demos carry no drum truth (their cues are bars, beats, sections, drops, keys; checked); they give the
+  share of kick hits on the `/phos/beat` grid (+-50 ms) and the level statistics, with the user's seven tracks
+  (`.screen/music` of the main checkout, read in place).
+
+Measures per instrument: F = onset F-measure of the envelope's hits against the true onsets (+-30 ms, after the best
+constant lag in 0..60 ms, which is reported); leak = the envelope's maximum 0..120 ms after each true onset, with the
+instrument muted over with it; crosstalk = sum |e_full - e_muted| / sum e_full with another voice muted, and its
+hit-locked form (at the other voice's own hits, 60 ms or more from any of this drum's, how much of the drum's
+envelope goes away when that voice is muted, against the envelope at its own hits).  Leak and crosstalk are measured
+on what the shaders see: the conditioner's drum stage ported (peak hold 0.24/0.20/0.14 s, slew 7/7/8 per second;
+the music and drum gates multiply every variant alike and are left out).
+
+#### Before and after
+
+*The screening music* (64 s; rate = hits per second over the whole file, the drums play in half of it):
+
+| drum | | F | P | R | lag ms | leak | rate | crosstalk (change) | crosstalk at their hits |
+|---|---|---|---|---|---|---|---|---|---|
+| kick | old | 0.846 | 0.78 | 0.93 | 38 | 0.997 | 1.05 | bass 0.12 | bass 0.06 |
+| | new | 0.875 | 0.78 | 1.00 | 24 | 0.999 | 1.12 | bass 0.08 | bass 0.01 |
+| snare | old | 0.385 | 0.25 | 0.89 | 10 | 1.000 | 1.59 | lead 0.29, bass 0.10 | lead 0.13 |
+| | new | 0.675 | 0.52 | 0.96 | 0 | 0.325 | 0.81 | kick 0.60, bass 0.45, hat 0.29 | kick 0.26, bass 0.26, hat 0.22 |
+| hat | old | 0.137 | 0.15 | 0.13 | 0 | 0.986 | 1.44 | lead 0.75, snare 0.39 | lead 0.84 |
+| | new | 0.855 | 0.80 | 0.92 | 0 | 0.377 | 2.02 | snare 0.22, bass 0.13 | lead 0.02 |
+
+*The breakbeat kit* (188 s):
+
+| drum | | F | P | R | lag ms | leak | rate | crosstalk (change) |
+|---|---|---|---|---|---|---|---|---|
+| kick | old | 0.533 | 0.40 | 0.80 | 32 | 0.828 | 2.22 | bass 0.31, keys 0.11 |
+| | new | 0.594 | 0.48 | 0.78 | 34 | 0.573 | 1.81 | bass 0.34, keys 0.37 |
+| snare | old | 0.470 | 0.39 | 0.60 | 22 | 0.550 | 2.15 | keys 0.23 |
+| | new | 0.337 | 0.25 | 0.52 | 6 | 0.436 | 2.88 | keys 0.33, riffs 0.13 |
+
+What this says:
+
+- *The hat* follows the hats: F 0.14 -> 0.86, the lead no longer drives it (0.84 -> 0.02 at the lead's notes).
+  What stays with the hat muted (leak 0.38) is the snare's white noise above 6.5 kHz -- the synthetic snare is noise up
+  to 22 kHz, as loud there as the hat.
+- *The snare* follows the snares on the screening music (F 0.39 -> 0.68, leak 1.00 -> 0.33, the lead 0.13 -> 0.00), but
+  its crosstalk rose: on the kick's and the bass's hits it lights at about a quarter of its own level (the bass gate's
+  hard edge is a broadband click, the kick's attack too).  On the real kit it is worse in F (0.47 -> 0.34; recall
+  0.60 -> 0.52, and more hits -- 2.9 a second): this kit's snare is a shell around 220 Hz with little noise above
+  1 kHz (measured: its rise at 1-4 kHz is 4-11 % of the shell's), the template's noise plateau does not fit it.
+- *The kick* is better in F on both sets, leaks a third less on the real kit (0.83 -> 0.57), and is faster (lag 38
+  -> 24 ms on the screening music).  On the screening music it does not get rid of the bass: that bass is a sawtooth
+  whose gate opens on every beat, at the kick's own moment, from 0.1 to full in one sample -- an onset in 30-200 Hz
+  of half the kick's size, falling where the kick falls.  What tells them apart is the harmonics above 250 Hz (the
+  bass's rise has 0.5 of its low part there, the kick's 0.08) -- causally and in the first 20 ms only that.  With the
+  kick muted, the bass's onsets still light the kick (leak 1.00); with the bass muted the kick's envelope hardly
+  changes (0.08).  The absorber takes about two thirds of the bass onset's activation; the rest exceeds the
+  threshold.  Keys (a piano with low notes) light the new kick more than the old (0.11 -> 0.37): the old kick fired
+  2.2 times a second at full strength and changed little whatever was muted.
+
+#### The decision
+
+The brief: keep the version that is strictly better than the old one on every measure; the lead (27.11., 12:00): a
+drum that stays worse on the real kit ships on the old envelope by default.
+
+- *Hat: the separator.*  Better on every measure of the screening music (F, leak, crosstalk -- as change and at the
+  lead's hits); the kit has no hat truth; on the user's tracks its rate is +13 %.  But one scene, PulsarLighthouse,
+  now trips the photosensitivity limiter more on the screening music (flash-on 1 -> 20 of 120 samples, see "The
+  picture") -- fixed in the scene: PulsarLighthouse's hat gain 1.2 -> 0.4 (gains 0.6 / 0.4 / 0.25 tried: flash-on
+  1 / 0 / 0, dimmed 70 / 57 / 57).  Same run as before: flash-on 0 of 120 (old drums and gain: 1), dimmed 57 (70), and
+  it still follows the hats (hat hit 0.024, sync 0.21 against 0.005 / 0.02); strip
+  `sheets\analyzer\PulsarLighthouse_hat_before_after.jpg` (top old, bottom new).
+- *Kick: the band group.*  The separator's kick is better in F on both sets, leaks a third less on the kit, is 14 ms
+  faster and keeps the user's tracks' statistics exactly -- but on the kit the keys light it three times as much
+  (0.11 -> 0.37) and its recall is 0.78 against 0.80.
+- *Snare: the band group.*  On the kit F 0.47 -> 0.34.
+
+Both stay one switch away (`KALEIDO_OLD_DRUMS=0`, or `=snare` for the separator's kick alone) and measured; what would
+change the decision for the kick is a real-music truth set where the keys' crosstalk is weighed against the leak.
+
+#### Level statistics
+
+Scenes were tuned on the old envelopes.  Their hits are all-or-nothing (median strength 1.00 before and after, p90
+1.00 / 0.98), the decay per block (0.93) and the conditioner after it are unchanged, so what can differ is how often
+a drum fires and the mean of the envelope:
+
+| files | | kick rate / mean | snare rate / mean | hat rate / mean | kick on beat |
+|---|---|---|---|---|---|
+| the user's 7 tracks | old | 2.02 / 0.270 | 2.12 / 0.277 | 2.40 / 0.303 | -- |
+| | new | 2.02 / 0.270 | 1.92 / 0.238 | 2.72 / 0.324 | -- |
+| 41 files (7 tracks + 34 demos) | old | 1.53 / 0.191 | 1.60 / 0.201 | 2.10 / 0.254 | 43 % |
+| | new | 1.42 / 0.180 | 1.79 / 0.205 | 1.71 / 0.197 | 46 % |
+
+On the user's seven tracks the kick's rate and mean are the old ones (2.02 / 0.270 both); per track within -13 %
+(Prodigy) .. +3 %, Thunderstruck +20 %.  The hat is lower where the old one fired without hats (an ambient demo
+without drums: 2.5/s -> 0) and on the lo-fi breakbeat demos, whose hats sit at 2-3 kHz under a roll-off at 5 kHz
+(measured: 40-80 dB down above 7 kHz) -- there the new hat goes nearly dark (noir 1.78 -> 0.07/s, haze 2.38 ->
+0.36) and the snare template takes those hats (southall snare 1.77 -> 3.95/s, haze 1.63 -> 2.73).
+
+#### What does not change
+
+Measured with all three drums from the separator (the widest change; the shipped default changes only the hat):
+
+- `python Tools/drum_lab.py --same PresetEditor_b0017.exe` (the editor of b0017f84 against this one) over 52 WAVs --
+  the lab's eleven mixes, the user's seven tracks, the 34 demos with PCM copies: every feature column but kick_c,
+  snare_c and hat_c identical in every row ("files with other columns changed: 0 of 52"; 15 min under the lock).
+- `Kaleidoscope.exe --schedule` old against new: Club and Psytrance on the structure track (2 h each), Ambient on the
+  screening music (1 h): the three plans byte-identical.
+- `Tools/analyzer_regress.py`: "as the baseline" -- the drum columns of its three tracks moved less than its 5 %
+  tolerance, so the baseline was not updated (nothing to show in a diff).
+
+#### The picture
+
+`Tools/reactivity.py --voices` on eight scenes (TaikoSilhouettes, BismuthLabyrinth, Voyager, TwinHelixTunnel,
+ParticleLifeClusters, LightningStorm, ChainSpiralKaleido, ProfileStill -- the kick, snare and hat leaders of
+Tools/scene_voices.tsv and the photo as the floor), run `drums_old` (KALEIDO_OLD_DRUMS=1) against `drums_new` (all
+three from the separator), 3 min each.  `hit` = the hit-locked part of the frame change when that voice is muted:
+
+| scene | kick hit | bass hit | snare hit | limiter: dimmed / flash-on samples of 120 |
+|---|---|---|---|---|
+| TaikoSilhouettes (kick, snare) | 0.078 -> 0.126 | 0.039 -> 0.239 | 0.006 -> 0.027 | 6 / 0 -> 6 / 0 |
+| BismuthLabyrinth (kick) | 0.567 -> 0.218 | 0.396 -> 0.306 | 0.013 -> 0.000 | 7 / 0 -> 39 / 5 |
+| Voyager (none of the three) | 0.169 -> 0.128 | 0.025 -> 0.026 | 0.014 -> 0.014 | 0 / 0 -> 97 / 0 |
+| LightningStorm (kick, snare) | 0.053 -> 0.010 | 0.022 -> 0.018 | 0.030 -> 0.069 | 0 / 0 -> 0 / 0 |
+| the other four | unchanged within 0.002 | | | unchanged |
+
+The separator's kick moved the picture the wrong way as often as the right one: TaikoSilhouettes now answers the
+bass MORE (the bass's gate edge on the beat, see "Limits"), BismuthLabyrinth's kick answer halved -- and the limiter
+dimmed more: BismuthLabyrinth 7 -> 39 samples with 5 flash-limited, Voyager (which reads no drum itself; the engine's
+kick shockwave and shake presumably do -- not traced further) 0 -> 97.  One more reason for the default.
+
+*The shipped default* (run `drums_def`, the same eight scenes): every scene's limiter counts identical to the old
+run (6/0, 7/0, 0/0, 3/0, 0/0, 0/0, 0/0, 0/0), every voice's hit within 0.002 -- none of the eight reads `audioHat`, so
+this only shows that kick and snare are the old ones.  The hat's own picture, eight scenes that read `audioHat`
+(ChainSpiralKaleido, DiffractionLab, ChainSinFold, ChainLab2D, CrystalThroatTunnel, DiscoGodrays, PulsarLighthouse,
+ProfileStill), runs `hat_old` against `hat_def`: six scenes identical within 0.005 in every voice (their hat term is
+small or under the voiceRoles knob); DiscoGodrays hat 0.020 -> 0.025; PulsarLighthouse -- a hat-coloured light,
+`0.15 + 1.2 * audioHat` -- follows the hats now (hat hit 0.010 -> 0.046, its snare answer 0.066 -> 0.042), and in
+that run its limiter dimmed more: 50 -> 62 of 120 samples, flash-on 0 -> 14 (ProfileStill after it 53 -> 80, it reads
+no drum: the limiter's state carries over).  `flash_count.py` on PulsarLighthouse (its own photo and seed): worst
+second 0.5 flashes before and after, mean luminance 0.004 both (that photo leaves the scene nearly black, so the
+count says little).  Repeated alone (PulsarLighthouse, ProfileStill; old, default, old, default): the limiter's
+flash-on samples 1 / 20 / 1 / 20 of 120, dimmed 70 every time -- deterministic.  The scene's hat light now blinks
+with the screening music's hats on every eighth (4.3 a second in the loud halves) where the band group fired 1.4
+times a second overall, and the limiter catches it.  By the brief that is a limiter firing more often; it is left
+to the lead (reported 13:30): the hat stays the separator's (the lead's call), the scene's gain on `audioHat` is the
+place to look, `KALEIDO_OLD_DRUMS=1` restores the old hat.
+
+`Tools/flash_count.py` (20 s at 60 fps, the screening music): TaikoSilhouettes 2.5, LightningStorm 2.0,
+BismuthLabyrinth 0.5 flashes/s in the worst second, the same with all three drums from the separator as with the
+old ones; Voyager 0.5 and BismuthLabyrinth 0.5 with the default against the old.  No second above 3 anywhere.
+
+#### Cost
+
+The whole analysis per 10-ms block, best of three over the self test's 8-s signal (`Kaleidoscope.exe -q`, printed as
+"(info)"): 113 us without the separator, 139 us with it -- +26 us a block, 0.26 % of one core.  The first version
+cost +120 us: the median across frequency sorted a copy of 17 values for each of ~1,000 bins; a window kept sorted
+as it slides (one value leaves, one enters) gives the same median (the C++/lab check found every hit in the same
+block before and after) at a fifth of the cost.  The decomposition (30 updates of 5 templates over 34 bands) is the
+rest.  The band groups still run (sections, build-up, the default kick and snare); with `KALEIDO_OLD_DRUMS=1` the
+separator is skipped.
+
+#### Checks
+
+- `Kaleidoscope.exe -q`: 184 passed, 0 failed.  New: the kick follows clean kicks (100 % against the band groups'
+  53 %, nothing on a plucked 1.8-2.8 kHz lead or on hats), the hat the hats (100 % against 7 %; on the lead 0 %
+  against 63 %), the snare stays out of the lead; the default publishes the band groups' kick and snare and the
+  separator's hat (compared value by value).
+- `drum_lab.py --check` on the screening music and the breakbeat kit (C++ trace of the final build): old and new
+  envelopes within 0.0001, every hit in the same block (72/52/128 and 340/542/225), activations within 0.24 % at p99.
+- `analyzer_regress.py`: as the baseline.  `check_build_lists.py`: in step (56 sources, 60 headers).
+  `cgvr_format.py --check` on the changed C++: same.  `temporal_budget.py` 0 errors, `shake_scan.py` 0 new,
+  `doc_shaders.py --check` 0, `check_strings.py` OK.
+- Doxygen (release_check's step): one warning, `DrumSeparator::hit` without its parameter -- documented since
+  (a comment; not run again).
+- Not run: `shadercheck.py` (no shader changed), the Linux build (DrumSeparator is plain C++17 with <algorithm> and
+  <cmath> only; CMake and .pro list it), the --same comparison with the final default (it compared all three from
+  the separator; the default publishes a subset of the same signals).
+
+#### Tried and dropped
+
+Each in the lab, on both truth sets (and the demos where it mattered):
+
+- *HPSS with the causal median across time* (FitzGerald's soft mask, Driedger's binary separation): the lead's onset
+  rise unchanged (+8 %), the chord bed's +46 % -- a new note has no past.  Dropped for the median across frequency
+  alone.
+- *NMF on the magnitude spectrum* (fixed templates, also with the absorbers learned online and kept harmonic, a
+  minimum 30 % of their mass in 250-2500 Hz): the sustained bass sat in the kick's activation (400 vs 35); the
+  learned absorbers left the low bands to the kick template.  Dropped for the onset spectrum.
+- *Nested bass absorbers* (harmonic share 0.3, 0.6, 1.2, or one per bass root): the kick plus a steeper absorber
+  explains any bass onset as well as the absorber alone -- the split was arbitrary (the bass gave the kick 26-41 %).
+  One absorber.
+- *An L1 penalty on the drums' activations* (sparse NMF, Virtanen 2007): the absorber took the kick (a kick alone:
+  absorber 15.5 against kick 1.1).
+- *Log or square-root compression* of the bands, *adaptive whitening* of the rise (Stowell & Plumbley 2007): every
+  band counts alike, and the kick could no longer be told from the bass (screening F 0.88 -> 0.55-0.68).
+- *Classifying the onset by the kick's share of kick + absorber* (segment and classify, Gillet & Richard 2008):
+  screening leak 0.96 -> 0.56, but the kit's kick lost (F 0.51 -> 0.48, leak 0.55 -> 0.64): tuned to one bass.
+- *Semi-adaptive drum templates* (Dittmar & Gaertner 2014: each block a multiplicative step towards the observed
+  rise, pulled back to the prior): kick and snare worse on both sets (screening kick F 0.88 -> 0.61-0.70).
+- *Other snare shapes*: no shell, a larger shell (220-300 Hz), the snare split into shell AND noise (their geometric
+  mean), its own band from 150 or 400 Hz: none better on both sets.
+- *A lower hat (4.5-5 kHz) and the hat following the production's bandwidth* (the highest band within 40 dB):
+  lo-fi hats came back only partly (haze 0.36 -> 0.63/s with the snare kept; 1.80 when the snare's band followed
+  too, but then that snare fired 4.7 times a second), and a lower fixed hat collapsed the screening snare (F
+  0.05-0.22).
+- *A per-drum threshold for the kick* (3.0): no change.  *The rise over the band's peak in all bands* (the old
+  reference everywhere): the snare's shell and the hats lost their hits (screening snare leak 0.08 -> 0.55).
+
+#### Limits
+
+- A bass whose notes start with a hard edge on the kick's own beat lights the kick (screening leak 1.00).  Causally,
+  in the first 20 ms, only the harmonics above 250 Hz tell them apart, and at half the kick's size the absorber does
+  not take all of it.  A kick drum with a sub-bass sine under it (an 808) is the same spectrum as a kick.
+- The snare template fits a noisy snare (the screening music's, an electronic clap); a shell-heavy acoustic snare
+  (the kit) is found less often than by the old band group.
+- Lo-fi productions (a roll-off at 5 kHz) leave the hat without its band.
+
+#### For the user
+
+- *The default is per drum*: the hat from the separator; kick and snare as before.  If you want to see the
+  separator's kick (it follows kicks better, leaks less, is 14 ms faster -- and lights on piano/keys onsets more on
+  the one real kit measured, and in two of eight scenes the limiter dimmed more), `KALEIDO_OLD_DRUMS=snare`;
+  all three from the separator, `KALEIDO_OLD_DRUMS=0`.  A setting in the ini instead of the environment variable
+  would be a small step if one of these becomes a choice.
+- *PulsarLighthouse* lights `1.2 * audioHat`: with a hat that really follows the hats it blinks at the hats' rate and
+  the limiter steps in more (flash-on 1 -> 20 of 120 samples on the screening music).  Lowering that scene's hat gain,
+  or the old hat (`KALEIDO_OLD_DRUMS=1`), are the two ways back.
+- *Lo-fi music*: on the BreakbeatGenerator's lo-fi demos (rolled off at 5 kHz) the new hat nearly never fires
+  (noir 1.78 -> 0.07 hits/s): hat-reading scenes stay quieter there.  On your seven tracks the hat fires 13 % more.
+- *More truth would decide the kick and the snare*: a second real kit with stems and MIDI (another generator
+  track with separate kick/snare/hat stems) would tell whether the kit measured here is typical.
+
+#### References
+
+- J. P. Bello, L. Daudet, S. Abdallah, C. Duxbury, M. Davies, M. B. Sandler: A tutorial on onset detection in music
+  signals. IEEE TSAP 13(5), 2005.
+- S. Boeck, G. Widmer: Maximum filter vibrato suppression for onset detection. DAFx 2013.
+- C. Dittmar, D. Gaertner: Real-time transcription and separation of drum recordings based on NMF decomposition.
+  DAFx 2014.
+- J. Driedger, M. Mueller, S. Disch: Extending harmonic-percussive separation of audio signals. ISMIR 2014.
+- D. FitzGerald: Harmonic/percussive separation using median filtering. DAFx 2010.
+- O. Gillet, G. Richard: Transcription and separation of drum signals from polyphonic music. IEEE TASLP 16(3), 2008.
+- D. D. Lee, H. S. Seung: Algorithms for non-negative matrix factorization. NIPS 2001.
+- D. Stowell, M. Plumbley: Adaptive whitening for improved real-time audio onset detection. ICMC 2007.
+- T. Virtanen: Monaural sound source separation by nonnegative matrix factorization with temporal continuity and
+  sparseness criteria. IEEE TASLP 15(3), 2007.
+- C.-W. Wu, A. Lerch: Drum transcription using partially fixed non-negative matrix factorization. EUSIPCO 2015.
+- C.-W. Wu, C. Dittmar, C. Southall, R. Vogl, G. Widmer, J. Hockman, M. Mueller, A. Lerch: A review of automatic
+  drum transcription. IEEE/ACM TASLP 26(9), 2018.
+
+## 27.11.2026 (71): the plan of 27.11. -- what the depth can still do
+
+`docs/PLAN_2026-11-27.md`, built the same afternoon by agents (the user allowed 95 % of the weekly limit until 17:00):
+P1 by the lead, P2-P6 and P8a by one agent each, plus three fixes and a first build-up signal the user asked for
+after reading the reports.  P7 (simulations in the photo's relief) and P4's second stage were not started; P8b (live
+depth in the app) waits for the user.
+
+| package | result |
+|---|---|
+| P1 | depth scenes showing a photo with a map 55 -> 82 % (target 85 %), other scenes with a flat photo 35 -> 73 %, variety up |
+| P2 | `arcP`: the five depth effects follow the build-up and clear 0.25-0.5 s after the drop; no flash count higher |
+| P3 | ChainLab2D depth look 6: bass in the near layer, hi-hat glints in the far; direction right, size small |
+| P4 | `reliefP`: the photo's depth as a relief in ten 3D scenes (Mikkelsen surface gradient) |
+| P5 | seven transitions through depth; between two scenes with depth one fade in four |
+| P6 | parallel histogram and limiter: 16-bit ChainLab2D 1.00 -> 0.61 ms (8 bit was 0.83); R11F_G11F_B10F rejected |
+| P8a | live depth: 15 frames/s beside the app at 120 fps on DirectML/WebGPU/CUDA; +40/+44 MB/+2.4 GB plus the 99-MB model |
+| fixes | the held breath lets go at the drop; QuantumQubitArray cap 1.0; ChromeForm and four reflections mix both photos |
+| build-up | a second signal, AUC builds vs grooves 0.53 -> 0.92 on 17 EDM builds; off by default (worse on crescendos) |
+
+Also on this day: an export driven by a tool (KALEIDO_NO_ACTIVATE) keeps its window off the screen (the user asked;
+frozen snapshots still need a window on the screen and stay at the bottom of the stack).
+
+### P1 -- the photo choice by depth
+
+The photo loader picks among five free candidates by mood: brightness and colourfulness against the music's valence
+and arousal (`score = -( |brightness - tb| + 0.7 |colourfulness - ts| )`, Source/RenderPipeline.cpp). Whether a photo
+has a depth map played no part. 707 of the 1,266 photos have relief; a scene that writes the photo's depth (`//
+@depth`, `EffectShader::writesDepth()`) got a flat photo in roughly half of its time and then looked as before, while
+the folding scenes -- whose best material are the flat textures -- got photos with relief.
+
+Now the render thread tells the loader (an atomic, like the mood) what the scene that will show the next photo wants:
+the active scene, or the incoming one while a fade runs -- 1 a photo with relief, 0 a flat one, -1 no wish (live
+input, KALEIDO_PHOTO_BY_DEPTH=0). `PhotoDepth::hasRelief()` answers from the map's existence and the table's `flat`
+column without reading an image (cached per path in the loader). A candidate that matches gets a bonus of 0.3 (the
+mood terms span about 0..1.7, so a matching photo wins unless it fits the mood clearly worse), and with a wish the
+loader looks at ten candidates instead of five. KALEIDO_PHOTO_STATS=1 counts, frame by frame, how often a depth scene
+shows a photo with a map and another scene a flat photo.
+
+Measured on 18 exports (three real tracks of the user's, 6-8 min each, three presets, 480x270 at 15 fps, the choice
+off and on, same seed):
+
+| | off | on (bonus 0.12, 8 candidates) | on (bonus 0.3, 10 candidates) |
+|---|---|---|---|
+| depth scenes showing a photo with a map | 61.9 % / 55.3 % | 72.9 % | 82.1 % |
+| other scenes showing a flat photo | 35.3 % / 34.6 % | 52.8 % | 73.0 % |
+| different photos over the nine exports | 19 / 21 | 28 | 27 |
+
+(The two "off" values are the two runs' baselines: the first with Allround/Psychedelic/Club -- Allround and
+Psychedelic started on the same lab and kept it, so their numbers are identical -- the second with
+Allround/Ambient/Club.) The plan's target of 85 % is missed by three points: a photo is loaded ahead, before it is
+certain which scene will show it (photos change on phrases and outlive scene changes). The variety did not suffer;
+it rose. The first, weaker setting is documented in the code.
+
+Not verified: the mood fit itself was not measured (how far the chosen photos' brightness/colourfulness lie from the
+mood's target before and after); live input and a folder without maps behave as before by construction (no wish /
+no relief), not by measurement.
+
+### P2 -- the tension arc through depth
+
+Plan P2 (docs/PLAN_2026-11-27.md), agent "p2", branch `wt-p2` from b9ea6a83.  The five depth effects get a knob
+`arcP` each: in a build-up the depth tightens -- a haze grows from the back, the aperture opens around the focus, the
+shafts narrow toward their light, the rim thins, the ambient light withdraws from the back -- and a drop clears it all
+within half a second, the shafts and the rim breaking through.  `arcP` 0 is the old picture, bit for bit; the presets
+roll it from -0.3 to 1 (off in 23 % of the activations).
+
+| step | what | result |
+|---|---|---|
+| shaders | the arc in FxDepthFog, FxDepthField, FxSunShafts, FxRimLight, FxAmbientOcclusion | knob 0: 10 of 10 exports with music and 10 of 10 frozen frames identical to the old shaders |
+| acceptance | three cue demos, one drop each, far half's brightness (detail for the depth of field) | far half follows the build-up (corr -0.4..-0.98 where the signal builds) and turns 0.25-0.48 s after the hit; no flash count higher |
+| presets | `arcP` -0.3..1 in the five Komplett entries, genre presets regenerated | 5 entries + 31 lines in eight genre presets; roundtrip, validate, check_schedule (20 plans) green |
+
+#### What was there
+
+- None of the five effects read the build-up or the drop (a grep for `audioBuildUp|audioDrop` over the five files found
+  nothing; before this change 93 shader files read `audioBuildUp`, 64 `audioDrop`).  They read the level, the kick,
+  the sub-bass, the beat, the ambient share and the chroma hue.
+- The two signals as the effects get them (`audioFx`, Source/AudioConditioner.cpp): `audioBuildUp` = the analyser's
+  build-up evidence (onset density, centroid sweep, level swell, snare rolls), ~0.5 s rise, ~1.2 s fall, times the
+  music gate.  `audioDrop` = max( drop pulse, DJ-stop slam ) times the gate: 1 at the hit, then x0.985 per analysis
+  block -- exp( -t / 0.72 s ) at 44.1 kHz; with score cues RenderPipeline's own pulse, exp( -t / 0.66 s ); a forced
+  drop (KALEIDO_FORCE_DROP) exp( -t / 0.5 s ).
+- The final pass's held breath (`breath`, Engine/Present.frag; its value from AudioConditioner.cpp): target
+  clamp( ( buildUp - 0.5 ) x 2.2, 0, 1 ) x gate, slewed at 2.5/s; it desaturates (0.38), dims (0.13) and closes a
+  vignette (0.5) over the whole frame.  Its target follows the build-up only: it lets go as the build-up falls (~1.2 s
+  and more), not at the drop.
+- *How well the build-up signal marks a build* (the analyser's feature files of the cue bench, .screen/cuebench of the
+  main checkout; mean / max of `buildup` per cue section): goa -- Groove 0.59 / 0.84, Build 1 0.40 / 0.62, Build 2 0.62
+  / 0.81; uplifting -- Groove 0.28 / 0.38, Build 0.11 / 0.34 (!), Drop 0.38 / 0.64; ostgut -- Groove 0.25 / 0.28, Break
+  0.59 / 0.75, Build 0.49 / 0.69, Drop 0.28 / 0.38.  The signal is high in ostgut's break-and-build, misses uplifting's
+  build entirely and is higher in goa's groove than in its first build.  The arc follows the signal it gets; better
+  build-ups are the analyser's (agent "analyzer").  The drops themselves are found: goa 79.50 s (cue 79.45), uplifting
+  194.85 (194.78), ostgut 181.45 (181.42) -- and in the exports below at the same places (+0.04..+0.07 s).
+
+#### The design
+
+*One function in all five files* (no include: the same text in each; the FX are hand-written, no generator):
+
+    vec2 tensionArc()
+    {
+        float clear = ( 1.0 - smoothstep( 0.45, 0.8, audioDrop ) ) * smoothstep( 0.0005, 0.03, audioDrop );
+        return vec2( smoothstep( 0.3, 0.7, audioBuildUp ) * ( 1.0 - clear ), clear );
+    }
+
+- *The clearing is an envelope built in the shader, never the pulse.*  A shader has no memory, but the pulse has a
+  known shape: it jumps to 1 and decays exponentially, so its value says how long ago the hit was.  The envelope is a
+  function of that value: 0 at the hit (pulse 1), rising between pulse 0.8 and 0.45, 1 down to pulse 0.03, back to 0 at
+  0.0005.  In time (tau 0.72 s): 10 % at 0.25 s, 50 % at 0.35 s, 90 % at 0.50 s after the hit, above 90 % until 2.7 s,
+  below 10 % from 3.7 s, 0 from 5.5 s (score cues, tau 0.66: 0.25 / 0.35 / 0.45 s; a forced drop, 0.5: 0.20 / 0.25 /
+  0.35 s).  At most 0.032 per frame at 120 Hz.  The jump of the pulse from 0 to 1 maps 0 to 0: the hit itself is no
+  step.  The next drop comes >= 8 s later (the analyser's cooldown), after the envelope ended.  Where the gate is
+  below 0.8 at the hit the pulse starts below 0.8 and the envelope starts part-way up (gate 0.7: 26 %) -- the gate is
+  the music's presence, ~1 at a drop.
+- *The tension* is smoothstep( 0.3, 0.7, buildUp ) times ( 1 - clear ): the drop releases it at once, whatever the
+  build-up signal does afterwards (it falls with ~1.2 s, and in goa it stays near 0.45 for seconds).
+- *The coordination with the breath* ("beide abstimmen, nicht doppeln").  The breath is global: colour, light,
+  vignette.  The arc is depth-local and never dims or desaturates the whole frame: the fog's haze is a pale veil (air
+  and sun colour without the kick, which would make it pulse), the shafts and the rim lose some of their own light, the
+  occlusion takes light from the back.  The arc starts earlier (0.3) and is full at 0.7, where the breath is at 0.44;
+  it clears at the drop, the breath follows the build-up's fall.  The one part of the arc that darkens a region, the
+  occlusion's withdrawal, gives up to half of itself where the breath's target rises (x ( 1 - 0.5 clamp( ( buildUp -
+  0.5 ) x 2.2, 0, 1 ) )), so the two do not stack in the far corners.  The breath itself is not changed (see "for the
+  user").
+- *Farness* (fog, occlusion): log( z / 4 ) / log( 15 ), clamped -- 0 at 4 units, 1 at 60 and beyond (the sky).  On a
+  photo (depth 8..80 units, linear in inverse distance) the same formula gives 0.26 at its near end, 0.48 in the
+  middle, 1 at its far end: no extra uniform.  The fog's front walks from farness 1 (no tension) to 0.25 in a room and
+  to 0.45 on a photo (its subject stays in front), over a soft edge of +-0.2.
+- *Photos* get PhotoArc = 0.6 of the arc in every effect (the effects are quieter on a photo already).
+- *Knob 0 is the old code path.*  Every new line sits behind `if ( arcP > 0.0 )` -- a uniform branch, so FxAmbient-
+  Occlusion's dFdx/dFdy stay out of pixel-dependent branches; the old expressions are untouched (FxDepthField's two
+  blur calls moved into an else branch word for word; FxDepthFog keeps the sun colour before the kick in a new local).
+
+*Per effect* (T tension, C clearing, s = arcP x (PhotoArc on a photo)):
+
+| effect | build-up | drop |
+|---|---|---|
+| FxDepthFog | a haze behind the front, 0.7 T of the pale haze colour | the haze goes with T; the usual fog's extinction x ( 1 - 0.6 C s ) |
+| FxDepthField | aperture x ( 1 + 1.5 T s ); a photo's largest blur x ( 1 + 0.5 T s ) | aperture x ( 1 - 0.8 C s ): sharp |
+| FxSunShafts | openness^( 1 + 0.8 T s ) (only the most open paths: narrower beams), falloff from the light x exp( -2.5 T s dl ) | falloff x exp( +0.6 C s dl ) (wider), x ( 1 + 0.9 C s ) (brighter) |
+| FxRimLight | sharpness toward 1 by 0.6 T s (thin outline), the light x ( 1 - 0.3 T s ), its kick pulse held back to 1 - 0.6 T s of itself | sharpness x ( 1 - 0.2 C s ) (a little wider), the light x ( 1 + 0.4 C s ) |
+| FxAmbientOcclusion | occlusion x ( 1 + 0.8 T s ), plus 0.35 x a withdrawal behind the fog's front toward the cool shadow colour | occlusion x ( 1 - 0.8 C s ) |
+
+#### Measured
+
+*The tool.*  `Tools/depth_arc.py` renders one scene with one effect over a stretch of a demo (75, 65 and 72 s, the drop
+45-65 s in -- the analyser arms drops after 30 s and keeps the groove of the last 45 s) as a video export (960 x 540,
+60 fps, KALEIDO_SEED 7, the snapshot photo kristallhoehle-indigo-fuchsia-2, which has a map; the user's settings in a
+private copy; 16-bit intermediates as by default).  A third run of the same scene with FxPlain (its entry carrying the
+effect's float lines, so the scene rolls the same) and KALEIDO_SHOW_DEPTH=1 gives each frame's depth: the far half is
+every pixel at or beyond the frame's median depth.  Per frame it measures the far half's mean linear luminance, the
+near half's, and the far half's detail (mean |Laplacian| of the luma), plus the build-up and drop pulse the app saw
+(KALEIDO_FEATURE_LOG).  The change is arcP 1 against arcP 0, smoothed over 0.2 s, relative to arcP 0.  The music is
+cut into .screen/p2arc and stays there.  Scenes: PillarHall (a 3D hall, its far half the corridor's end) on all three
+demos, FoldLab (a lab passing the photo's depth on) on goa.  Each export took 9-38 s (the machine was shared).
+
+Two traps of the tool: an effect's rolls are seeded with its file path, so the first "old shader" run from a copy in
+another folder rolled differently and all 4500 frames differed -- the old shader now runs from the effect's own path
+(the new file put back after the run, and committed before).  And a drop cuts to a new scene; with one scene in the
+preset that is the same scene again (re-rolled), in both runs -- the change (1 against 0) is not affected, the raw
+curves jump there.
+
+*Knob 0, bit for bit.*  The old shaders (b9ea6a83) against the new ones at arcP 0: 10 of 10 exports identical (goa,
+PillarHall and FoldLab x the five effects, 4500 frames each, the MD5 of every decoded frame; NVENC is deterministic
+for identical input) and 10 of 10 frozen frames (Tools/scene_snapshots.py's shot, silent, the preset entry without
+arcP: max difference 0).
+
+*The arc over three drops* (sheets `p2_curve_<effect>.jpg`: per panel the measure at arcP 0 and 1 above, the relative
+change, the build-up and the drop pulse below).  Each cell: correlation of the change with the build-up over the 30 s
+before the hit / its extreme in the 6 s before the hit / its mean 0.5..1.5 s after the hit / when it has gone half the
+way from before to after, after the hit.  The far half's linear luminance unless the column says otherwise (for the
+depth of field the far half's detail, |Laplacian|; the fog both).
+
+| effect | measure | goa, PillarHall | uplifting, PillarHall | ostgut, PillarHall | goa, FoldLab (photo) |
+|---|---|---|---|---|---|
+| FxDepthFog | far | -0.40 / -13 % / -1 % / 0.48 s | +0.57 / -0 % / -5 % / 0.35 s | -0.68 / +2 % / -8 % / 0.32 s | +0.64 / +69 % / -7 % / 0.37 s |
+| FxDepthFog | detail | -0.77 / -25 % / -1 % / 0.37 s | +0.30 / -0 % / -1 % / 0.32 s | -0.94 / -2 % / -2 % / 0.45 s | -0.83 / -24 % / +2 % / 0.25 s |
+| FxDepthField | detail | -0.97 / -10 % / +50 % / 0.42 s | -0.62 / -0 % / +48 % / 0.40 s | -0.87 / -7 % / +51 % / 0.38 s | -0.98 / -17 % / +2 % / 0.35 s |
+| FxSunShafts | far | -0.41 / -6 % / +31 % / 0.43 s | -0.53 / +0 % / +45 % / 0.33 s | -0.83 / -11 % / +56 % / 0.37 s | -0.90 / -50 % / +57 % / 0.37 s |
+| FxRimLight | far | -0.83 / -28 % / +67 % / 0.33 s | -0.40 / +0 % / +44 % / 0.35 s | -0.60 / -11 % / +33 % / 0.37 s | -0.80 / -25 % / +32 % / 0.33 s |
+| FxRimLight | near | -0.35 / -21 % / +106 % / 0.40 s | +0.24 / +0 % / +46 % / 0.37 s | -0.66 / +16 % / +86 % / 0.40 s | -0.42 / -10 % / +12 % / 0.32 s |
+| FxAmbientOcclusion | far | -0.74 / -35 % / +12 % / 0.30 s | -0.04 / +0 % / +20 % / 0.33 s | -0.87 / +3 % / +11 % / 0.33 s | -0.81 / -10 % / +3 % / 0.37 s |
+
+How to read it:
+
+- *Follows the build-up.*  Where the signal builds (goa before its drop, ostgut's break and build, goa's photo) the
+  change goes with it: correlations -0.4..-0.98 -- the haze takes the far half's detail (-25 %), the aperture its
+  sharpness (-10..-17 %), the narrowed shafts and the thinner rim its light (-6..-50 %, -11..-28 %), the withdrawal
+  its light (-35 %).  The fog's luminance goes either way: the pale haze is darker than the hall's lit corridor end
+  (-13 %) and much brighter than the photo's dark crevices (+69 %).  Uplifting has no build-up before its drop (the
+  analyser's 0.11 in the cue build), so nothing happens before it -- and its positive correlations come from a
+  build-up rising AFTER the drop (to 0.64 at +8 s), where the arc tightens again once the clearing has ended.  In
+  ostgut the arc acts in the break (build-up 0.6..0.75 from -25 to -12 s; the sheet shows it) and the build-up has
+  fallen to 0.3 by the drop, so the 6-s extreme is small.
+- *Jumps at the drop.*  Every effect turns within half a second of the analyser's hit (half-way at 0.25..0.48 s; the
+  hit itself 0.00..0.04 s after the cue): the depth of field sharpens the far half by about half (+48..+51 %), the
+  shafts break through (+31..+57 %), the rim flares (+32..+67 %), the occlusion lifts (+3..+20 %), the fog clears
+  and thins below its usual air (-1..-8 % luminance, the haze gone).  On the photo the depth of field's release is
+  small (+2 %): PhotoArc and the photo's blur cap keep it a hint.  The release holds about 2.6 s and fades out by
+  5.5 s; where the build-up signal is still high then (uplifting rises to 0.64 after its drop), the arc tightens
+  again.
+- The drop is also where the analyser goes quiet before the hit (goa: build-up 0.61 at -1.5 s, 0.46 at the hit), so
+  part of the release starts before the drop; the envelope then does the rest.
+
+*Flashes* (Tools/flash_count.py's count on each 60-fps export -- WCAG pairs of >= 0.1 changes in linear luminance,
+the worst second of the nine quarter windows; arcP 0 -> 1): goa PillarHall 0.5 -> 0.5 (fog), 1.0 -> 1.0 (field),
+1.0 -> 1.0 (shafts), 1.0 -> 1.0 (rim), 0.5 -> 0.5 (occlusion); uplifting 0.5 -> 0.5, 0.5 -> 0.5, 0.5 -> 0.5, 1.0 ->
+1.0, 0.5 -> 0.5; ostgut 0.5 -> 0.5, 0.5 -> 0.5, 0.5 -> 0.5, 1.5 -> 1.0, 0.5 -> 0.5; goa FoldLab 0.5 -> 0.0, 0.0
+-> 0.0, 0.5 -> 0.5, 0.5 -> 0.5, 0.0 -> 0.0.  The mean luminance of the exports moves by -0.0003..-0.006 (the shafts
+are narrower most of the time).  No count is higher; ostgut's rim and goa's photo with fog are lower.  The rim took
+two retunes to get there (see "tried and dropped"): ostgut's hall pulses with the kick at 1.5 flashes a second in
+one quarter window by itself, and the first two rims tipped it to 2.0 seven seconds before the drop.
+
+*Frames and clips* (C:\Users\Rene\Desktop\kaleido-wt\sheets\p2\): `p2_frames_<effect>_goa.jpg` (PillarHall and
+FoldLab, arcP 0 above 1, at -20, -6, -1, +0.25, +0.6, +2, +5 s from the drop), `_ostgut.jpg` (PillarHall);
+`p2_clip_<effect>_goa.mp4` -- 26 s over goa's drop (20 s before, 6 after) with the music, 2 x 2: PillarHall arcP 0 |
+1 above, FoldLab arcP 0 | 1 below.  Looked at: the haze is a pale veil at the hall's far end and in the photo's
+crevices before the drop, gone at +0.25 s; the shafts are a narrow glow at the corridor's end and break through
+wide and orange at +0.6 s.
+
+#### Presets
+
+The user's rule of 27.11. (new looks are switched on, the old picture stays one outcome): each of the five entries in
+Presets/Komplett.xml got `<float name="arcP" minValue="-0.3" maxValue="1.0"></float>` as its last line -- rolled per
+activation; at or below 0 (23 % of the activations) the effect is the old one bit for bit, above it the arc runs at
+that strength.  `python Tools/make_genre_configs.py` added the same line to the genre presets that carry the effects
+(31 lines in Allround, Ambient, Cinematic, Club, Downtempo, Electronic, Noir, SpaceAmbient; Psytrance and Psychedelic
+have none of the five); nothing else changed in them.  As with every added knob, the new line moves the rolls of what
+the scheduler rolls after it (section (69), T4).
+
+#### Checks
+
+- `Tools/shadercheck.py --new b9ea6a83` (the five files, compiled by the driver): 0 errors, 0 warnings, after every
+  change (last run with the rim's retune).
+- `Tools/temporal_budget.py`: 0 errors, 4 warnings; `Tools/shake_scan.py --summary --baseline`: 0 new hits, 74 known
+  -- both exactly as on b9ea6a83 (the arc has no oscillation of its own: its drivers are the smoothed build-up and the
+  envelope, both slower than 3 Hz -- the envelope's steepest step is 0.032 of its range per frame at 120 Hz).
+- `Tools/doc_shaders.py --check` and `Tools/cgvr_format.py --check`: nothing to change; `Tools/check_strings.py` OK (no
+  new strings).
+- Presets: `PresetEditor --roundtrip` of every preset file, all load and save (Komplett 2,930 entries);
+  `PresetEditor --validate`: all 12 files complete against Komplett.xml (a first run listed the frozen test's leftover
+  `_snap0.xml`; depth_arc.py removes it now); `Tools/check_schedule.py --quick`: 20 plans, 0 violations.
+
+#### Tried and dropped
+
+- *The first tuning* (tension over build-up 0.35..0.8, the fog's front from beyond the far end to farness 0.45): on
+  goa the build-up stays at 0.4..0.6, so the tension was 0.1..0.5 and the front never reached the hall's far half
+  (median distance ~15-20 units, farness ~0.55): the far half's luminance moved by 0.5 %.  Now 0.3..0.7 and a front
+  to 0.25.
+- *The first clearing* held to 1.6 s and was gone by 4 s: on goa the build-up stays near 0.45 for seconds after the
+  drop, so the shafts narrowed again at +2..3 s -- a burst of +31 % followed by a dip of -30 % within two seconds.  Now
+  it holds to 2.6 s and is gone by 5.5 s, when the build-up has fallen (goa: 0.36 at +4 s).
+- *The first rim flare* (the rim light x2 and its sharpness x0.5 at the drop): the far half +109..+211 %, the near
+  half +290..+705 % for two seconds -- a glare, not a release.  Now x1.4 and sharpness x0.8 (far +32..+67 %).
+- *The rim's plain dimming in the build-up* (x( 1 - 0.3 T s ), with either flare): ostgut's worst second went from
+  1.5 to 2.0 flashes, at -7..-9 s, where the build-up is 0.47..0.5.  The two luminance series of that quarter window
+  differ by ~5 %; WCAG's state machine (follow the extreme, turn at 0.1) found four turns in a second instead of
+  three -- the hall's own kick flicker sits at the threshold.  The rim pulses with the kick (0.55 + 0.9 audioKick +
+  0.35 audioLevel in lit()): the build-up now holds that pulse back (to 0.4 of it at full tension), which is also
+  the musical sense of a held breath; ostgut 1.0.
+- *Changing the breath* (letting it go at the drop as well) -- not done: it is global, has no knob, and changes every
+  drop of every scene; listed for the user.
+
+#### For the user
+
+- The held breath (final pass) still lets go with the build-up's fall, about a second after the arc has cleared.
+  Releasing it at the drop too (its target x ( 1 - the same envelope )) would make the whole picture clear at once;
+  it changes every drop in every scene, so it waits for a yes.
+- The arc follows the analyser's build-up, which misses some builds (uplifting) and sees others in grooves (goa) --
+  see "What was there".  Where it is wrong the arc is wrong with it, quietly (a haze in a groove, no tension before a
+  drop).
+- The strengths (haze 0.7, aperture x2.5, shafts x1.9 at the drop, rim x1.4, withdrawal 0.35) and the 23 % off-share
+  are first values from one hall and one lab.  The clips (sheets\p2\p2_clip_*.mp4) show them with the music.
+
+#### Not verified
+
+- Other scenes: the arc was measured on one 3D hall (PillarHall) and one photo lab (FoldLab, one photo with a map);
+  rooms with a sky, open landscapes, and the other labs and Chain* scenes with depth were not rendered.
+- The score-cue path (`-k`, pulse tau 0.66 s), forced drops and DJ-stop slams: the envelope's timing for them is
+  computed (above), not rendered.  A photo cross-fade or a scene cross-fade during the arc: the code mixes the two
+  layers' strengths with `interpolation`, not rendered.
+- GPU time: not measured.  The arc adds a few ALU per pixel, FxAmbientOcclusion two depth reads (the withdrawal),
+  FxRimLight two colour reads, FxDepthField and FxDepthFog nothing extra (arcP 0 skips all of it).
+- The impression with real music over a show, on the panel and in the headset -- the user's.
+- No C++ changed: the self test was not run.
+
+### P3 -- frequency by depth
+
+27.11.2026, agent "p3", branch `wt-p3` (from phos-cues b37183e4: the defaults of the morning and the drum separation
+of (70) -- audioHat follows the hi-hat).  Plan P3 of docs/PLAN_2026-11-27.md.
+
+**Shipped:** a sixth depth look in ChainLab2D (`depthLook` 6, variants by `depthVar`), the same light in TimeChainLab
+and MirrorBilliardLab (`depthLook` 6 there: the subject anchor plus frequency by depth, variant 0), and look 6 as one
+outcome of ChainLab2D's rolled `depthLook` in the presets.  Looks 0..5 are untouched, bit for bit (shown below).
+The acceptance of the plan (kick in the near half, hat in the far half) is met in direction, but weakly: on the dark
+screening picture the look's light is small against the lab's own drift (see "Acceptance").
+
+| what | look 0 -> look 6 (ChainLab2D, screening music, kristallhoehle photo) |
+|---|---|
+| what look 6 adds, near third / far third (of 255) | 0 -> +2.1 / +0.4 |
+| its correlation with the kick, near / far third | -> 0.29 / 0.27 (bass 0.39 / 0.28) |
+| its correlation with the hat, near / far third | -> 0.12 / 0.21 |
+| per voice, difference of differences, sync near / far | kick 0.14 / 0.06, hat 0.03 / 0.10, bass 0.29 / 0.17 |
+| chain_regress --every 6, look 6 pinned | 12 of 12 at 0.000 (6 after a rerun with --wait 40, see below) |
+| looks 0, 3, 5 (ChainLab2D), 0 (TimeChainLab), 4 (MirrorBilliardLab), old shaders against new | 5 of 5 bit for bit |
+| GPU median ChainLab2D | 0.83 -> 0.85 ms, 120 fps |
+| presets | ChainLab2D depthLook -1.17..5.49 -> -1.51..6.49 (look 0 25 %, each look 12.5 %) |
+
+#### The look
+
+The photo's depth (the alpha of tex0/tex1, section (69) T1) splits the picture softly into three layers, and each band
+of the music lights one of them -- light and colour only, on the photo's own colours (the chain labs stay "only the
+photo", chain_classes.PHOTO_ONLY); the frame, the zoom and the turn never follow the music.
+
+- *Near: the bass.*  `audioKick` (0.7) and `audioBass` (0.3) brighten the near layer by 16..32 % (variant) at full
+  strength, and lift it by a quarter of that in the photo's own colour there brought up to full brightness (so a dark
+  photo answers too).  And a slight size: the photo is sampled pulled toward its subject (photoFocus where the maps are sure of
+  it, else the centre) by 0.8..2.5 % at most, and where that enlarged sample is near it covers what lies behind, so the
+  near layer swells over the middle one.  The size follows the slow swell (0.8) and a fifth of the bass (0.2): the rule
+  for spatial scales (memory "audio-reactive phase constraint", (3): the swell, at most 0.2 of a slew-limited band
+  level); the kick never moves anything.  At rest (silence) the size is 0 and the sample is the chain's own colour.
+- *Middle: the mids.*  `audioMid` raises the middle layer's chroma around its luma by up to 50..110 % (variant): its
+  own colours grow richer, no colour of its own comes in.
+- *Far: the highs.*  `audioHat` (0.8) and `audioHigh` (0.2) set fine round glints into the far layer: jittered
+  points in cells of 1/110 .. 1/170 of the height (variant), 20..34 % of the cells lit, each point round with a size of
+  its own (rule V8e; the jitter +-0.2 and the radius <= 0.24 keep it inside its cell), a slow twinkle and a drift on
+  sceneAdvance; a glint multiplies the colour by up to 2.2..3.2 and adds half of the photo's own colour there (its
+  mip 5, brought up to full brightness), so it shows in the dark far parts too.
+- *The layers.*  Around the photo's mean depth (fdLayers(): the depth map's 1 x 1 mip, cross-faded like the colour):
+  far below mean - h, near above mean + h, h = 0.10..0.18 (variant), soft edges 0.05..0.10.  See "Tried and dropped"
+  for why not fixed thirds.
+- *Without a map.*  The look is weighted with the photos' share with a map (interpolation * photoDepthAmt.x + ...):
+  a photo without a depth map keeps its colour, a cross-fade to or from one fades the look.
+
+Code: `freqDepth()` and `fdLayers()` in Tools/scenegen/gen.py (FREQ_LIB, appended for sources that call freqDepth(,
+with the audio uniforms it reads, FREQ_AUDIO); ChainLab2D's depthLookCol() look 6 adds the size at its photo lookup
+and calls freqDepth(); TimeChainLab and MirrorBilliardLab call it in main after the walk's sum (`depthLook > 5.5`,
+on top of the anchor that `> 3.5` already gives).  Generated: Scene2D/ChainLab2D.frag, TimeChainLab.frag,
+MirrorBilliardLab.frag (gen.py: the three are free of drift), Engine/ChainPass/Final_ChainLab2D.frag (make_chainpass).
+
+#### Tools
+
+- `Tools/reactivity.py --voices ... --halves`: the full mix is rendered once more with `KALEIDO_SHOW_DEPTH=1` (each
+  scene's depth as grey, white near); per frame the pixels above the frame's median depth are the near half, the
+  rest the far half, and amp, sync and hit of every muted voice are measured in each half on its own (measure_halves();
+  keys `near`/`far` in the run's json; the console prints them).
+- `--against RUN` (with `--halves`, both runs with `KALEIDO_VOICES_KEEP=1`): what a knob does with each voice, per half
+  (look_halves()).  In a lab every muted voice reads a few percent from the drift alone (the walk and the flow follow
+  the music's advance, the muted run wanders off), and the halves' own numbers drown in it: on ChainLab2D the kick's
+  hit in the near half read 0.018 with look 0 and 0.015 with look 6 -- the same within the drift.  Two runs with the
+  same rolls (the same `<expr>` knobs, only the look's value differing) drift alike, so the difference of their
+  differences, (full - muted) of one run minus (full - muted) of the other, keeps what the look does with the voice:
+  its mean size per half (amp, % of full scale) and how well its signed mean follows the voice's hits (sync).
+- `--pin NAME=VALUE` for `Tools/chain_regress.py` (pins one more knob of the entry in every combination) and
+  `Tools/perf_labs.py` (an `<expr>` per entry: both runs of a comparison need the same exprs, they move the rolls).
+
+#### Tried and dropped
+
+- *Fixed thirds of the depth* (near above 0.58..0.70, far below 0.28..0.40; f989159d).  The maps are stretched per
+  photo between the 2nd and 98th percentile, but that does not make the thirds equal: the screening photo
+  (kristallhoehle-indigo-fuchsia-2, a cave that recedes) shows in the chain's view a depth of mean 0.21, 90th
+  percentile 0.31 (the depth view, 18 s into the run) -- the near layer was nearly empty, and the kick's answer in the
+  near half did not grow (hit 0.018 with look 0, 0.015 with look 6).  Now the layers sit around the photo's own mean
+  depth (fdLayers()).
+- *Light by gain alone.*  The first version multiplied the near layer by 1 + 0.24 x bass and set the glints as
+  col x (1 + gl) + 0.3 gl x (the photo's broad colour).  ChainLab2D's picture on the screening photo has a mean of
+  18 of 255: what look 6 added to the far third was +0.17 of 255 on average (std 0.15), and its correlation with the
+  hats 0.22 -- as with the snare (0.27), which the look does not read.  The glints and the near layer's lift now carry
+  the photo's own colour brought up to full brightness (the colour of a coarse mip, so there is no grain to lift)
+  -- as the chain lab's glow takes its colour (17.10.2026, "only the photo").
+- *Amp and hit per half alone* (measure_halves()): the walk and the flow drift as soon as one voice is muted (the
+  music's advance differs), 3..12 % of full scale in the labs, and the look's answer drowns in it.  Kept, but the
+  acceptance reads `--against` (see Tools).
+
+#### Acceptance
+
+Screening music of Tools/reactivity.py (the voices' stems, 128 BPM, loud and quiet halves), the snapshot photo
+kristallhoehle-indigo-fuchsia-2 (a map, relief 0.32; dark: ChainLab2D's picture has a mean of 18 of 255 on it), seed 7,
+the user's settings, `KALEIDO_VOICES_KEEP=1`.  Runs with `--expr depthLook=6,depthVar=0` against
+`--expr depthLook=0,depthVar=0` (the same exprs: the same rolls, the same chain).
+
+*Where the look answers which voice* -- what look 6 adds to the picture (its full run minus look 0's full run, the
+same music), per frame in the nearest and the farthest third of the pixels by the depth view, correlated with each
+voice's onsets (best Pearson over lags 0..6 frames, both high-passed; 290 frames at 30 fps):
+
+| version | layer | mean added (of 255) | kick | bass | hat | lead | snare |
+|---|---|---|---|---|---|---|---|
+| 1, fixed thirds (f989159d) | near third | +0.71 | 0.24 | 0.30 | 0.08 | 0.03 | 0.15 |
+| | far third | +0.17 | 0.22 | 0.18 | 0.22 | 0.14 | 0.27 |
+| 2, around the mean depth, own colour (842a3683 without the last glint step) | near third | +2.11 | 0.29 | 0.39 | 0.12 | 0.03 | 0.27 |
+| | far third | +0.37 | 0.25 | 0.24 | 0.13 | 0.09 | 0.23 |
+| 3, glints 0.8 hat, 20..34 %, half the own colour (842a3683) | near third | +2.12 | **0.29** | **0.39** | 0.12 | 0.04 | 0.27 |
+| | far third | +0.43 | 0.27 | 0.28 | **0.21** | 0.11 | 0.26 |
+
+The near layer follows the bass and the kick (0.39, 0.29) and hardly the hat (0.12); the far layer follows the hat
+better than the near one does (0.21 against 0.12) -- but it follows the kick, the bass and the snare as much (0.26..0.28):
+at 160 x 90 the kaleidoscope interleaves near and far finely, the house's bloom and exposure carry the near layer's
+lift into its neighbours, and the mids (bed, lead and snare are in audioMid's band) colour the middle layer, which
+the thirds cut through.  The look's own light is small on this dark picture: +2.1 of 255 in the near third, +0.4 in
+the far third, on average.
+
+*Per voice, per half (`--halves --against`)* -- the difference of differences: run 3 against look 0, the median split of the depth view (amp in % of full scale, sync as above):
+
+| voice | near amp / sync | far amp / sync | reading |
+|---|---|---|---|
+| kick | 0.87 / **0.14** | 0.64 / 0.06 | the look's answer to the kick is in the near half |
+| bass | 0.92 / **0.29** | 0.78 / 0.17 | near, more than far |
+| hat | 0.86 / 0.03 | 0.68 / **0.10** | the look's answer to the hat is in the far half |
+| snare | 0.82 / 0.12 | 0.72 / 0.12 | no side (the look reads it only through audioMid) |
+| lead | 3.10 / 0.03 | 3.19 / 0.01 | the mids' colour, both halves (amp), not on hits |
+
+By the halves' own numbers (measure_halves(), each run alone) the separation does not show: the kick's hit-locked
+change in the near half 0.018 with look 0, 0.018 with look 6, in the far half 0.013 -> 0.016; the hat's 0.010 ->
+0.010 near, 0.014 -> 0.015 far -- the walk's drift (amp 3..7 %) is larger than the look's light.  "Without the look
+not" therefore reads: the difference of differences is zero by construction for look 0, and the halves' own numbers do
+not move between look 0 and look 6 beyond the drift.  **The acceptance is met in direction (kick near 2.3x the far
+sync, hat far 3x the near sync), not in size** -- the sync values stay small (0.10..0.29).
+
+*chain_regress --every 6 --pin depthLook=6 --pin depthVar=37* (the runner against the uber shader, 12 combinations):
+12 of 12 at 0.000.  The first run read 6 of 12 bad (3 FAIL 6.9..20.7, 3 NO SCREENSHOT) -- all during two other
+agents' builds (/m:4): the 600 fixed frames of a comparison run did not finish within the 22-s wait (one runner
+frame was half drawn).  The six again with `--wait 40` on a quieter machine: 0 of 6 differ.  Note: a comparison run is
+silent (glwidget.cpp: KALEIDO_FREEZE_TIME gives empty features), so this checks the look's static path; its audio
+terms are the same text in the runner's final pass and the uber shader (both generated from the one source).
+
+*Looks 0..5 untouched* -- the start state's shaders (b37183e4, put in place by a script and restored) against the new ones,
+the app's chain runner, a frozen frame, lehmwurf-fruehling-zinnober-2 (a sure subject), 40-s waits: ChainLab2D looks 0,
+3 and 5 (depthVar 37), TimeChainLab look 0, MirrorBilliardLab look 4 -- 5 of 5 pairs bit for bit (max difference 0).
+Two pairs got no screenshot (TimeChainLab look 4 old, MirrorBilliardLab look 0 new; the machine ran two other
+agents' jobs) and were not repeated.  The code says the same: looks 1..5 and look 0 are textually unchanged in the
+generated frags (the diff adds the look-6 branch, three uniform declarations and FREQ_LIB), and the labs' main computes
+the same expressions in the same order (`d = dsum / max(ws, 1e-3)` named once).
+
+*Cost* -- Tools/perf_labs.py, 30 s (labs 25 s) live at 2880 x 1620, alone in the lock, the same exprs both
+ways, GPU median / p90 ms: ChainLab2D look 0 -> look 6 0.83 / 0.97 -> 0.85 / 1.01; TimeChainLab look 4 -> 6 0.92 /
+0.95 -> 0.94 / 0.97; MirrorBilliardLab 1.24 / 1.26 -> 3.33 / 3.49 (the machine, see below); 120 fps in every run.  Look 6 costs
+ChainLab2D about 0.02 ms (one more photo read for the size, the glint cells' hashes).
+
+*Sheets* (kaleido-wt\sheets\p3\): `p3_look6_vs_look0_kick_hat.jpg` -- the same frame of the same music, look 0 |
+look 6 | difference x4, on a kick and on a hat between the kicks, in variants 0, 13, 37, 64, and the depth view;
+`p3_look6_variants_kristallhoehle.jpg` -- per variant the frame where muting the kick (the hat) changes the picture
+most: full | muted | difference x4 (mostly the drift of the muted run, see Tools).
+
+*Light limiter* -- the exposure debug lines of every voices run: 0 of 120 samples dimmed, 0 flash-on, with look 0 and
+with every version of look 6 (the near layer's lift on the kick stays far from a flash).
+
+#### TimeChainLab and MirrorBilliardLab
+
+`depthLook` 6 there is the subject anchor (> 3.5, as look 4) plus freqDepth() after the walk's sum, variant 0 (these
+labs have no depthVar), without the size (their photo lookup sits inside each walk slot's look).  What look 6 adds
+against look 4 (run 2 of the light, the same table as above): TimeChainLab near third kick 0.36, bass 0.49, hat 0.14 --
+far third kick 0.16, bass 0.17, hat 0.11; MirrorBilliardLab near kick 0.27, bass 0.41 -- far hat 0.21, kick 0.20.  The
+near layer answers the bass as in ChainLab2D; the far layer's hat does not separate.  A later pair of runs (labs6c
+against labs4) drifted apart by 8..16 % in every voice -- the two runs did not show the same picture, and the reason
+was not found in the time.  **Not in the presets**: their rolled range stays 2.83..5.49 (anchor 75 %, off 25 %); look
+6 is there for a preset that pins it.  Cost: TimeChainLab 0.92 -> 0.94 ms; MirrorBilliardLab read 1.24 -> 3.33 ms in
+one run (p90 3.49, 120 fps) -- a cost that the arithmetic does not explain (one coarse photo read and the glint
+hashes); a second run, alone in the lock, read look 6 4.43, look 4 4.68, look 6 3.59 ms (120 fps): the machine's GPU load of the moment, not the look -- look 4 costs as much there.  A quiet-machine measure of the labs is open.
+
+#### Not verified
+
+- The look on other photos than the screening photo (one dark, receding cave) in the voices runs; the sheets show
+  only that photo.  A bright photo with a clear near subject should show the near layer's pulse far more strongly.
+- The labs' look 6 against its own acceptance (above), and their identity at looks 4 (TimeChainLab) and 0
+  (MirrorBilliardLab) -- the screenshots of those two pairs were missing.
+- The look by eye over time (a clip): the sheets are single frames.
+
+#### For the user
+
+- Look 6's strengths were set by measurement, not by eye: the near layer +16..32 % (and a quarter of that as a lift in
+  its own colour) on the kick and the bass, the glints up to 2.2..3.2 x the colour plus half the own colour.  On a
+  dark photo the look stays quiet; on a bright one it may want less.  Switchable: a preset entry with
+  `<float name="depthLook" minValue="-1.17" maxValue="5.49">` takes look 6 out of the roll again.
+- The near layer's "slight size" follows the slow swell and only a fifth of the bass (the rule for spatial scales);
+  the kick moves nothing.  If the size should pulse with the kick, that is a decision against the no-shake rule.
+
+### P4 -- the photo as relief in 3D
+
+Package P4 of docs/PLAN_2026-11-27.md, by agent "p4" (branch `wt-p4` from b9ea6a83).  A new look as a knob: 0 = the
+old picture bit for bit, shown with snapshots.
+
+#### What there was
+
+- 221 of the 327 Scene3D fragment shaders mention `tex0`; none read the photo's alpha, where the depth map travels since
+  26.11. (Source/PhotoDepth.h; 707 of the 1,266 photos carry one).  Most of them use the photo only as a colour
+  source: the house palette `imgPalette()` (the photo sampled along an arc), a faint sky, a reflection.  Those stay out
+  (the plan's rule).  A relief needs three things in the fragment stage: the photo as the colour of a surface, a
+  normal that the scene lights with, and the shaded point (for the derivatives).  A survey script (every frag that
+  samples the photo outside `img()`/`imgPalette()`, with a `dot( n, L )`-like term) and a look at each candidate left
+  the ten below.
+- Left out, and why: the photo cards and panels (PhotoCarousel, PhotoShatter, GalleryHall, SilkPhoto, MosaicWave,
+  BillboardCity, RegattaSpinnakers, HotAirBalloonDawn, AsteroidRubblePileTumble) light per vertex with a scalar
+  (`vLight`, `vShade`, `vLit`) and have no light direction in the fragment stage -- a relief there would need a new
+  light, not the scene's; the math surfaces of the physics family (BoySurface..., Enneper..., Helicoid...) have a normal
+  and the photo but no position in the fragment stage (one could be handed on, as for KelvinHelmholtzCloudWaves below
+  -- the next candidates); CyberVoxelTerraform samples one photo texel per voxel (the coordinate is constant over a
+  face: no slope to take); OrreryBrass's planets are a few pixels wide, so the relief would always sit below the
+  footprint limit (it was in the first list and is out); VideoRelief already has a knob `reliefP` (its luminance
+  displacement) and keeps it.
+
+#### The block
+
+`Tools/scenegen/patch_relief3d.py` writes one block between two marker lines into each scene, after the pattern of
+patch_env3d.py (U1): no include (the decision of 14.10.); idempotent (a re-run replaces only the block); afterwards
+doc_shaders.annotate() and cgvr_format.format_text().
+
+- `ReliefFrame reliefFrame( p, uv )`: the screen-space derivatives of the shaded point and of the photo coordinate
+  (Mikkelsen's sigma_x, sigma_y).  The only derivatives of the block; each site calls it where all four pixels of a
+  2 x 2 quad run the same code -- behind `if ( reliefP > 0.0 )` (a uniform) and at most inside branches on values
+  constant per primitive (`vKind`: a quad belongs to one primitive), never inside a branch on the pixel
+  (fwidth-divergent-branch trap).  The coordinate given here is the continuous one, before a `fract()` that tiles the
+  photo -- the tiles' seams would be steps of 1 in the derivative.
+- `reliefDepth( uv, lod )`: the depth (alpha, 255 = near) of tex0 and tex1, cross-faded with `interpolation` like
+  `img()`, each slot weighted by `photoDepthAmt` (1 with a map, 0 without -- alpha is 255 then and must not count).
+- `reliefSlope( uv, lod )`: the depth's slope in the photo, d depth / d uv -- four taps on the diagonals, one texel
+  of the level out, each a bilinear mean of four texels: together a 3 x 3 Sobel-like kernel of that level.
+- `reliefNormal( n, f, uv, amt )`: Mikkelsen 2010, "Bump Mapping Unparametrized Surfaces on the GPU" -- the surface
+  gradient from the screen-space derivatives of the position, no vertex tangents, any parametrisation:
+  `grad_s h = ( h_x ( sy x c ) + h_y ( c x sx ) ) / ( c . c )` with the facet's own normal `c = sx x sy` in his frame,
+  then laid into the plane of the scene's shading normal `n`, and `n' = normalize( n - A ( grad_s h )_n )`.
+  - Against the 8-bit map's terraces, the height's screen derivatives `h_x, h_y` are not `dFdx( h )` (the map is flat
+    between its 255 steps, a quad difference of it is blocky) but the photo-space slope by the chain rule,
+    `h_x = grad_uv h . duv/dx` (the paper's variant for a height given as a texture), and that slope is the mean of two
+    scales: level 2 (256 texels of the 1,024 photo; coarser as the photo shrinks on the screen,
+    `log2( footprint ) + 1`, up to 6) for the detail and two levels coarser for the shapes.
+  - The map's steps are occlusion edges (an object in front of another), not cliffs: the slope is compressed,
+    `g / ( 1 + |g| / 8 )`, and the tilt softly limited below about 45 degrees (`t / sqrt( 1 + 1.23 t.t )`).
+  - The relief's depth `A` is a share of the photo's extent on the surface (world length per unit of uv, from the
+    same derivatives): the tilt is about `0.15 amt |g|`, the same in a scene 10 units or 100 units wide.
+  - It fades out where a pixel covers 24 to 64 texels of the photo (far away, minified: a relief would only shimmer;
+    and the seam rows of a tiled or equirect mapping, where the coordinate jumps), and is skipped where the photo has
+    no map (`photoDepthAmt` cross-faded is 0), where the derivatives degenerate or are NaN (a quad's helper pixels
+    outside a surface).  Only `textureLod()` inside: the function itself may run in a pixel-dependent branch.
+  - 16 texture fetches (2 scales x 4 taps x 2 photo slots) and some arithmetic, only with the knob above 0.
+- The knob `uniform float reliefP`: 0 (no preset entry) = the old picture, every added line behind
+  `if ( reliefP > 0.0 )`; a negative value is off too, so a rolled range like -0.5..1 keeps the old picture as one
+  outcome.  No C++ change: the host already uploads `photoDepthAmt` to every program that declares it, and a preset
+  float reaches any uniform of its name.
+
+#### The ten scenes
+
+| scene | the photo on | the site |
+|---|---|---|
+| TessellatedLavaLake | the crust plates, tiled per plate (world xz) | `n` right after the photo is sampled; the derivatives on the coordinate before its `fract()` |
+| EuropaChaosTerrain | the ice rafts, tiled (the ice's own sliding coordinates) | the same |
+| PermafrostPolygons | the tundra ground pattern, tiled per cell | `n` where it is made, before the sun term |
+| TravertineTerracePools | the crust's mineral banding (a multiplier) | `n` where it is made; the pools' water mixes over it as before |
+| GlacierTessellation | the ice, the photo laid over it faintly | `n` where it is made: diffuse light and frost glint |
+| CrystallineCavernTessellation | the rock between the crystals, tiled x3 | `n` where it is made, the relief faded out on the crystals (`teCrystal`) |
+| SandDuneBarchanMigration | the whole dune carpet, one photo | a copy of the normal (`dune_n`) for the diffuse and the glint; the old code read `vNormal` directly |
+| KaleidocycleFold | the faces of the folding ring | the normal from the derivatives of the position; the relief rises toward the eye whichever way a face winds, the normal's sign stays (the kick flash reads `n.y`) |
+| Magnetosphere | the planet (an equirect map; tex0 only in its colour -- left as it is) | inside the planet's branch (constant per primitive); the map's seam and poles fade out by the footprint |
+| KelvinHelmholtzCloudWaves | the whole cloud sheet, one photo | the fragment stage had no position: the vertex stage hands its world point on (`vReliefPos`, in the frame of `vNormal`) -- the patch's only vertex-stage change |
+
+#### Tried and dropped (each seen on a sheet first)
+
+- *One scale, depth 0.03 of the photo's width, a hard cap at 50 degrees* (the first render, photo basaltstufen-tuerkis):
+  the mean difference per scene 0.17-1.3 of 255 except the dunes (5.3) -- the relief was the map's edges as thin
+  bright or dark lines (saturated tilt over a band one texel wide) and almost nothing of the shapes between them.
+- *Two scales, depth 0.12, a soft cap, edges uncompressed*: the shapes showed (Permafrost's ground took the round forms
+  of the photo, Europa's ice its bumps), the dunes broke into dark jagged cracks -- at 0.35 of the depth just as much
+  (mean difference 17.4 against 17.5).  A depth that does not change the artefact is not a depth problem: the
+  paper's frame divides by `n . ( sx x sy )`, and SandDune's normal is analytic (with the ripples' slope) while its
+  120-row grid is coarse, so the determinant came near 0 on facets that the normal does not describe.  With the
+  facet's own normal in the frame (`c . c`, never 0 on a visible facet) and the gradient projected into the plane of
+  the shading normal the cracks went (the final block).  The edge compression (`g / ( 1 + |g| / 8 )`) came one step
+  before, for the same look elsewhere (the cavern rock's thin glossy squiggles).
+- *SandDune with `normalize( vNormal )` into the block*: a photo WITHOUT a map changed that scene (the flat-photo set:
+  9 of 10 identical) -- the block returns the normal it got, and the old light used the interpolated, unnormalized
+  `vNormal`.  Now the normal goes in as it comes.
+- *OrreryBrass* (the planets: the photo wrapped on sphere impostors): in the first list, out after the before set --
+  the planets are a few pixels wide, the relief would always sit behind the footprint fade.
+
+#### Results
+
+Snapshots (Tools/scene_snapshots.py through a wrapper that takes exact names and appends a knob at the END of an
+entry, so the other knobs roll the same; frozen time, seed 7, silent, the user's settings, Presets/ZZMesh.xml present,
+16-bit intermediates as by default).  Photos: A kristallhoehle-indigo-fuchsia-2 (the snapshot baseline's photo, map
+relief 0.32), B basaltstufen-tuerkis (5.59, the strongest of the table), C tropfsteinhalle-gold-moos-2 (3.10), and
+the flat achat-amethyst-lk3 (`flat` = 1: no map).
+
+- *The old picture.*  A before set from the worktree's start state (b9ea6a83) and the same scenes after the patch with
+  no knob entry: **20 of 20 frames byte-identical** (photos A and B, the final block).  A photo without a map with
+  reliefP = 1 against reliefP = 0: **10 of 10 byte-identical** (the block returns the normal it was given).  The
+  reliefP = 0 sets of two versions of the block (photo A) are byte-identical too (the 0 path does not depend on
+  the block's content).  A set with the knob entry at 0 differs from the set without the entry: an added knob takes a
+  roll and moves the later rolls of the run (the trap of (69), T4 and U2) -- 0 is compared with 1, absent with before.
+- *The look* (reliefP 0 against 1, mean absolute difference of 255; A / B / C):
+
+  | scene | A | B | C |
+  |---|---|---|---|
+  | SandDuneBarchanMigration (half depth) | 9.85 | 4.34 | 5.42 |
+  | TravertineTerracePools | 3.92 | 1.28 | 1.85 |
+  | EuropaChaosTerrain | 3.63 | 1.77 | 1.49 |
+  | CrystallineCavernTessellation | 2.55 | 0.94 | 1.21 |
+  | PermafrostPolygons | 2.16 | 1.21 | 1.76 |
+  | GlacierTessellation | 2.05 | 1.12 | 1.53 |
+  | KelvinHelmholtzCloudWaves | 2.02 | 0.67 | 1.72 |
+  | TessellatedLavaLake | 0.95 | 0.53 | 1.04 |
+  | KaleidocycleFold | 0.90 | 0.33 | 0.64 |
+  | Magnetosphere | 0.53 | 0.33 | 0.38 |
+
+  On the sheets: Europa's ice and Permafrost's ground take the photo's forms as bumps, the cloud sheet and the
+  folding ring's faces a fine surface, the dunes a second, finer relief over their own; the lava crust and the small
+  planet change least (dark crust, a planet 60 pixels wide).  The strength follows the photo: the crystal cave A has a
+  map full of local shapes (median tilt 0.43 on a flat square, the offline sheet), the basalt B is smooth except at
+  its columns' edges (median 0.05).
+- *Sheets* (`C:\Users\Rene\Desktop\kaleido-wt\sheets\p4\`): `p4_relief_{A,B,C}_<photo>_{1,2}.jpg` (reliefP 0 | 1 |
+  difference x4, five scenes each), `p4_relief_flat_achat-amethyst-lk3.jpg` (no map: no difference),
+  `p4_relief_offline_what_the_block_does.jpg` (numpy: photo, map, the block's normal lit from the upper left on a flat
+  square, the photo lit flat and lit with the relief).
+- *GPU time* (agent env3d's perfwrap.py on Tools/perf_labs.py: live at 2880 x 1620, alone on the machine, a photo
+  with a map fixed so the taps run, knob 0 then 1 with the same rolls; median / p90 ms).  Twice: the final block, 15 s
+  a scene, and before that the two-scale block without the edge compression and the facet frame, 20 s a scene:
+
+  | scene | final: 0 | final: 1 | earlier: 0 | earlier: 1 |
+  |---|---|---|---|---|
+  | KaleidocycleFold | 0.88 / 0.91 | 0.86 / 0.91 | 1.58 / 1.96 | 1.53 / 1.68 |
+  | TessellatedLavaLake | 0.84 / 0.86 | 0.85 / 0.89 | 0.81 / 0.84 | 0.83 / 0.88 |
+  | EuropaChaosTerrain | 0.83 / 0.87 | 0.83 / 0.85 | 0.96 / 1.00 | 0.91 / 0.95 |
+  | PermafrostPolygons | 0.83 / 0.86 | 0.83 / 0.84 | 0.97 / 0.99 | 0.92 / 1.07 |
+  | TravertineTerracePools | 0.92 / 0.95 | 0.98 / 1.02 | 0.90 / 0.92 | 0.97 / 1.05 |
+  | SandDuneBarchanMigration | 0.88 / 0.90 | 0.82 / 0.91 | 0.91 / 0.91 | 0.90 / 0.93 |
+  | CrystallineCavernTessellation | 0.92 / 0.95 | 0.96 / 0.99 | 1.15 / 1.24 | 1.20 / 1.31 |
+  | Magnetosphere | 0.86 / 0.91 | 0.84 / 0.89 | 0.89 / 0.93 | 0.84 / 0.87 |
+  | GlacierTessellation | 0.81 / 0.86 | 0.84 / 0.91 | 0.84 / 0.89 | 0.87 / 0.90 |
+  | KelvinHelmholtzCloudWaves | 0.83 / 0.89 | 0.81 / 0.82 | 0.81 / 0.86 | 0.80 / 0.82 |
+
+  -0.06..+0.06 ms median, the noise of single runs (the same scene moves by more between the two runs); 120 fps
+  in every run but one -- the first app start of the final run (KaleidocycleFold at 0: 86 fps median, GPU 0.88 ms,
+  the warm-up of a fresh start, not the shader).  Travertine is the one scene +0.06 both times.  16 fetches a pixel
+  of the photo surfaces are cheap next to these scenes' tessellation and lighting.
+- *In the presets*: `<float name="reliefP" minValue="-0.4" maxValue="1.2">` at the end of the ten Komplett.xml entries
+  (the old picture about a quarter of the activations; a depth 0..1.2 otherwise), genre presets regenerated (22 lines
+  added in seven of them, none changed).
+
+#### Checks
+
+shadercheck on the 11 changed files (static rules and the driver's compile): 0 errors, 0 warnings (three times, the
+last on the final block); every snapshot run without an error line in its log; `cgvr_format --check` 3,516 files same;
+`doc_shaders --check` 0 to change; `temporal_budget` 0 errors (the 4 warnings are other scenes); `shake_scan` 0 new
+hits; `PresetEditor --roundtrip` of the 11 presets OK, `--validate` 12 files complete; `check_schedule --quick` 20
+plans, 0 violations.  No C++ changed (no build, no self test needed).
+
+#### Not done, not verified
+
+- The second stage (parallax inside the surface for two or three calm scenes) was not started: the first stage took
+  four rounds of sheets.  The frame for it is there (the same derivatives give the uv shift of a view ray).
+- Moving pictures: every frame above is frozen and silent.  The relief follows the photo cross-fade (both slots,
+  `interpolation`) and fades with the footprint, so it should neither jump nor shimmer -- not seen in motion.
+- Stereo and the editor's previews (same shaders; not looked at).
+- Magnetosphere's colour reads tex0 only (an old defect, left); its relief cross-fades both slots, so during a photo
+  fade colour and relief can disagree for a moment.
+
+#### For the user
+
+- Whether the relief stays on in these ten scenes, and its range (-0.4..1.2): on the sheets it is clear in the
+  terrains and the dunes, faint on the lava and the small planet.
+- The next candidates: the math surfaces of the physics family (BoySurface, Enneper, Helicoid, ...) need a position
+  handed on from the vertex stage, as done for the clouds.
+
+### P5 -- transitions through depth
+
+Plan P5 of docs/PLAN_2026-11-27.md, by agent "p5" (branch `wt-p5` from b9ea6a83).  Of the 210 transitions in
+Transitions/ only Portal read a depth; seven new ones move through the depth of both scenes, with a calm stand-in by
+brightness where a side has none, and between two scenes with depth the scheduler takes one of them for one fade in
+four.
+
+| what | result |
+|---|---|
+| seven transitions | DepthFromBehind, DepthFogWall, DepthFocusPull, DepthLayers, DepthWorldsMerge, DepthDusk, DepthSilhouette (Transitions/, generated by Tools/transgen/tgen.py from drafts/P5.txt); transcheck 7/7, all inside the calm genres' limits |
+| a depth library in the transition generator | `trOrderA/trOrderB` (each scene's depth order, equalised), `trOrderBoth`, the brightness stand-in; added to a draft that calls it |
+| registration | Komplett.xml (probability 0.07 each, minFade 4-5 s), genre presets regenerated; Tools/transition_profile.tsv has their rows |
+| the scheduler | between two scenes with a real depth one fade in four is rolled among the Depth*.frag (`KALEIDO_DEPTH_TRANS=0`: off) |
+
+#### What was there
+
+- The combine stage gives every transition both depth buffers: `texDepth0` (unit 29, the outgoing scene) and
+  `texDepth1` (unit 30, the incoming one), `depthValid` (x/y: 1 a 3D scene; for a 2D scene with `// @depth` the
+  photos' share with a map, so it fades with a photo cross-fade; 0 none), `depthPhoto` (1 where the depth is a
+  photo's), `photoDepthWin` (the window depths of the photo's near and far end) and `nearFar` -- set for every
+  EffectShader by name (EffectShader.cpp, the generic uniform table), bound in RenderPipeline::prepareFxInputs()
+  (`glActiveTexture( GL_TEXTURE0 + 29/30 )`) before the transition pass.  A 2D scene's depth is cleared to the far
+  plane before it draws (RenderPipeline.cpp, renderActiveScenePass / renderNextScenePass).
+- Portal reads only the OLD scene's depth (`depthValid.x`), falls back to a linear mix without it, and the scheduler
+  swaps it for ZoomThrough unless both scenes are 3D (SceneScheduler.cpp, the transition roll: `is3D()` on both).
+  Its linearisation `zn*zf / (zf - z*(zf - zn))` is the formula for a 0..1 clip range; the GL projection of the
+  host (and FxDepthFog, DepthView) uses `2nf / (f + n - (2z - 1)(f - n))`.  Portal was not changed (its threshold
+  sweeps past both ends either way; noted for whoever touches it).
+- The editor (`PresetEditor --transcheck`, `--transprofile`) binds only `texDepth0` and sets `depthValid` = (1 for
+  a 3D scene in slot 0, 0): with its still photo as scene A and a photo as B both measuring tools see no depth --
+  they measure the brightness stand-in.
+
+#### The design
+
+*Why a stand-in in the shader and not a scheduler rule.*  Portal's rule (pick it only between two 3D scenes) cannot
+see the 2D scenes with depth: whether they have one depends on the photo, it can change in the middle of a fade (a
+photo cross-fade between a photo with a map and one without moves `depthValid` continuously), and at the moment of
+the roll the incoming scene's photo is not known.  So the new transitions run between any two scenes, read
+`depthValid` as a weight and blend a real depth order with a brightness order: continuous whatever happens.
+
+*And a preference in the scheduler.*  Rolled like any transition, the seven make 0.49 of a probability mass of 15.35
+(Crossfade alone 1.0): about 3 % of the fades, and between two scenes that both have a depth (3D, or a 2D scene with
+`// @depth` on a photo with a map) a fraction of that -- the depth would almost never be seen.  So after the roll
+(SceneScheduler.cpp, behind Portal's gate) a fade between two such scenes is, one time in four, rolled again among the
+registered `Depth*.frag` (probability and mood as always; a preset without them is unchanged).  "Has a depth" is
+`is3D()`, or `writesDepth()` with the larger of the two photo slots' `photoDepthAmt` above 0.5 -- the photo the
+incoming scene will show is not known at the roll, the current ones are the best guess, and a wrong guess only means
+a depth transition running on brightness.  The scene-plan simulation (`--schedule`) has no GL programs, so there
+writesDepth() is false and only 3D pairs count.  `KALEIDO_DEPTH_TRANS=0` leaves the roll as before.
+
+*The depth order* (`trOrder()` in tgen.py's DEPTH_LIB).  A front swept over raw depth spends its time where a scene
+has no geometry: a 3D scene's things sit between 2 and 30 units, the sky on the far plane; a photo's map is already
+stretched 0..1 but a fold scene shows only parts of it.  The order is therefore the share of the picture that lies
+nearer: a soft empirical distribution over a 5 x 5 grid of the same frame (`smoothstep( g - w, g + w, f )` summed over
+the 25 grid values g), so a threshold at progress d covers about d of the picture whatever the depths are.  The
+farness itself: a photo's window depth between `photoDepthWin`'s two ends (exactly 1 - its depth map), a 3D scene's
+linear distance on a log scale up to 60 units (DepthView.frag's scale), the far plane 1.  The pixel's own depth is
+read over five taps 1.5 px apart (a silhouette is a soft edge, not a pixel stair).
+
+*The stand-in.*  Where `depthValid` is 0 the order is the same distribution over brightness (bright = near), the
+pixel's brightness averaged on a ring of 1/40 of the picture's height (no grain decides).  Being a rank, it ignores a
+brightness change of the whole frame (a kick lighting the scene moves no front).  A 3D scene whose depth is flat (a
+fragment scene that draws one plane) would put every pixel at one rank and switch the picture at once: the standard
+deviation of the 25 depth values gates the real depth (`smoothstep( 0.02, 0.06, sd )`).
+
+*Two scenes, one order* (`trOrderBoth()`).  The first versions mixed the two orders with the progress (old scene's
+depth at the start, the new one's at the end).  That is continuous but not monotonic: a place far in the old scene
+and near in the new one switched early and then went back.  The joint order is fixed over the fade: a place counts
+as far only where it is far in both scenes (the minimum of the two orders), made even again by 1 - (1 - min)^2 (the
+minimum of two even orders piles up near 0).  So the old scene's near things leave last and the new scene's near
+things arrive last, and every pixel's weight only grows.  The transitions with two phases (fog, focus, dusk) use each
+scene's own order in its own half instead.
+
+*Cost.*  Per pixel and scene 5 + 9 + 2 x 25 texture reads; the 50 grid reads are the same for every pixel (cache).
+
+#### The seven transitions
+
+All seven: exactly the old scene at progress 0 and the new one at 1 (the template's main()), every weight grows with
+the progress or rises and falls once, nothing moves on audio (the template's 5 % brightness breath on audioSwell in
+the middle is the only music), two knobs each plus speedP/hueP (hue gain 0 except WorldsMerge 0.05).
+
+| transition | what it does | knobs |
+|---|---|---|
+| DepthFromBehind | "von hinten": a place changes early where it is far in both scenes, late where either has something near (`trOrderBoth`); the new scene starts 6 % smaller (x approachP) and paler (its contrast 35 % towards its mean) and grows to full size | approachP, softP (front width) |
+| DepthFogWall | "Nebelwand": a fog front runs through the old scene's order from far to near (progress 0..0.55), the scenes swap under it (0.4..0.6), the fog leaves the new scene from near to far (0.45..1); density 0.6-0.84, a little thicker far away; the fog's colour is `trVeil` x 0.8 (never brighter than the brighter scene), fbm wisps drift on trClock | fogP, wispP |
+| DepthFocusPull | "Schärfefahrt": the old scene blurs from its far places to its near ones, the new one sharpens from near to far; a 13-tap golden-angle disc, radius up to 1.6 % of the height x blurP; the swap spread over 0.12..0.88 | blurP, softP |
+| DepthLayers | "Schichten": three thirds of the joint order (near, middle, far), soft borders; the far layer fades over the first 0.36-0.6 of the progress, the middle one overlapping, the near one last; a layer dims by up to 12 % while it changes | overlapP, edgeP |
+| DepthWorldsMerge | a depth test between the two worlds: the new scene's order is pushed from behind the old one to in front of it (`oA - oB + (2d - 1)(1 + s)`), so in the middle the near things of each stand in front of the far things of the other; a faint seam light (`trVeil` x 0.12 x seamP) where they intersect | seamP, softP |
+| DepthDusk | the light leaves the old scene from the back (far first), the scenes swap in the dusk, the light returns to the new one from the front; at most 36-54 % of the light goes, the dim places turn a little blue | dimP, blueP |
+| DepthSilhouette | the new scene takes the old one's far places (about two thirds of the picture, 0..0.6), the near things left darken by 45-75 % into silhouettes against it and dissolve from 0.55 on | shadeP, softP |
+
+Without depth the same transitions run on the brightness order: DepthFromBehind and DepthLayers then keep the bright
+parts longest (a bright ring of a tunnel scene stays over the new picture until the end), DepthWorldsMerge brings the
+new scene's bright parts through the old scene's dark ones, DepthFogWall, DepthDusk and DepthFocusPull fill the
+shadows first.
+
+#### Measured
+
+*The editor's harness* (`Tools/transition_profile.py`: ProfileStill and the two pinned photos, no depth on either
+side -- the brightness stand-in; `PresetEditor --transcheck`: Kaleidoscope.frag against a photo).  Every one exact at
+both ends (0.00 / 0.00 of 255) and inside the calm genres' limits (core80 >= 0.45, peak <= 0.10, flick <= 1.25,
+flash <= 30), so make_genre_configs takes them into Ambient, SpaceAmbient, Downtempo and Cinematic by their moods:
+
+| transition | tv | core80 | peak | flick | flash | transcheck jump |
+|---|---|---|---|---|---|---|
+| (Crossfade) | 58.27 | 0.800 | 0.025 | 0.00 | 0.0 | -- |
+| DepthFromBehind | 79.30 | 0.525 | 0.053 | 0.02 | 2.3 | 2.3x |
+| DepthFogWall | 89.11 | 0.600 | 0.060 | 0.02 | 19.7 | 1.8x |
+| DepthFocusPull | 75.94 | 0.500 | 0.054 | 0.02 | 0.9 | 1.6x |
+| DepthLayers | 64.62 | 0.625 | 0.042 | 0.02 | 0.0 | 1.6x |
+| DepthWorldsMerge | 81.39 | 0.475 | 0.059 | 0.02 | 16.2 | 1.4x |
+| DepthDusk | 114.52 | 0.475 | 0.072 | 0.01 | 0.8 | 2.0x |
+| DepthSilhouette | 103.80 | 0.550 | 0.075 | 0.01 | 0.0 | 4.3x |
+
+*In the app, with real depth* (a scratch tool on the pattern of Tools/trans_frames.py: the video export on the frame
+clock, 960 x 540, two scenes solo 4 s, fades of 10 s, the transition forced, 40 s of silence, the fixed photo
+kristallhoehle-indigo-fuchsia-2 -- it has a map; the frames of each fade at 240 x 135, the step between neighbouring
+frames as mean |difference|, jump = largest / median step as in --transcheck).  Pairs: 3D/3D PillarHall <->
+MonolithField (corridors of pillars, clear near and far), photo/photo ChainTunnelLens <-> StripLab (two 2D scenes
+with `// @depth` on the mapped photo).  Two fades per pair (one each way); Crossfade on the same pairs is the
+reference for the scenes' own motion:
+
+| transition | 3D/3D jump (two fades) | photo/photo jump | mean luma, 3D (ends -> extreme) | photo |
+|---|---|---|---|---|
+| Crossfade | 5.0, 1.9 | 2.0, 2.2 | 15/14 -> 11..17 | 33/33 -> 31..34 |
+| DepthFromBehind | 5.3, 2.6 | 1.9, 1.5 | 20/14 -> 12..21 | 33/33 -> 31..36 |
+| DepthFogWall | 3.6, 3.7 | 3.1, 4.0 | 20/14 -> 27 | 33/33 -> 48 |
+| DepthFocusPull | 3.7, 3.3 | 3.5, 5.4 | 20/14 -> 13..21 | 33/33 -> 31..35 |
+| DepthLayers | 2.8, 2.5 | 1.9, 1.6 | 20/14 -> 12..21 | 33/33 -> 29..34 |
+| DepthWorldsMerge | 2.4, 2.1 | 1.5, 1.6 | 20/14 -> 7..21 | 33/33 -> 31..37 |
+| DepthDusk | 3.7, 3.2 | 3.5, 5.5 | 20/14 -> 5..21 | 33/33 -> 12..34 |
+| DepthSilhouette | 2.8, 2.9 | 1.7, 2.6 | 20/14 -> 5..21 | 33/33 -> 23..34 |
+
+No step above 6x its median; the largest steps of the photo pair (12 of 255) are the lab scenes' own and appear with
+Crossfade alike.  The fog lightens the dark pair by up to 15 of 255 over the brighter end (trVeil caps it at the
+brighter scene's mean + 0.09, x 0.8), dusk and silhouette darken by design; the export ran on silence, so the 3D
+scenes are near their darkest (mean luma 14-20).
+
+*The scheduler's preference* (`Kaleidoscope.exe --schedule <preset> silence 24`, seed 1, once with
+`KALEIDO_DEPTH_TRANS=0` and once without; the simulation has no GL programs, so "with a depth" means two 3D scenes
+there; a scratch count over the plan's `scene` lines):
+
+| preset | fades | Depth* of all fades, off -> on | 3D->3D fades | Depth* among them, off -> on |
+|---|---|---|---|---|
+| Allround | 759 | 32 (4.2 %) -> 37 (4.9 %) | 12 | 1 -> 6 |
+| SpaceAmbient | 687 | 45 (6.6 %) -> 52 (7.6 %) | 32 | 1 -> 8 |
+| Cinematic | 745 | 23 (3.1 %) -> 25 (3.4 %) | 8 | 0 -> 2 |
+
+The number of fades is the same either way; the roll only swaps the transition.  Expected among the depth pairs: a
+quarter plus the ordinary share of the rest, about 28 %; the counts are small.  `Tools/check_schedule.py --quick`
+with the new presets and the new build: 20 plans, 0 violations (the floors take the new minFade 4-5 s).  Self test
+182 passed, 0 failed; `PresetEditor --roundtrip` of Komplett.xml 2,937 entries, `--validate` all 12 presets complete.
+A seeded plan that contains a fade between two scenes with depth draws one more random number there (the one-in-four
+roll), so plans after such a fade differ from the old ones of the same seed; no snapshot is affected (a frozen
+snapshot shows one scene).
+
+*GPU time* (a scratch run alone on the machine: the app live at 2880 x 1620, PillarHall and MonolithField with 1 s solo
+and 30 s fades, the transition forced, `KALEIDO_GPU_TIMING`, the median of the per-second values after 5 s -- so a
+fade frame: both 3D scenes and the transition):
+
+| transition | ms (median / p90) |
+|---|---|
+| Crossfade | 2.78 / 3.00 |
+| DepthFromBehind | 3.72 / 4.08 |
+| DepthFogWall | 3.45 / 3.93 |
+| DepthLayers | 3.54 / 3.73 |
+| DepthWorldsMerge | 3.59 / 3.84 |
+| DepthDusk | 3.74 / 4.04 |
+| DepthSilhouette | 3.56 / 3.81 |
+
+About +0.7..1.0 ms over a cross-fade while one of them runs (4.7 million pixels x two orders of 64 reads; the grid
+reads are the same for every pixel and come from the cache, the cost is mostly the reads' rate).  The DepthFocusPull
+run logged one fade instead of two and a median below the cross-fade's (2.04 ms): not a valid measurement, not
+repeated; it does the same two orders plus 26 disc reads.  The seven run in about 3 % of all fades, so the cost per
+hour is small; a cheaper order (a 4 x 4 grid, a 5-tap ring) would save about a third, not tried.
+
+*The sheets* (`C:\Users\Rene\Desktop\kaleido-wt\sheets\p5\p5_depth_transitions_1.jpg` and `_2.jpg`: per transition
+the 3D/3D fade, the photo/photo fade and the catalogue strip, progress 0.1 / 0.3 / 0.5 / 0.7 / 0.9).  In the 3D pair
+the depth reads at once: from behind, layers and silhouette take the end of the corridor first while the near pillars
+and the floor stay; the worlds merge stands the new scene's near pillars in front of the old scene's far ones; the
+fog and the focus pull start at the vanishing point.  In the photo pair (folded photos) the order follows the folded
+relief -- a soft organic dissolve, the depth less legible than in a room.  In the catalogue pair (TunnelPlain has no
+depth) the brightness order keeps the tunnel's bright star ring longest over the aurora.
+
+*Is the photo pair's depth real?*  The same photo-pair fades once more with `KALEIDO_NO_DEPTH=1` (every map ignored:
+the brightness stand-in alone) and the pairs with `KALEIDO_SHOW_DEPTH=1` (the depth the transitions read, as grey):
+`kaleido-wt\sheets\p5\p5_depth_check.jpg`.  The folded photo's depth is there (the grey petals of the folded map), and
+DepthFromBehind and DepthWorldsMerge open the photo pair in other places with the maps than without them; the 3D
+pair's depth view shows the two corridors.
+
+*Catalogue.*  `python Tools/trans_frames.py --names Depth...` (the catalogue's own pair, TunnelPlain -> aurora):
+`docs/Catalog/strip/<Name>.jpg` committed, the mid-fade pictures in docs/Catalog/rendered/transmid (ignored; the
+catalogue page is made at the end of a round); every picture 0.75-1.39 of the end-to-end distance away from both
+ends (the acceptance of C1 is 0.25).
+
+#### Tried and dropped
+
+- *Mixing the two scenes' orders with the progress* (the old scene's depth at the start, the new one's at the end):
+  continuous, but a place far in the old scene and near in the new one switched early and then went back (a weight
+  that falls again).  Replaced by the joint order (`trOrderBoth`) for the one-front transitions and by each scene's
+  own order in its own half for the two-phase ones.
+- *A fixed depth scale instead of the rank* (log distance, or a photo's 0..1 as it is): a front swept over it spends
+  most of the fade where no geometry is (a 3D scene's things between 2 and 30 units, the sky at the far plane) and
+  then crosses the picture in a moment.  A min/max of the frame instead jumps whenever a silhouette passes one of the
+  sample points; the soft distribution moves by at most 1/25 then.
+- *DepthFocusPull with the swap in the middle third*: 80 % of the change in 35 % of the fade (core80 0.350) and a
+  transcheck jump of 72.6x (the blur alone changes a smooth photo very little, the median step was near zero).  The
+  swap now runs from 0.12 to 0.88 and the blur reaches 1.6 % of the height instead of 1.1 %: core80 0.500, 1.6x.
+- *DepthFogWall at the veil's full brightness*: flash 32.7 (the calm genres allow 30); the fog's colour is now trVeil x
+  0.8: 19.7.
+- *DepthSilhouette sweeping the whole order by 0.7*: the silhouettes were gone before they could darken (core80 0.300,
+  jump 57.4x); the reveal now stops at about two thirds of the picture and the rest dissolves from 0.55: 0.550, 4.3x.
+- *Portal's gate for the new ones* (only between two 3D scenes): not taken, see "The design".
+
+#### Not verified, open
+
+- Watched only in exports on silence (the 3D scenes near their darkest) and in the editor's harness, not in a show
+  with music; the scheduler's preference only in the scene-plan simulation (3D pairs) -- see "Measured".
+- A 2D scene with a camera rig (`rig2*` formulas) hands the transitions its transformed colour but its untransformed
+  depth: in those few scenes the depth order is offset against the picture.  Not looked at.
+- The stand-in by brightness reads the scenes' own animation: a scene that flashes in parts moves its front with the
+  flashes (the rank ignores a flash of the whole frame).  Not seen in the strips; not measured with music.
+- Mesa/Linux: compiled only by the NVIDIA driver here (shadercheck); the CI will compile them.
+- Portal keeps its own (0..1-clip) linearisation and its 3D-only gate; not touched.
+
+#### For the user
+
+- Seven new transitions are in the rolled pool of every genre preset whose moods take them (Allround, Ambient,
+  SpaceAmbient, Downtempo: all seven; Cinematic six; Noir two; Electronic, Psytrance, Psychedelic one; Club none),
+  probability 0.07 each.  The old transitions stay.  Sheets: `kaleido-wt\sheets\p5\p5_depth_transitions_1.jpg`, `_2.jpg`.
+- Between two scenes with a depth one fade in four is one of them; `KALEIDO_DEPTH_TRANS=0` switches that off.
+- DepthDusk and DepthSilhouette darken the picture in the middle of the fade (by design, at most about half resp.
+  three quarters of the light); on scenes that are dark already that is a short dip towards black.
+
+### P6, P8a -- cheaper 16 bit, and live depth measured
+
+Packages P6 and P8a of `docs/PLAN_2026-11-27.md`, by agent "p6" (branch `wt-p6` from b9ea6a83).  Every number was
+measured on the reference machine (RTX 5090, panel 2880 x 1620, 120 Hz, render scale 1), each app run through the
+heavy-job lock, timing runs alone.
+
+| package | what | result |
+|---|---|---|
+| P6 (a) | GPU time per station of the frame (`KALEIDO_GPU_PASSES`, `perf_labs.py --passes --gpumem`) at 8 bit, 16 bit and R11F_G11F_B10F | 16 bit costs +0.17 ms: the limiter's measure frame 0.078, the full-frame passes' bandwidth ~0.08, MSAA resolve +0.03 on 3D; but 0.29 ms of EVERY frame (8 or 16 bit) sat in two compute passes run by one work group / one invocation |
+| P6 (b) | R11F_G11F_B10F for the targets (nobody reads their alpha) | as fast as 8 bit and -240 MB against 16 bit, but its highlights are coarser than 8 bit (65 / 33 levels in 0.5..1 against 128): not taken; `KALEIDO_HDR_FORMAT=r11` stays as a measuring switch |
+| P6 (c) | the mipmaps | the present source's chain costs 0.05 ms at 8 and 16 bit alike and every level is read; the limiter's measure frame (16 bit only) is now drawn at a quarter of the size |
+| P6 (d) | the exposure histogram and the limiter in parallel | histogram 0.20 -> 0.015..0.021 ms, limiter 0.086 -> 0.021 ms, the same numbers (exports framemd5-identical with the old measure); with (c) the 16-bit frame is cheaper than the 8-bit one was: ChainLab2D 1.00 -> 0.61 ms (8 bit was 0.83), TunnelPlain 0.71 -> 0.33 (0.54) |
+| P8a | Depth Anything V2 Small on the GPU beside the app | 15 depth frames a second at 252..518 px with every runtime (fp32), the app's median 120 fps throughout, its minimum 100..120; model alone 3.3..14.6 ms, plus 6..15 ms of CPU resizing; +40 MB (DirectML, Windows only) or +44 MB (WebGPU, Windows and Linux) or +2.4 GB (CUDA) |
+
+#### P6 (a) -- where the time goes
+
+*The instrument.*  `KALEIDO_GPU_TIMING` gives one number per frame (a GL_TIME_ELAPSED query around draw()); such a
+query cannot nest, so a per-pass timer needs timestamps.  `KALEIDO_GPU_PASSES=1` (glcore.cpp, `glcorePassFrame()`):
+between glwidget's draw() bracket every `glcoreDebugMark()` -- the station names the KHR_debug messages already
+carried (`scene:act`, `oit`, `scene:next`, `transition`, `present`, `shadowPass1/2`) plus new ones (`sims`,
+`scene:resolve+cap`, `fx`, `overlay`, `overlay:next`, `blend`, `trails`, `guard+spout`, and inside the present pass
+`present:history`, `:mips`, `:measure`, `:readback`, `:limit`, `:expo`, `:bloom`, `:draw`) -- issues a
+`glQueryCounter( GL_TIMESTAMP )`; a station's time runs to the next mark.  Five frames in flight, read four frames
+later (nothing waits), one `[gpupass] n=.. total=.. <station>=<ms> ...` line a second, the mean per frame.  Two
+optional entry points came into glcore (`glQueryCounter`, `glGetQueryObjectui64v`); without them, or without the
+switch, nothing happens.  The sum of the stations agrees with `KALEIDO_GPU_TIMING`'s frame (0.826 against 0.86,
+0.538 against 0.54 ms).  `Tools/perf_labs.py --passes` prints the median of each station under the scene (and as
+`pass:<station>` columns with `--tsv`); `--gpumem` adds the process's dedicated GPU memory four seconds before the
+end (the counter `Tools/soak.py` reads).
+
+*The run* (`perf_labs.py --passes --gpumem --wav Tools/review128.wav`, 22 s a scene, the first 6 s left out, alone in
+the lock; 8 bit = `KALEIDO_HDR_BUFFERS=0`, 16 bit = `=1`, R11 = `=1` plus `KALEIDO_HDR_FORMAT=r11`, see (b)).  Median
+ms per frame; 120 fps everywhere:
+
+| scene | targets | frame | scene | resolve | fx | overlay | blend | trails | mips | measure | limit | expo | bloom | draw | GPU MB |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ChainLab2D | 8 bit | 0.83 | 0.291 | 0.005 | 0.021 | 0.017 | 0.028 | 0.032 | 0.051 | 0.001 | 0.087 | 0.198 | 0.012 | 0.066 | 923 |
+| ChainLab2D | 16 bit | 1.00 | 0.291 | 0.005 | 0.031 | 0.027 | 0.058 | 0.055 | 0.057 | 0.079 | 0.085 | 0.208 | 0.013 | 0.071 | 1143 |
+| ChainLab2D | R11 | (0.65) | 0.294 | 0.005 | 0.021 | 0.017 | 0.029 | 0.034 | 0.051 | 0.077 | (new) | (new) | 0.012 | 0.068 | 973 |
+| TunnelPlain | 8 bit | 0.54 | 0.015 | 0.002 | 0.018 | 0.016 | 0.027 | 0.025 | 0.051 | 0.001 | 0.086 | 0.197 | 0.012 | 0.065 | 768 |
+| TunnelPlain | 16 bit | 0.71 | 0.025 | 0.002 | 0.029 | 0.028 | 0.056 | 0.048 | 0.057 | 0.079 | 0.087 | 0.203 | 0.012 | 0.067 | 1052 |
+| TunnelPlain | R11 | (0.39) | 0.029 | 0.003 | 0.018 | 0.016 | 0.028 | 0.028 | 0.052 | 0.077 | (new) | (new) | 0.012 | 0.067 | 854 |
+| ParticleTunnelFlight | 8 bit | 0.71 | 0.040 | 0.151 | 0.003 | 0.021 | 0.027 | 0.020 | 0.049 | 0.001 | 0.086 | 0.201 | 0.012 | 0.067 | 880 |
+| ParticleTunnelFlight | 16 bit | (0.65) | 0.059 | 0.131 | 0.002 | 0.028 | 0.054 | 0.035 | 0.054 | 0.078 | (new) | (new) | 0.012 | 0.083 | 1209 |
+| ParticleTunnelFlight | R11 | (0.57) | 0.057 | 0.144 | 0.002 | 0.018 | 0.028 | 0.024 | 0.052 | 0.076 | (new) | (new) | 0.011 | 0.076 | 967 |
+| VolumetricFire | 8 bit | 1.80 | 1.277 | 0.045 | 0.003 | 0.016 | 0.017 | 0.018 | 0.048 | 0.001 | 0.082 | 0.199 | 0.011 | 0.061 | 879 |
+| VolumetricFire | 16 bit | (2.07) | 1.571 | 0.058 | 0.003 | 0.026 | 0.031 | 0.026 | 0.050 | 0.080 | (new) | (new) | 0.013 | 0.066 | 1208 |
+| VolumetricFire | R11 | (2.46) | 2.079 | 0.048 | 0.003 | 0.018 | 0.017 | 0.021 | 0.047 | 0.071 | (new) | (new) | 0.011 | 0.063 | 966 |
+| Spaceship | 8 bit | 0.79 | 0.218 | 0.058 | 0.003 | 0.016 | 0.030 | 0.027 | 0.053 | 0.001 | 0.085 | 0.194 | 0.012 | 0.071 | 967 |
+| Spaceship | 16 bit | (0.76) | 0.216 | 0.088 | 0.002 | 0.027 | 0.059 | 0.040 | 0.053 | 0.075 | (new) | (new) | 0.012 | 0.076 | 1296 |
+| Spaceship | R11 | (0.61) | 0.216 | 0.064 | 0.002 | 0.017 | 0.030 | 0.026 | 0.049 | 0.078 | (new) | (new) | 0.011 | 0.074 | 1054 |
+| MeshTuningForks | 8 bit | 0.80 | 0.193 | 0.059 | 0.003 | 0.016 | 0.030 | 0.027 | 0.052 | 0.001 | 0.085 | 0.193 | 0.011 | 0.072 | 928 |
+| MeshTuningForks | 16 bit | (0.74) | 0.220 | 0.089 | 0.003 | 0.029 | 0.057 | 0.046 | 0.054 | 0.074 | (new) | (new) | 0.012 | 0.077 | 1257 |
+| MeshTuningForks | R11 | (0.63) | 0.189 | 0.060 | 0.003 | 0.017 | 0.030 | 0.029 | 0.050 | 0.076 | (new) | (new) | 0.011 | 0.076 | 1015 |
+
+"(new)": a trap of my own.  The app reads Engine/*.comp from the worktree at every start, and while the run went
+through its scenes I wrote the parallel versions of (d) into Engine/ -- every app start after that (from the 16-bit
+ParticleTunnelFlight on) took the new limiter and the new histogram's stage 0, without the C++ that dispatches its
+stage 1 (so the exposure stood still in those runs; their `limit` 0.021..0.023 and `expo` 0.004 are the new shaders'
+costs, their frame sums in brackets not comparable).  The other stations do not depend on it.  A rerun of the old
+16-bit state at 13:13 was useless for another reason: the user had a game running on the GPU, and every station came
+out 2..3 times slower.  Lesson: never edit a shader of the worktree a measuring run is reading.  The VolumetricFire
+`scene` column (1.28 / 1.57 / 2.08) moves from run to run with the walk's rolls; the scene's own cost is not this
+question.
+
+What 16 bit costs, against 8 bit (the two 2D scenes; the 3D ones the same, plus the MSAA resolve):
+
+- `present:measure` +0.078 ms -- the limiter's own frame (Engine/LightMeasure.frag, section (69) L1), drawn at the
+  full render size and mipmapped, only with 16 bit.  The largest single item: 45 % of the difference.
+- the full-frame passes, twice the bytes: `blend` +0.030 (the final mix reads two frames), `trails` +0.023,
+  `overlay` +0.010, `fx` +0.010 (the rig copy), on 3D scenes `scene:resolve+cap` +0.03 (the 4x MSAA resolve).
+  Together ~0.08 ms: bandwidth.
+- `present:mips` +0.006: the mip chain of the present source is not format-bound.
+- GPU memory +220 (ChainLab2D) .. +284 (TunnelPlain, with the rig's scratch targets) .. +329 MB (every 3D scene:
+  the MSAA colour is 4 x 18.7 MB more): the five frame-sized targets (scene x2, FX x2, transition) 93 MB, the three
+  mipmapped ones (final, trails x2) 75 MB, the measure frame 50 MB, the MSAA colour 75 MB, the rig targets 37 MB.
+
+And what neither 8 nor 16 bit is about: `present:expo` 0.20 ms and `present:limit` 0.086 ms in EVERY frame --
+together more than the whole 16-bit difference, more than the scene of TunnelPlain (0.015).  The auto-exposure's
+histogram (Engine/CfxHistogram.comp) ran as ONE work group: 256 invocations walked 292,000 samples (1 in 16 pixels
+at 2880 x 1620) with shared-memory atomics while the other 169 multiprocessors idled; the limiter
+(Engine/SafetyLimit.comp) as ONE invocation followed 128 flashing-area cells with eight reversal ages each, every
+access a round trip to the buffer.  That is (d).
+
+#### P6 (b) -- R11F_G11F_B10F: as cheap as 8 bit, but coarser than 8 bit where it is bright
+
+*Who reads the alpha of the intermediates* (read in the code, every consumer of the targets `m_texInternalFormat`
+makes): the transitions and the FX (combine) shaders read the scene frames on units 3/4 -- 30 FX files, none reads
+`.a` (FxPulse and the transitions such as PrismDispersionDrift, AfterimageHandoffHalo, MistRiseVeil only pass it on
+into their own output); OverlayBlend mixes two vec4s; Engine/Feedback.frag (the trails) reads `.rgb` and writes
+alpha 1, so whatever alpha a scene wrote -- the 2D scenes with an alpha of their own among them -- ends there;
+Present.frag, BloomBlur.frag and LightMeasure.frag read `.rgb`; the seven `texPrevFrame` scenes read `.rgb`; no blend
+function in Source/ uses the destination alpha (`DST_ALPHA`: none), the OIT pass blends with the source's alpha and
+keeps its own RGBA16F accumulation; `capSceneLight()`'s GL_MIN keeps the alpha it never needed.  The photo's alpha
+(its depth since 26.11.) lives in the PHOTO textures (RGBA8 images, never a render target) and is not affected.  The
+one place an intermediate's alpha leaves the program: Spout "clean" (`spoutSource=clean`) of a full-stereo frame
+sends the eye-packed scene target as it is.  So the alpha is free.
+
+*The cost* (`KALEIDO_HDR_FORMAT=r11`, a measuring switch: `RenderPipeline.cpp` `hdrFormat()`; the targets that follow
+`m_texInternalFormat` become R11F_G11F_B10F, the MSAA colour too; the present pass treats it as 16 bit): the
+full-frame passes are back at their 8-bit times (`blend` 0.029, `trails` 0.024..0.034, `overlay` 0.017), the GPU memory
+is 50..90 MB above 8 bit and 170..250 MB below 16 bit (TunnelPlain 768 / 1052 / 854 MB, ParticleTunnelFlight 880 /
+1209 / 967, Spaceship 967 / 1296 / 1054).  (The `limit` and `expo` columns of that run already show (d)'s shaders --
+see "the run" below.)
+
+*The ramp* (`p6_ramp.py`, numbers only: the formats' rounding of a 0..1 ramp, the largest error in 1/255):
+
+| format | channel | < 1/16 | 1/16-1/8 | 1/8-1/4 | 1/4-1/2 | 1/2-1 | levels in a smooth 0.5..1 gradient |
+|---|---|---|---|---|---|---|---|
+| RGBA8 | all | 0.50 | 0.50 | 0.50 | 0.50 | 0.50 | 128 |
+| RGBA16F | all | 0.00 | 0.01 | 0.02 | 0.03 | 0.06 | 1,025 |
+| R11F_G11F_B10F | R, G (6-bit mantissa) | 0.06 | 0.12 | 0.25 | 0.50 | 1.00 | 65 |
+| R11F_G11F_B10F | B (5-bit mantissa) | 0.12 | 0.25 | 0.50 | 1.00 | 1.99 | 33 |
+
+The intermediates hold display values (gamma-encoded), so 8 bit's even steps are already perceptual; a float format
+gives its precision to the darks.  R11F_G11F_B10F is finer than 8 bit below a quarter and coarser above a half: a
+bright sky-like gradient gets 65 steps in red and green and 33 in blue where 8 bit had 128, and the exposure (up to
+x1.8) and the grade come after it.  No sign either (a negative colour becomes 0, as at 8 bit; RGBA16F keeps it).  In
+one respect it is better than 8 bit: a trail that fades by 0.9 a frame keeps its hue (after 40 frames 0.96 / 0.99 /
+0.96 of the exact colour per channel; 8 bit 1.18 / 1.77 / 3.54 -- the last steps of 8-bit trails stall).  **Not
+taken:** it gives back the bandwidth (~0.07 ms) and ~240 MB, but it would trade the precision the 16-bit targets
+were made for (section (69) L1: "no longer rounded to 1/255 before the grade") for banding in the highlights.  An
+option for a GPU short of memory, if the user wants one: the switch exists; it is not in the menu.
+
+#### P6 (c) -- the mipmaps
+
+Of the twelve `glGenerateMipmap` calls, nine run once (allocation, a resize, a photo upload, the title, the photo-B
+copy); three run every frame: the present source's chain (`present:mips`), the limiter's measure frame (16 bit only,
+inside `present:measure`), and the finished scene while an FX that samples it at explicit levels (FxChain) is on
+screen.  `present:mips` is 0.05 ms at 8 bit and 0.055 at 16 -- the chain is not bound by the format -- and every
+level of it is read: level 2 by the bloom's first pass (its quarter-size fragments step 4 texels, so the hardware
+picks level 2), levels 4..5 by Present.frag's halation and fallbacks (`texture( tex, puv, 4.0/4.5/5.0 )`), level 8
+by the picture guard, the top by the OSC mean, levels 8 and 10 by the limiter at 8 bit.  Nothing to leave out there,
+and the bloom's chain cannot stand in for it (its first pass keeps only the bright part).
+
+The measure frame can shrink: the limiter reads its levels 8 and 10 (2880 x 1620), never the frame-sized one.  Now
+it is drawn at a quarter of the size, each texel the mean of its 4 x 4 measured pixels -- what the frame-sized
+target's level 2 held -- and the limiter reads two levels lower (`m_measureShift`); its levels have the same sizes.
+`KALEIDO_MEASURE_FULL=1` keeps the frame-sized target (one pixel per texel: the old computation exactly).  Below 64
+pixels a side it measures pixel by pixel.
+
+#### P6 (d) -- the exposure histogram and the limiter, run in parallel
+
+*The histogram* (Engine/CfxHistogram.comp) has two stages now, two dispatches of the same program (`stage`).  Stage
+0: one work group per 64 x 64 tile of the frame; its 16 x 16 invocations take the tile's top-left 16 x 16 pixels --
+exactly the pixels the single work group's strided walk took (x, y = invocation + 64 k) -- into a shared histogram,
+which is added to the frame's bins (a new 1 KB buffer on binding 4, `m_histBinsBuf`).  Stage 1: one work group reads
+the bins (and clears them for the next frame); invocation 0 then runs the old percentile, smoothing and slew code
+unchanged.  The histogram is integer counts of the same samples, so the percentiles and the gain are the same
+numbers.  *The limiter* (Engine/SafetyLimit.comp): one work group of 128 invocations, one per flashing-area cell --
+each cell reads and writes only its own reference, direction, rate and eight ages -- the cells' luminances in shared
+memory, the hot cells counted with an atomic; then invocation 0 alone takes the mean, sums the nine quarter windows
+from the shared luminances in the same order as before, and sets the scale.  No C++ change for the limiter (still one
+dispatch of one work group).
+
+*Proof by export* (Tools/flash_count.py's render: the video export on the frame clock, the screening music, seed 7,
+one photo, 10 s at 60 fps, `KALEIDO_EXPOSURE_DEBUG` logging gain, p50, p98, the limiter's scale, the hazard dimming
+and its state every third frame).  The old code twice: ChainLab2D, HarmonicRings, ParticleTunnelFlight (10 hazard
+frames) and VolumetricFire framemd5- and log-identical to each other -- the export is deterministic.  The new code
+with `KALEIDO_MEASURE_FULL=1`: all four framemd5-identical to the old (600 frames each) and all 400 log lines each
+identical.  So the parallel histogram and limiter give exactly the old numbers.  With the quarter measure frame
+(c): ChainLab2D and HarmonicRings identical (no light above 1: the measure is the frame either way); ParticleTunnelFlight
+and VolumetricFire: gain identical, the limiter's scale within 0.001, the same 10 hazard frames, the encoded video
+0.7 and 1.4 of 255 apart on average (H.264 spreads a 0.1 % scale difference).  Snapshots (frozen, silent): 16 scenes
+before; the five with light above 1 (ParticleTunnelFlight, CymaticsPlate, VolumetricFire, ChladniAcousticPlate,
+FractalBloom) with the full and with the quarter measure: 0 of 5 changed against the before set either way.
+
+*A second trap.*  The first after-run took `const ivec2 p0 = ivec2( gl_FragCoord.xy ) * cellSize;` in
+LightMeasure.frag -- a const with a non-constant initialiser, a compile error in GLSL 3.30 on NVIDIA -- and the
+present pass fell back to reading the raw 16-bit frame, as before L1's measure frame existed: ParticleTunnelFlight
+then had 42 hazard frames instead of 10, and its snapshot differed by 2.68.  shadercheck found it (C1); fixed (no
+`const`), the exports and snapshots above are after the fix.  The after-timings below are from that run: their
+`measure` is the fallback (0.001), so add the quarter measure frame's own cost (not measured separately; a 720 x 405
+pass reading the frame once, expected ~0.02 ms) and its 3 MB.
+
+*After* (`p6_after`: perf_labs --passes --gpumem, the same settings as (a); the GPU was not idle -- the user had a game
+open, 4..35 % load before the runs):
+
+| scene | frame 16 bit before -> after | limit | expo | GPU MB 16 bit before -> after | frame 8 bit before -> after |
+|---|---|---|---|---|---|
+| ChainLab2D | 1.00 -> 0.61 | 0.085 -> 0.023 | 0.208 -> 0.021 | 1143 -> 1092 | 0.83 -> 0.51 |
+| TunnelPlain | 0.71 -> 0.33 | 0.087 -> 0.022 | 0.203 -> 0.017 | 1052 -> 1002 | 0.54 -> 0.29 |
+| ParticleTunnelFlight | -> 0.50 | -> 0.021 | -> 0.021 | 1209 -> 1122 | |
+| VolumetricFire | -> 2.09 | -> 0.037 | -> 0.033 | 1208 -> 1122 | |
+| Spaceship | -> 0.57 | -> 0.021 | -> 0.015 | 1296 -> 1209 | |
+| MeshTuningForks | -> 0.60 | -> 0.021 | -> 0.015 | 1257 -> 1170 | |
+
+(The memory after is without the measure frame, see the trap; with the quarter one add 3 MB: -47 MB on 2D scenes;
+the 3D scenes' -87 MB also contain run-to-run differences of the driver.)  The chain set at 16 bit, median GPU ms
+against (70)'s numbers: ChainLabTunnel 1.35 -> 0.97, ChainP4mSpiralKaleidoWarp 0.77 -> 0.44, ChainWaveDrosteHex
+0.73 -> 0.39; ChainLab3D 3.30 -> 3.64 and ChainSlice3D 2.19 -> 2.40 came out slower -- the busy GPU (31 % before the
+run); their scene passes dominate and were not changed.  120 fps median everywhere.  Self test 182 passed, 0 failed;
+shadercheck of the three shaders 0/0 (after the fix); doxygen 0 C++ and 0 shader warnings; cgvr_format and
+doc_shaders unchanged.
+
+*Not verified:* a 30-min soak (no target format changed; the measure target's size did); a clean after-timing on an
+idle GPU; the 8-bit fallback and Mesa (CI); the GPU memory with the quarter measure frame in place.
+
+*Tried and dropped:* skipping OverlayBlend's second read when the FX stand (interpolation 1): 0.02 ms at 16 bit, but
+`mix()` may compile to `x + ( y - x ) * a`, one ulp off -- not bit-identical by construction, and a stale NaN in the
+unused target would still be read; left alone.
+
+## P8a -- live depth: Depth Anything V2 Small on the GPU, beside the app
+
+Measurement only; nothing in the app.  The question (plan P8): can a webcam or Spout picture get a depth map 10 to 15
+times a second without the app falling below 100 fps, and what would it add to the packages?
+
+*The model.*  Depth Anything V2 Small (Apache-2.0, the revision Tools/depth_maps.py pins, section (69) T0), exported as
+agent "maps" did for T5 -- TorchScript exporter, opset 17 -- at fixed square inputs of 252, 392 and 518 px (18, 28
+and 37 patches of 14) into `kaleido-wt\depthsrc\onnx_p8a\` (the 518 file of T5 left as it was), each also as fp16
+(onnxruntime's `float16.convert_float_to_float16`, inputs and outputs kept float32).  99.1 MB fp32, 49.8 MB fp16 at
+every size (the weights do not depend on it); largest difference to torch 1.1e-6 .. 4.0e-6 relative.
+
+*The runtimes* (PyPI only, each `uv pip install --target kaleido-wt\depthenv_ort\<name> --no-deps` and put first on
+the path of `depthenv`'s Python -- so the environment's own onnxruntime 1.32.0 (CPU) stayed as it was):
+
+| package | execution provider | Windows DLLs | Linux | licence (as the wheel states it) |
+|---|---|---|---|---|
+| onnxruntime-gpu 1.26.0 (the last CUDA 12 build; 1.27 on are CUDA 13) | CUDA | onnxruntime.dll 16.4 MB + onnxruntime_providers_cuda.dll 340.6 MB, plus the CUDA 12 runtime, cuBLAS, cuDNN 9, cuFFT, cuRAND: 2,085 MB (here borrowed from torch's lib folder) | manylinux wheel 251 MB (1.32), the same NVIDIA libraries | ORT: MIT ("MIT License / Copyright (c) Microsoft Corporation", LICENSE in the wheel); the NVIDIA libraries under NVIDIA's own licences (not read here) |
+| onnxruntime-directml 1.24.4 (the last on PyPI, while onnxruntime itself is at 1.32) | DirectML (D3D12: NVIDIA, AMD, Intel) | onnxruntime.dll 21.1 MB + DirectML.dll 18.5 MB | none (Windows only) | ORT: MIT; DirectML.dll ships in the MIT-labelled wheel without a licence text of its own -- its redistribution terms are Microsoft's and were not checked (PyPI only) |
+| onnxruntime-webgpu 1.27.0 | WebGPU (Dawn: D3D12 on Windows, Vulkan on Linux) | onnxruntime.dll 24.3 MB + dxcompiler.dll 17.7 MB + dxil.dll 1.5 MB | manylinux wheel 25 MB | ORT: MIT; Dawn: BSD-3-Clause ("Copyright 2017-2023 The Dawn & Tint Authors", ThirdPartyNotices.txt); dxcompiler/dxil.dll (the DirectX shader compiler) not named in the notices -- to be checked |
+
+*The run* (`p8a_bench.py` per runtime, one lock hold "exclusive", 14:38-14:50; the app beside it: ChainLab2D live with
+the review music, `KALEIDO_FPS_LOG`, `KALEIDO_GPU_TIMING`, 16-bit default; the input a webcam-like 1280 x 720 frame
+resized to N x N on the CPU).  The model alone, median ms per frame (input upload and output download included), and
+the CPU's resizing:
+
+| runtime | 252 fp32 | 392 fp32 | 518 fp32 | fp16 252 / 392 / 518 | CPU resize 252 / 392 / 518 |
+|---|---|---|---|---|---|
+| CUDA (1.26.0) | 9.5 | 10.0 | 10.1 | 9.4 / 10.2 / 12.9 | 7.9 / 12.9 / 15.3 |
+| DirectML (1.24.4) | 3.3 | 5.3 | 8.7 | 45.5 / 116.7 / 11.1 | 6.1 / 10.4 / 14.5 |
+| WebGPU (1.27.0) | 9.3 | 11.2 | 14.6 | does not run (Resize) | 6.3 / 10.1 / 13.4 |
+| CPU (T5, 1.32.0, 24 threads) | | | 198 | | |
+
+With the app: 15 depth frames a second (model + resize per frame) and as fast as it goes, the app's per-second fps:
+
+| runtime, size | depth at 15/s: ms per frame | app fps median / min | as fast as it goes: depth/s | app fps median / min |
+|---|---|---|---|---|
+| CUDA 252 fp32 | 18.8 | 120 / 120 | 33 | 120 / 120 |
+| CUDA 392 fp32 | 26.8 | 120 / 117 | 34 | 120 / 120 |
+| CUDA 518 fp32 | 28.2 | 118 / 100 | 40 | 120 / 118 |
+| CUDA 392 fp16 | 27.3 | 120 / 113 | 39 | 117 / 100 |
+| DirectML 252 fp32 | 9.9 | 120 / 120 | 105 | 120 / 120 |
+| DirectML 392 fp32 | 16.1 | 120 / 118 | 60 | 120 / 120 |
+| DirectML 518 fp32 | 22.4 | 120 / 120 | 45 | 120 / 120 |
+| WebGPU 252 fp32 | 16.7 | 120 / 120 | 63 | 120 / 119 |
+| WebGPU 392 fp32 | 21.1 | 120 / 120 | 47 | 120 / 120 |
+| WebGPU 518 fp32 | 31.6 | 120 / 118 | 22 | 120 / 120 |
+
+(The app alone: 120 / 103..120.  Its GPU time read 0.56..0.9 ms in most phases and 2.8..3.8 ms in a few -- the lab's
+walk, not the model: the same phases as fast as it goes read lower.  The user's game was open on the GPU, 29..39 %
+load with the app alone.)
+
+*Quality* (`p8a_quality.py`, CUDA; sheet `C:\Users\Rene\Desktop\kaleido-wt\sheets\p6\p8a_live_depth_quality.jpg`).
+No video of the user's is in the project's `.screen` (only the app's own transtest.mp4), so: matplotlib's sample
+portrait (grace_hopper.jpg, a person before a flag -- webcam-like), a frame of the app's own render (Spout-like), and
+the snapshot photo; each made webcam-like (16:9 crop, 640 x 360 and back up, noise sigma 3/255, JPEG 75).  The person
+separates cleanly from the background at all three sizes; 252 loses the crystal facets of the photo (a blur with a
+dark centre), 392 shows them, 518 sharpest.  Flicker of a still camera (30 frames, fresh noise each; mean change of
+the stretched map per frame): portrait 0.4..0.65 %, photo 0.3..1.1 %, render 2.2..2.8 % -- after an exponential
+smoothing with weight 0.3: 0.1..0.7 %.  fp16 against fp32: 0.03..0.2 % of the range.
+
+*Answer.*  Yes: 10..15 depth frames a second are within reach of every GPU runtime at every size, and the app stayed
+at its 120 fps median in all of them; its minimum touched 100 in two phases (CUDA 518 at 15/s, CUDA 392 fp16 flat
+out), never below.  DirectML is the fastest here (3.3 ms at 252, 8.7 at 518, model alone), WebGPU close behind and
+the only small runtime that also runs on Linux (Vulkan); CUDA is no faster on this machine and costs 2.4 GB.  The
+CPU's resizing (6..15 ms, bicubic in Python) is more than the model on DirectML: in the app it belongs on the GPU (the
+frame is a texture already).  fp16 gains nothing here (DirectML slower, WebGPU fails), halves the file only.  For
+P8b, if the user wants it: 392 px, fp32, WebGPU (Windows + Linux, +44 MB + 99 MB model) or DirectML (Windows, +40 MB),
+the resize on the GPU, the map smoothed in time.  Before shipping: the licence terms of DirectML.dll and of
+dxcompiler/dxil.dll (not in the wheels).
+
+*Not measured:* other GPUs (an integrated or older card would be the real test of "beside the app"), the Linux
+WebGPU build, a real webcam stream, the C/C++ API (the Python wheels' DLLs are the same libraries).
+
+#### For the user
+
+- R11F_G11F_B10F as an option for small GPUs (half the extra memory, banding in the highlights): the switch exists
+  (`KALEIDO_HDR_FORMAT=r11`), not in the menu.
+- P8b (live depth for webcam and Spout): feasible as measured above; your decision.
+
+#### Files
+
+C++: Source/glcore.h, glcore.cpp, glwidget.cpp (the pass timer), RenderPipeline.cpp (marks, `hdrFormat()`),
+PresentPass.cpp/.h; shaders: Engine/CfxHistogram.comp, SafetyLimit.comp, LightMeasure.frag; Tools/perf_labs.py.  The
+measuring scripts (p6_measure, p6_ident, p6_identcmp, p6_ramp, p8a_export, p8a_bench, p8a_quality) stayed in the
+session's scratchpad; the ONNX files in `kaleido-wt\depthsrc\onnx_p8a\`, the runtimes in `kaleido-wt\depthenv_ort\`.
+
+### Three fixes: the breath lets go at the drop, a light cap, both photo slots in five 3D scenes
+
+Agent "fixes" (branch `wt-fixes` from phos-cues 8bc0a0cd).  Three small fixes the user decided on 27.11.2026, each its
+own commit.
+
+| fix | what | result |
+|---|---|---|
+| 1 | the held breath (final pass) is let go at the drop with the depth arc's envelope | 2c952f2a: where the breath is held at the hit (forced drops; 4 of the cue bench's drops) half-way 0.25-0.33 s after it instead of 0.6-3.6 s or never; the three demo drops unchanged (no breath at their hits); no flash count higher |
+| 2 | QuantumQubitArray's 16-bit light cap 1.2 -> 1.0 | 758e355e: 1.0 flashes/s -> 0.5, mean luminance 0.115 -> 0.097 -- both the 8-bit values |
+| 3 | ChromeForm's `photo()` and the tex0-only reflections of BloomSculpt, Detonation, MetaSculpt, Ocean mix both photo slots like img() | 52b922f6: compiles (shadercheck clean); the expected cross-fade difference did NOT show in the exports (the four byte-identical before/after, ChromeForm ~0.002) -- open |
+
+#### 1 -- the held breath lets go at the drop
+
+#### What was there
+
+- The breath (`breath`, Engine/Present.frag: desaturate 0.38, dim 0.13, a vignette 0.5 over the whole frame) gets its
+  value from Source/AudioConditioner.cpp: target clamp( ( buildUp - 0.5 ) x 2.2, 0, 1 ) x gate, slewed at 2.5/s.  It
+  follows the build-up only, so it lets go as the build-up falls -- the analyser's build-up has a ~1.2 s fall, and in
+  goa it stays near 0.45 for seconds after the drop.  Agent p2's depth arc (docs/engine-internals-71-p2.md, `arcP`)
+  clears 0.25-0.5 s after the hit; the breath then still held the frame (p2's "for the user").
+- The CinemaScope letterbox (the bars in the build-up) slews toward the same build-up target, at 12/s while the drop
+  pulse is above 0.4 -- so it, too, only opens as far as the build-up has fallen by 0.66 s after the hit.  Not
+  changed (see "for the user").
+
+#### The change
+
+The breath's target takes the arc's clearing envelope (tensionArc() in the five FX/FxDepth*-family files), computed in
+the conditioner from the same conditioned drop pulse the shaders get as `audioDrop` (max( drop pulse, DJ-stop slam )
+x gate; the score-cue pulse where cues are live; a forced drop):
+
+    clear  = ( 1 - smoothstep( 0.45, 0.8, dropPulse ) ) x smoothstep( 0.0005, 0.03, dropPulse )
+    target = clamp( ( buildUp - 0.5 ) x 2.2, 0, 1 ) x gate x ( 1 - clear )      -- slewed at 2.5/s as before
+
+- *A continuous envelope, never a jump.*  The pulse jumps from 0 to 1 at the hit; the envelope maps both to 0, so the
+  hit itself changes nothing.  Then the envelope rises as the pulse decays through 0.8..0.45 (tau 0.72 s: 10 % at
+  0.23 s, 50 % at 0.34 s, 90 % at 0.47 s), holds to pulse 0.03 (2.7 s) and is gone at 0.0005 (5.5 s): the breath
+  returns only if the build-up is still above 0.5 by then -- exactly when the arc tightens again.
+- *The slew stays.*  2.5/s was already the fastest the breath could let go (a build-up that fell at once); the
+  release is not faster than before, it starts earlier.  Simulated for a full breath (1.0) at 120 Hz: it starts to
+  fall 0.17 s after the hit, is half-way at 0.39 s (the arc: 0.34 s) and gone at 0.58 s; half a breath (0.5) is
+  half-way at 0.34 s, with the arc.  Score cues (tau 0.66): 0.38 / 0.57 s; a forced drop (tau 0.5): 0.33 / 0.53 s.
+- `KALEIDO_BREATH_DROP=0` keeps the old breath (for comparisons; README).  The app's KALEIDO_FEATURE_LOG got two
+  columns at its end (`dropFx` the conditioned pulse, `breath`), and `PresetEditor --features` two (`drop_c`,
+  `breath`) -- appended, so readers by name or by position keep working; Tools/analyzer_regress.py skips columns
+  its baseline does not have.
+
+#### Measured
+
+*The tool.*  `Tools/breath_drop.py` renders the stretches of p2's three cue demos (Tools/depth_arc.py: goa 15-90 s,
+uplifting 140-205 s, ostgut 120-192 s of the demo; PillarHall with FxDepthFog at arcP 1 -- the arc and the breath
+together; 960 x 540, 60 fps, KALEIDO_SEED 7, the snapshot photo, the user's settings in a private copy) once with
+`KALEIDO_BREATH_DROP=0` and once with 1, and reads per frame the breath the app computed and the conditioned drop
+pulse (KALEIDO_FEATURE_LOG), the frame's mean linear luminance and Tools/flash_count.py's count.  Because the three
+real drops turned out to have no breath at the hit (below), two more pairs force a drop (KALEIDO_FORCE_DROP, pulse
+tau 0.5 s) where the build-up is highest in the stretch: goa at 19.5 s, ostgut at 43 s.  Each export took 6-14 s.
+
+*The breath around each hit* (old -> new; "half-way" and "gone" in seconds after the hit):
+
+| drop | build-up at the hit | breath at the hit | 0.3 s after | 1 s after | half-way | gone |
+|---|---|---|---|---|---|---|
+| goa 64.50 s (real) | 0.48 | 0.000 | 0 -> 0 | 0 -> 0 | -- | -- |
+| uplifting 54.80 s (real) | 0.06 | 0.000 | 0 -> 0 | 0 -> 0 | -- | -- |
+| ostgut 61.45 s (real) | 0.34 | 0.000 | 0 -> 0 | 0 -> 0 | -- | -- |
+| goa 19.50 s (forced) | 0.85 | 0.766 | 0.741 -> 0.281 | 0.654 -> 0 | never (in 4 s) -> 0.27 | never -> 0.42 |
+| ostgut 43.00 s (forced) | 0.77 | 0.591 | 0.590 -> 0.136 | 0.501 -> 0 | never -> 0.25 | never -> 0.37 |
+
+- *At the three real drops nothing changes.*  The build-up the analyser gives is below 0.5 at each hit, so the breath's
+  target is 0 there and the breath had already let go (goa: 0.25 at -1.5 s, 0 from -0.5 s).  The two feature logs are
+  the same, frame for frame (uplifting: four frames 4.5 s after the hit differ by 0.0001, where the build-up crosses
+  0.5 while the envelope's tail is still above 0).  p2's "lingers about a second" is what the code does when the
+  build-up is high at the hit -- which on these three demos it is not.
+- *Where the breath is held at the hit it now goes with the arc.*  The forced drops: the old breath follows the
+  build-up, which stays at 0.8 (goa) and 0.7 (ostgut) -- one second later it still holds 85 % of itself, and 3 s later
+  70 %.  The new one falls at the slew's 2.5/s from 0.17 s after the hit (the forced pulse's envelope is faster than a
+  real drop's: 10 % at 0.16 s, 90 % at 0.33 s) and is gone at 0.42 / 0.37 s.  As the clearing ends (from 2 s; gone at
+  ~3.8 s with tau 0.5) the breath returns where the build-up is still above 0.5 (goa: 0.22 at +2 s, 0.54 at +3 s,
+  the old 0.55): the same as the arc, which tightens again then.  A forced drop in the middle of a build is the
+  extreme case; at a real drop the build-up has fallen by then.
+- *A wider look without rendering* -- the cue bench's feature files (main checkout, .screen/cuebench, 20 rows/s, an
+  older analyser state), the conditioner's arithmetic replayed offline: 24 analyser drops in 11 of the tracks; the
+  breath is 0 at 20 of them and above 0.05 at 4 (BreakbeatGenerator skank 0.78 and 0.39, stomp 0.23 and 0.49).  At
+  those four the old breath took 0.6-3.6 s to get half-way (two not at zero after 4 s); the new 0.31-0.37 s, gone at
+  0.54-0.55 s.  The same through the real analyser and conditioner of this build (`Tools/breath_drop.py features`,
+  PresetEditor --features, 10-ms rows, the switch at 0 and 1; whole tracks): goa 2 drops, uplifting 2, ostgut 1 --
+  breath 0 at every hit (build-up 0.00-0.48); BreakbeatGenerator skank 153.67 s (build-up 0.86, breath 0.79): half-way
+  old 1.19 / new 0.31 s, zero 2.03 / 0.49 s; skank 291.90 s (0.68 / 0.39): 0.60 / 0.28, 1.04 / 0.46; stomp 163.14 s
+  (0.60 / 0.23): 2.32 / 0.33, never / 0.47; stomp 296.57 s (0.72 / 0.50): 3.62 / 0.30, never / 0.48.
+
+*Flashes and light* (Tools/flash_count.py on each 60-fps export, old -> new): goa 0.5 -> 0.5, uplifting 0.5 -> 0.5,
+ostgut 0.5 -> 0.5, goa forced 0.5 -> 0.5, ostgut forced 1.0 -> 1.0 -- no count higher.  The mean luminance of the
+exports moves by at most +0.0001 (forced drops); in the release the frame is up to +0.008 brighter than the old one
+for the 1.5 s the old breath still held it.  The largest frame-to-frame rise of the mean luminance in the 2 s after
+each hit is the same in both (goa forced 0.0214, ostgut forced 0.0161): the drop's own hit is brighter than the
+breath's release.  The three real-drop exports: goa and ostgut byte-identical frame for frame, uplifting 348 frames
+with small differences around 59 s (the 0.0001 above).  The fastest fall of the breath in the feature logs: 2.5/s
+(the slew), old 0.32/s.
+
+Sheet: `C:\Users\Rene\Desktop\kaleido-wt\sheets\fixes\f1_breath_curves.jpg` (per hit, 10 s before to 6 s after: the
+breath old grey / new gold, the build-up, the drop pulse, the mean luminance new - old).
+
+#### 2 -- QuantumQubitArray's light cap 1.2 -> 1.0
+
+*What there was.*  docs/engine-internals-70-defaults.md, B: QuantumQubitArray (a solid 3D scene with open light)
+flashed 2.5 times a second with 16-bit intermediates against 0.5 with 8 bit; agent "defaults" capped its frame at 1.2
+(`// @hdrcap 1.2`, RenderPipeline::capSceneLight(), GL_MIN over the finished frame, 16 bit only) and measured 1.5
+then.
+
+*The change.*  The cap line reads 1.0.  An 8-bit frame is never capped, so the old (8-bit) picture is unchanged.
+
+*Measured* the way "defaults" did -- `Tools/flash_count.py QuantumQubitArray` (the scene alone, 20 s of the screening
+music at 60 fps, 960 x 540, KALEIDO_SEED 7, the snapshot photo; the worst second of the nine quarter windows), the
+same exe and settings for all three (a dummy variable in the environment only names the files):
+
+| run | flashes/s | seconds above 3 | mean luminance |
+|---|---|---|---|
+| 8-bit intermediates (`KALEIDO_HDR_BUFFERS=0`) | 0.5 | 0 % | 0.097 |
+| 16 bit, cap 1.2 (before) | 1.0 | 0 % | 0.115 |
+| 16 bit, cap 1.0 (after) | 0.5 | 0 % | 0.097 |
+
+With the cap at 1.0 the count and the mean luminance are the 8-bit ones.  ("defaults" counted 1.5 at 1.2 on the build
+of that morning; this build counts 1.0 -- one second's pair either way.)  Not looked at: the frames themselves.
+
+#### 3 -- the two photo slots in ChromeForm, BloomSculpt, Detonation, MetaSculpt, Ocean
+
+#### What was there
+
+The photo slots: tex0 is the photo on screen, tex1 the next; `interpolation` runs 1 -> 0 through a photo cross-fade,
+then the slots swap and it is 1 again (RenderPipeline.cpp, the texture state machine).  img() and the photo
+environment of U1 (`envPhoto()`) mix `interpolation x tex0 + ( 1 - interpolation ) x tex1`.  Section (69), U1, found
+two old-look defects (envP 0) and left them for the user:
+
+- ChromeForm's own `photo()` mixed `mix( tex1, tex0, 1 - interpolation )`: tex1 at rest -- the NEXT photo -- moving
+  backward to tex0 during a fade, and a jump at both ends of each fade (and once more when the loader puts the next
+  photo into tex1).
+- BloomSculpt, Detonation, MetaSculpt and Ocean read tex0 alone for their reflection: through a photo fade the
+  reflection kept the old photo and jumped to the new one when the slots swapped.
+
+#### The change (old look, envP 0 path)
+
+- ChromeForm: `mix( tex1, tex0, interpolation )` -- the one word.
+- BloomSculpt, Detonation, MetaSculpt: `envPhoto( fract( env_uv ), 0.0 )` (U1's helper in the same file: both slots
+  with `interpolation`, textureLod, mip 0 as before; Detonation's lookup sits in a pixel-dependent branch and keeps
+  the explicit lod).  Ocean: the same mix written out with `texture()` (its implicit-derivative lookup as before).
+- The equirect seam and the mip-0 shimmer of the old lookups stay: that is the envP > 0 look's job.
+- At rest (`interpolation` exactly 1.0) the four reflections are tex0 exactly (1 x a + 0 x b): their picture changes
+  only during a photo fade.  ChromeForm's changes at rest too: it now shows the photo on screen.
+
+#### Measured
+
+*The tool.*  `Tools/photo_fade.py` renders one scene alone as a video export (50 s of the screening music, 60 fps, 960
+x 540, KALEIDO_SEED 7, the user's settings in a private copy) from a folder of three photos (-f; green, indigo, orange
+copies in .screen/photofade/photos) with KALEIDO_PHOTO_SECS=3, and measures each frame's mean absolute change from the
+frame before.  The old files ran from their own paths (swapped in for the before run; the rolls are seeded with the
+path), the new ones after.  The logs: the green photo first, indigo next, the first fade 15-35 s (the program's first
+photo always stays 15 s and fades 20 s), then orange.
+
+*Result -- the expected difference did not show.*  BloomSculpt, Detonation, MetaSculpt and Ocean: the before and after
+exports are byte-identical (the same MD5, 3000 frames each), so in these renders the new mix gave exactly what tex0
+alone gave, through the 20-s photo fade too.  ChromeForm: before and after differ by a mean of ~0.002 (of 1) at every
+sampled frame, at rest as much as in the fade; both runs show the green photo in its room at 0-30 s and indigo from
+~32 s -- where the old formula should have shown the next photo at rest.  The spikes the measure finds (17.4, 31.8,
+40.5 s) are the scene's own re-activations (drop cuts to the same scene, the log's SEEDED lines), the same in both.
+
+So either the 3D scenes get the same photo in both slots during their draws (then tex0 alone was never wrong for them,
+and U1's "jump at every photo change" does not happen in practice), or the photo fade did not reach the 3D pass in
+these exports.  Not resolved in the time: the units are bound act -> 0, next -> 1 in RenderPipeline.cpp (~3315) and
+Scene3DShader::setUniforms() passes `interpolation` like the 2D path; the 3D scenes write `interpolation` as their
+alpha.  The change is committed because it is what img() does and is exact at rest; whether it changes any picture is
+open (see "not verified").  No before/after sheet: there is nothing different to show.
+
+#### Checks
+
+- Build (app and editor): 0 warnings.  `Tools/analyzer_regress.py`: as the baseline (chord changes 24 of 38, 4 false;
+  drops 3 of 3; 127.9 / 120.0 BPM).  It does not cover the breath: its checks are the analyser's counts and the
+  feature columns of `PresetEditor --features`, which had no breath column -- the new `breath` and `drop_c` columns
+  are skipped until a baseline update writes them (`--update`, left to the analyser's owner).
+- `Tools/check_schedule.py --quick`: 20 plans, 0 violations.
+- `Tools/temporal_budget.py`: 0 errors, 4 warnings; `Tools/shake_scan.py --summary --baseline`: 0 new, 74 known (as
+  on 8bc0a0cd).  `Tools/doc_shaders.py --check`: nothing to change; `Tools/cgvr_format.py --check` on the six shaders
+  and four C++ files: same (AudioConditioner.cpp formatted once, one declaration's alignment);
+  `Tools/check_strings.py`: OK (no new strings).
+- `Tools/shadercheck.py --new 8bc0a0cd`: 6 files (the five scenes and QuantumQubitArray), compiled by the driver, 0
+  errors, 0 warnings.
+- The self test (`Release\Kaleidoscope.exe -q`, this build): 186 passed, 0 failed.
+- No render log of the exports has an error line.
+
+#### Tried and dropped
+
+- *The breath's output times ( 1 - clear ) instead of its target* -- the arc's timing to the frame, but the picture
+  could then brighten as fast as the envelope falls (up to 3.8/s of the breath at 120 Hz, against the slew's 2.5/s,
+  which bounded every release so far).  With the target the release starts at the same moment and lags the arc by
+  0.05 s at half-way for a full breath, none for half a breath.
+- *Photo changes in a 24-s export* (the first photo_fade runs): no photo changed.  The program's first photo stays
+  15 s and fades over 20 s whatever KALEIDO_PHOTO_SECS says (RenderPipeline's constructor values; the switch sets
+  the ranges rolled after the first swap), so the first swap comes at ~35 s.  The tool renders 50 s now.
+- *The cue demos through `PresetEditor --features`*: the generators' demos on G: are 32-bit float WAVs, which the
+  editor's WAV reader refuses (exit 1 at once); breath_drop.py takes 16-bit copies (ffmpeg, .screen/p2arc).
+
+#### For the user
+
+- *The letterbox* (the CinemaScope bars that creep in during a build-up) still slews toward the build-up's own
+  target: it opens at 12/s while the drop pulse is above 0.4, but only as far as the build-up has fallen -- where the
+  build-up is held to the hit, the bars stay after the breath has let go.  The same factor ( 1 - clear ) on its target
+  would open them with the breath; not done, it was not part of the decision.
+- *Where the breath change shows.*  The breath only lingers where the analyser's build-up is still above 0.5 at the
+  hit.  On p2's three demos it is not (the build-up falls before the drop), on the cue bench at 4 of 24 drops.  Whether
+  the build-up should hold up to the hit is the analyser's question (agent "analyzer").
+- *ChromeForm's old look changes at rest*: its room now carries the photo on screen, not the next one -- the intended
+  correction, but it is a different picture in all of its 11 entries.
+- *QuantumQubitArray*: 1.0 reaches the 8-bit count; nothing to decide unless the frames look too flat (not looked at).
+
+#### Not verified
+
+- Fix 3's effect: not shown (above).  Worth a check of the photo slots in a 3D scene during a fade (a 3D scene that
+  writes `texture( tex1, uv )` straight to the screen) before anyone builds on U1's "jump".
+- Fix 1 with score cues (`-k`, tau 0.66 s) and DJ-stop slams: computed, not rendered; with real music over a show, on
+  the panel and in the headset -- the user's.  The letterbox interplay (bars staying while the breath lets go where
+  the build-up is held) not rendered.
+- Fix 2: only the one 20-s count; no frames looked at, no other photo or music.
+- GPU time: not measured (fix 1 is a few CPU flops a frame; fix 3 adds one texture read in four scenes' old path).
+
+### A second build-up signal (off by default)
+
+Agent "buildup", branch `wt-buildup` from phos-cues 8bc0a0cd.  Agent p2 found (docs/engine-internals-71-p2.md) that
+the analyser's build-up (`AudioFeatures::buildUp` -> `audioBuildUp`) reads 0.11 inside the build of the "uplifting"
+cue demo and higher in goa's groove (0.59) than in its first build (0.40).  The depth arc (P2), the final pass's held
+breath, the scheduler's drop cut and the drop detector's arming all hang on it.  This package measures it against the
+generators' score cues, and builds a second signal from what the literature names as the marks of a build-up.
+
+| step | what | result |
+|---|---|---|
+| measure | Tools/buildup_lab.py: the signal against the Build sections that run into a drop, 41 demos | the old signal: AUC builds vs grooves 0.53 (chance), it FALLS inside the builds (corr. with time -0.09), 10 of 17 drops armed |
+| new signal | the groove's bass gone x the top rising (Source/AudioAnalyzer.cpp), port in the lab (matches) | EDM builds (C++): AUC 0.53 -> 0.92, rise -0.09 -> 0.50, armed 10 -> 16 of 17, groove time above 0.45 6.3 % -> 0.8 % |
+| default | new one only if better on every demo | not on every demo (Cinematic/Ritual crescendos, two breakdowns): **shipped off**, `KALEIDO_OLD_BUILDUP=0` turns it on |
+
+#### What was there
+
+The build-up (AudioAnalyzer.cpp, "Build-up / drop detection") adds four "rises", each a fast average (tau ~1.5 s)
+over a slow one (~10 s): onset rate (x0.45 per onset/s), the smoothed spectral centroid (x3), the level ratio
+(x0.5, capped), and a leaky snare-roll density (the snare band group's onset envelope, x0.6); times the music gate,
+then smoothed (0.5 s up, 1.2 s down).  A value above 0.45 arms the drop detector's vacuum path for 8 s, and the
+scheduler cuts on its rising edge past 0.45.
+
+Why it misses: every term is a *change* -- a fast average pulling above a slow one.  It fires where something new
+enters (a groove's new layer as much as a build's first snare) and decays while a build goes on, because after a few
+seconds the slow average has caught up.  A build-up is not a change but a *state* that ramps: the groove's foundation
+taken away while the top climbs toward the drop.
+
+#### The measure (Tools/buildup_lab.py)
+
+The 43 demos of the frozen cue set (Tools/analyser_cue_set.txt; their 16-bit copies and feature files in
+.screen/cuebench, as Tools/analyser_vs_cues.py makes them; seconds, not blocks).  From the cues:
+
+- *builds*: the Build section that runs into a drop (a `/phos/drop` cue or a Drop section; a short Break of < 10 s
+  between them allowed, the cinematic "vacuum"), from its start (>= 12 s) to the drop.  At most 80 s: the EDM kind
+  (Breakbeat block/nuskool/riot/skank/stomp, Psytrance goa, Techno ostgut, Trance uplifting, Berlin School cosmic:
+  17 builds in 9 demos).  Longer ones (the Cinematic crescendos of 130-170 s, the Ritual intros of 90-260 s; 11) are
+  listed apart as "long".
+- *grooves*: the Groove sections (from 12 s on), 35 demos, 8,787 s.
+
+Per demo: `inB`/`inG` the mean in builds / grooves; `auc` P(random build block > random groove block); `aucX` the same
+against all time outside the builds (breaks, intros, outros and drops count against it); `rise` the correlation of the
+signal with time inside each build (does it climb toward the drop?); `pre` its mean over the last 4 s before the
+drop; `arm` drops whose last 8 s see it above 0.45; `falseG` / `falseX` the share of groove time / of all non-build
+time above 0.45.
+
+#### The old signal, measured (C++ feature files, every 50 ms)
+
+| demo | inB | inG | auc | aucX | rise | pre | arm | falseG |
+|---|---|---|---|---|---|---|---|---|
+| BerlinSchool cosmic | 0.27 | 0.62 | 0.05 | 0.30 | -0.30 | 0.21 | 0/1 | 0.825 |
+| Breakbeat block | 0.27 | 0.34 | 0.29 | 0.36 | -0.44 | 0.20 | 1/2 | 0.110 |
+| Breakbeat nuskool | 0.22 | 0.25 | 0.37 | 0.31 | -0.39 | 0.15 | 0/2 | 0.003 |
+| Breakbeat riot | 0.36 | 0.34 | 0.61 | 0.64 | -0.20 | 0.32 | 2/3 | 0.172 |
+| Breakbeat skank | 0.67 | 0.30 | 0.88 | 0.89 | 0.92 | 0.95 | 2/2 | 0.083 |
+| Breakbeat stomp | 0.48 | 0.36 | 0.74 | 0.77 | 0.94 | 0.66 | 2/2 | 0.099 |
+| Psytrance goa | 0.47 | 0.59 | 0.27 | 0.78 | 0.45 | 0.60 | 2/2 | 0.836 |
+| Techno ostgut | 0.49 | 0.25 | 1.00 | 0.95 | -0.97 | 0.36 | 1/1 | 0.000 |
+| Trance uplifting | 0.26 | 0.28 | 0.53 | 0.50 | -0.84 | 0.22 | 0/2 | 0.000 |
+| **mean, EDM builds** | 0.39 | 0.37 | **0.53** | 0.61 | **-0.09** | 0.41 | **10/17** | |
+| mean, long builds (11) | 0.23 | 0.18 | 0.54 | 0.63 | -0.06 | 0.21 | 1/11 | |
+
+Outside the builds 5.7 % of the time above 0.45 (mean over 41 demos), 6.3 % of all groove time.  In words: between
+builds and grooves the signal is at chance; in six of nine demos it falls while the build runs; it arms the drop
+detector for 10 of 17 drops; in cosmic and goa it sits above 0.45 for 83 % of the groove.
+
+#### Candidate inputs (`--features`)
+
+Each causal, per 10-ms block, on the analyser's own 32 log bands (the 2048-point Hann FFT per 480-sample block that
+Tools/drum_lab.py computes exactly as the C++), separation on the 9 EDM demos (mean AUC builds vs grooves / mean
+correlation with time inside the builds):
+
+| input | auc | rise | |
+|---|---|---|---|
+| the bass (bands 0..7) under its groove level (the drop detector's measure) | 0.92 (min 0.68) | 0.54 | the groove's foundation taken out |
+| the top's share (bands 20..31 in dB of the total) | 0.92 (min 0.47) | 0.64 | |
+| the centroid (power-weighted band index) | 0.88 (min 0.36) | 0.56 | |
+| the centroid rising (1-s over 6-s average) | 0.69 (min 0.53) | 0.53 | filter sweep |
+| the top rising (1-s over 6-s average, in dB) | 0.68 | 0.32 | riser |
+| the level rising | 0.29 | -0.31 | builds get *quieter* when the bass leaves |
+| the high band flux (onset density proxy) | 0.37 | -0.23 | |
+
+The level ramp and the onset density -- two of the old signal's four terms -- point the wrong way on these demos.
+
+#### The design (Source/AudioAnalyzer.cpp, "The build-up, new")
+
+    gap   = clamp( ( groove - bass_fast - 6 dB ) / 24 dB )      the drop detector's own fast bass and groove level
+    c     = clamp( ( centroid_1s - centroid_6s ) / 1.5 bands )  over bands 8..31 (above the bass)
+    h     = clamp( ( top_1s - top_6s ) / 3 dB )                 top = bands 20..31 (2.9-16 kHz) in dB of bands 8..31
+    raw   = max( gap x ( 0.2 + 0.8 x max( c, h ) ),  0.5 x min( c, h ) ) x musicPresence
+    new   = raw smoothed 0.5 s up, 1.2 s down (as the old one)
+
+- *The gap is the context, the rise the build.*  A breakdown also takes the bass out; weighted by the rise, a flat
+  breakdown reads 0.2 x gap, a breakdown whose top climbs reads up to 1.  The gap uses the drop detector's state
+  (m_dropBassFast, the 45-s groove level), so the build-up and the drop agree on what "the bass is gone" means.
+- *Above the bass.*  With the centroid and the top's share over all 32 bands, the bass leaving *is* a brightening:
+  the first seconds of every breakdown read as a rising sweep (goa's break 108-114 s: 0.91).  Over bands 8..31 only,
+  falseX fell from 8.5 % to 4.1 %.
+- *A build that keeps its bass* (Psytrance: goa's second build has the rolling bass up to the drop, only a riser on
+  top) counts by the rise alone -- both the centroid and the top rising (min), at half weight: a hat entering a groove
+  lifts the top but rarely both for seconds.  With it goa's second build arms (2/2), falseG 0.6 % -> 0.8 %.
+- *The old signal still arms the drop detector* and is still computed: the drops (engine-internals (62)) do not move.
+- Cost: one pass over 24 bands and four averages per block.
+
+Literature: R. T. Solberg, "Waiting for the bass to drop": correlations between intense emotional experiences and
+production techniques in build-up and drop sections of electronic dance music, Dancecult 6(1), 2014 (the build-up's
+techniques: bass and kick removed, rising filter sweeps and risers, snare rolls); M. J. Butler, Unlocking the Groove,
+Indiana University Press 2006 (the breakdown/build-up/drop form); K. Yadati, M. Larson, C. Liem, A. Hanjalic,
+"Detecting drops in electronic dance music: content based approaches to a socially significant music event",
+ISMIR 2014 (drops found from the contrast of the segments around a structural boundary -- the same contrast the gap
+measures causally).
+
+#### Results
+
+The C++ (`PresetEditor --features` with `KALEIDO_OLD_BUILDUP=0`, every 50 ms; the lab port gives the same means):
+
+| demo | inB | inG | auc | aucX | rise | pre | arm | falseG |
+|---|---|---|---|---|---|---|---|---|
+| BerlinSchool cosmic | 0.03 | 0.02 | 0.71 | 0.34 | 0.21 | 0.07 | 0/1 | 0.000 |
+| Breakbeat block | 0.66 | 0.02 | 1.00 | 0.97 | 0.63 | 0.70 | 2/2 | 0.000 |
+| Breakbeat nuskool | 0.39 | 0.04 | 1.00 | 0.90 | 0.36 | 0.48 | 2/2 | 0.000 |
+| Breakbeat riot | 0.75 | 0.04 | 1.00 | 0.98 | 0.91 | 0.99 | 3/3 | 0.000 |
+| Breakbeat skank | 0.60 | 0.02 | 1.00 | 0.95 | -0.04 | 0.43 | 2/2 | 0.000 |
+| Breakbeat stomp | 0.47 | 0.05 | 0.99 | 0.92 | 0.65 | 0.62 | 2/2 | 0.000 |
+| Psytrance goa | 0.24 | 0.04 | 0.66 | 0.60 | 0.72 | 0.61 | 2/2 | 0.011 |
+| Techno ostgut | 0.33 | 0.06 | 0.99 | 0.85 | 0.56 | 0.37 | 1/1 | 0.000 |
+| Trance uplifting | 0.22 | 0.04 | 0.92 | 0.79 | 0.55 | 0.33 | 2/2 | 0.000 |
+| **mean, EDM builds** | 0.41 | 0.04 | **0.92** | **0.81** | **0.50** | 0.51 | **16/17** | |
+| mean, long builds (11) | 0.11 | 0.07 | 0.51 | 0.53 | 0.11 | 0.22 | 4/11 | |
+
+Outside the builds 4.4 % of the time above 0.45 (old 5.7 %), groove time 0.8 % (old 6.3 %).  Per demo the groove
+time above 0.45 is at most 3.6 % in the demos without a build (Ritual didgeridoo; old 0.1 %; Breakbeat bristol 2.9 %,
+old 0) and 5.5 % in the Ritual serpent's grooves (old 0.8 %); it fell in the Analemma pieces (e.g. ancestors 11.0 ->
+2.6 %, didgeridoo 20.3 -> 0 %) and in Cinematic drift (24.6 -> 0 %).
+
+*Where it is worse*, demo by demo (the reason the default stays old):
+- aucX of goa (0.78 -> 0.60) and ostgut (0.95 -> 0.85): their breakdowns read high now (the bass gone, the top
+  rising as the break opens) -- by the old signal they read low.  Against the grooves both are better or equal.
+- skank: the rise inside the build (0.92 -> -0.04) and `pre` (0.95 -> 0.43): its build is loud from its first bar
+  and the riser does not climb further; the old onset term climbed with its snare roll.
+- uplifting's mean inside the build (0.26 -> 0.22), though the shape is now right (rise -0.84 -> 0.55, auc 0.53 ->
+  0.92, both drops armed).
+- The long builds (Cinematic crescendos, Ritual intros): aucX 0.63 -> 0.53.  They keep their bass and swell in level
+  over minutes; the new signal does not look at the level (and a level term does not help: tried and dropped).
+
+#### Verification
+
+- *The port against the C++* (`PresetEditor --features WAV x.csv --buildup-trace T`, then `buildup_lab.py --check T
+  WAV`) on goa, uplifting and block: the new build-up within 0.004 of the C++ (uplifting 0.00001); fast bass,
+  centroid, top share and both rises within 1e-4..1e-2.  One port detail mattered: the drop detector's half-second
+  slots add the block length in float32, which at 48 kHz takes 51 blocks, not 50 (the groove level differed by 2.3 dB
+  in uplifting until the port counted the same way).  The groove level still differs at single blocks of goa and
+  block (where a slot ends exactly on the boundary); the build-up does not show it.
+- *Identity* (all `--features` columns every 10 ms, broadband120.wav and goa): this build at its default against
+  `KALEIDO_OLD_BUILDUP=1` -- identical in every column; against `KALEIDO_OLD_BUILDUP=0` -- only `buildup` differs
+  (99.6 / 99.95 % of the rows).  Against the main checkout's editor (built 13:02 from a state I could not pin down)
+  every column but `hat_c` is identical; this diff touches no drum code.
+- *Self test* (`Kaleidoscope.exe -q`): 186 passed, 0 failed at the default and with `KALEIDO_OLD_BUILDUP=0`.
+- *Tools/analyzer_regress.py* at the default: as the baseline (chords 24/38 with 4 false, drops 3/3, tempo 127.9 and
+  120.0 BPM).  Not run with `KALEIDO_OLD_BUILDUP=0` (its baseline holds the old build-up column).
+- *Tools/check_schedule.py --quick*: 20 plans, 0 violations at the default and with `KALEIDO_OLD_BUILDUP=0`.  With
+  the new build-up the scheduler's drop cuts land on a staged spectacle more often (its "drop ahead" fires on the
+  build-up's rising edge past 0.45), on the synthetic structure track: Electronic 264/288 -> 273/280, Psytrance
+  206/221 -> 213/220, Psychedelic 192/205 -> 200/206, Noir 292/306 -> 306/310, Allround 254/269 -> 252/258
+  (92-95 % -> 97-99 %).  The number of changes moves by -0.7 to -4.7 %; the silence plans are unchanged.
+
+#### Not done, next steps
+
+- Tell a breakdown from a build inside the gap.  Both lose the bass; the build's top keeps climbing to the drop, the
+  breakdown's settles.  The hold above (rise and pre up, falseX up) shows the gain is there once the breakdowns are
+  kept out -- e.g. by the time since the gap opened (a build is the LAST 8-30 s of a gap) or by the onset density
+  accelerating (the separator's snare hits per second rising: the snare roll that skank's build ends with).
+- The crescendos (Cinematic, Ritual): not a level ramp (dropped above).  What the old signal sees there (aucX 0.63)
+  should be taken apart term by term from a trace of its four terms before anything is built for them.
+- The real tracks: the seven hand-labelled tracks of the drop round (memory note audio-analysis-answer-key) have drop
+  times but no build sections; their last 8 s before each drop would give an `arm` count on real music.
+- Whether the drop detector should be armed by the new signal (16/17 vs 10/17 armed builds) -- a change to the drop
+  numbers of (62), to be measured with Tools/analyser_vs_cues.py.
+
+#### For the user
+
+- Switch the new build-up on by default?  It is far better on the EDM builds (the shape the depth arc, the breath and
+  the drop cut want: low in the groove, climbing to the drop) and worse on slow crescendos and on some breakdowns.
+  `KALEIDO_OLD_BUILDUP=0` shows it in the app.
+
+#### Tried and dropped
+
+All in the lab (`--param`; the experimental knobs stay in Tools/buildup_lab.py, default off, not in the C++):
+
+- Centroid and top share over all 32 bands: the bass leaving reads as a sweep (falseX 7.8 % against 4.1 % above the
+  bass, both with the floor 0.2; 8.5 % against 5.2 % with 0.35).
+- A floor of 0.35 for the gap (a breakdown reads 0.35 without any rise): falseX 5.2 % against 4.1 %; 0.2 kept.
+- The rise alone without a gap at weight 0.5 with max( c, h ): falseG 0.6 % -> 6.8 %; with min( c, h ) 0.8 %.
+- Centroid scale 1.0 band instead of 1.5: rise +0.05, falseX +1.3 points; 1.5 kept.
+- The old snare-roll density times the gap (`w_roll` 0.6 / 0.9, the band-group snare envelope ported from
+  drum_lab.Old): EDM aucX 0.81 -> 0.81 / 0.82, rise 0.50 -> 0.50 / 0.47 -- nothing; skank's late climb is not in it.
+- Holding the rise while the gap lasts (`hold` 4 / 10 s, so that a riser that has stopped climbing still counts):
+  rise 0.50 -> 0.57 / 0.59, pre 0.51 -> 0.57 / 0.61, but falseX 4.4 % -> 5.6 / 6.5 % -- the breakdowns hold too.
+  The most promising of the dropped ones; with a break/build distinction it may come back.
+- Other averages for the rise (`tf`/`ts` 1/12, 2/6, 2/12 s instead of 1/6): 1/12 rises better (0.58) and arms
+  earlier (pre 0.63) but doubles the false time in grooves (1.7 %, falseX 6.0 %); 2/6 halves it (0.4 %, 2.9 %) but arms
+  only 13 of 17; none brings goa's and ostgut's breakdowns or the crescendos to the old aucX.
+- A slow loudness ramp for the crescendos (`w_lvl` 0.5 / 0.8, 4-s over 20-s / 40-s level): long builds' aucX at best
+  0.65 (old 0.63), but groove time above 0.45 9.5-28 % and EDM AUC 0.41-0.68 -- every intro and every new layer is a
+  ramp.  The old signal's 0.63 on the crescendos is not a level effect alone.

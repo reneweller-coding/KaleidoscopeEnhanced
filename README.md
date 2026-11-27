@@ -39,7 +39,7 @@ used as a shadow puppet, and a hardware-tessellated fjord under the northern
 lights.*
 
 **Highlights**
-- 2,475 scenes + 30 overlay effects + 210 scene transitions, all audio-reactive
+- 2,475 scenes + 30 overlay effects + 217 scene transitions, all audio-reactive
   and image-driven — see the [scene catalogue](docs/Catalog/Katalog.md).
 - Real signal analysis (beat/onset detection, key & mood, song-structure
   tracking) drives the visuals, not a generic FFT bar graph — see
@@ -467,7 +467,7 @@ shader yields many different looks over a session rather than repeating
 itself identically.
 
 **[Browse the full scene catalogue](docs/Catalog/Katalog.md)** — all 2,475
-scenes, 30 overlay effects and 210 transitions, each with a description and
+scenes, 30 overlay effects and 217 transitions, each with a description and
 three example frames. A printable `Katalog.pdf` ships with every release.
 The same catalogue as a page with search and filters by kind, genre preset
 and mood is online at
