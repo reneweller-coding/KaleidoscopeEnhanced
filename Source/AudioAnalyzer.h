@@ -427,6 +427,7 @@ private:
     float m_sStBand[2][3] = {}; ///< Smoothed [L/R][low/mid/high] per-channel band energies.
     float m_balNum = 0.f;       ///< Slow average of the channels' energy difference R - L (stereoBalance).
     float m_balDen = 0.f;       ///< Slow average of their energy sum L + R (the balance's denominator).
+    float m_balSmooth = 0.f;    ///< Their ratio, smoothed once more (~0.6 s): AudioFeatures::stereoBalance.
 
     // ---- Track-change detection (sustained silence -> first onset) ----
     float m_silenceFrames = 0.f; ///< Consecutive near-silent update cycles.
