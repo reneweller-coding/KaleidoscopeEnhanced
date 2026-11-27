@@ -4176,13 +4176,14 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
             pin.photoWin[1] = EffectShader::windowDepth( EffectShader::M_PhotoDepthDist[1] );
         }
         // ---- rays (27.11.2026): light shafts through the photo's depth (Engine/Present.frag, raysLight()) -- BEGIN
-        // ---- The active scene's preset knob `raysP` (0 where its entry has none) times "a photo's depth is up",
+        // ---- The active scene's preset knob `depthRaysP` (0 where its entry has none; not `raysP`, which two older
+        // scenes, AnticrepuscularRays and CrepuscularRaysForest, use for their own rays) times "a photo's depth is up",
         // slewed at 1.2/s: neither a scene change nor a photo with or without a map makes the light jump.
         // KALEIDO_RAYS=<x> forces the knob for every scene (to look at it: the presets do not set it).
         {
             static const QByteArray RaysEnv = qgetenv( "KALEIDO_RAYS" );
             const float knob = RaysEnv.isEmpty()
-                                   ? m_effectTextures[m_scheduler.actTexture()]->namedParameter( "raysP", 0.f )
+                                   ? m_effectTextures[m_scheduler.actTexture()]->namedParameter( "depthRaysP", 0.f )
                                    : RaysEnv.toFloat();
             const float             up = full_src ? 0.f : EffectShader::M_DepthPhoto[0] * EffectShader::M_DepthValid[0];
             m_raysUp = slewToward( m_raysUp, ( knob > 0.f ? knob : 0.f ) * up, 1.2f, dtWall );

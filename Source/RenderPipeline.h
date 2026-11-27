@@ -1653,7 +1653,7 @@ private:
     float m_photoDepthUp = 0.f;  ///< slewed 0..1 "the active scene passes a photo's depth on" (plan T3): the photo's
                                  ///< parallax and its share in the stereo, eased like m_trailDepth3D.
     float m_raysUp = 0.f; ///< slewed strength of the light shafts through a photo's depth (rays, 27.11.2026): the
-                          ///< active scene's preset knob raysP x "a photo's depth is up".
+                          ///< active scene's preset knob depthRaysP x "a photo's depth is up".
     float m_meshUp = 0.f; ///< slewed 0..1 "a loaded-model scene is up" — damps the time echo, whose scaled ghost reads
                           ///< as a fault on a solid object.
     float m_meshHoldSecs = 0.f; ///< How long the current fade has been held waiting for an async mesh warm-up; releases
