@@ -302,18 +302,22 @@ def frozen(scenes, fxs, label):
     out = os.path.join(WORK, "frozen_" + label)
     os.makedirs(out, exist_ok=True)
     bl = blocks()
-    old_dir = os.path.relpath(os.path.join(ROOT, ".screen", "fxold"), os.path.join(ROOT, "Presets"))
     same_n = 0
     for sc in scenes:
         for fx in fxs:
-            new_blk = re.sub(r'[ \t]*<float name="arcP"[^>]*>\s*</float>[ \t]*\n', "", bl[fx])
-            head, rest = new_blk.split(">", 1)
-            path = os.path.join(old_dir, fx + ".frag").replace("/", "\\")
-            old_blk = re.sub(r'file="[^"]*"', lambda _m: 'file="%s"' % path, head) + ">" + rest
+            blk = re.sub(r'[ \t]*<float name="arcP"[^>]*>\s*</float>[ \t]*\n', "", bl[fx])
+            target = os.path.join(ROOT, "FX", fx + ".frag")
+            new_src = io.open(target, "rb").read()
             pics = []
-            for kind, blk in (("old", old_blk), ("new", new_blk)):
+            for kind in ("old", "new"):
                 f = os.path.join(out, "%s_%s_%s.jpg" % (sc, fx, kind))
-                r = ss.shoot(bl[sc], blk, f, PHOTO, 60)
+                try:   # the old shader from the effect's own path (the rolls are seeded with it)
+                    if kind == "old":
+                        io.open(target, "wb").write(io.open(os.path.join(ROOT, ".screen", "fxold", fx + ".frag"),
+                                                            "rb").read())
+                    r = ss.shoot(bl[sc], blk, f, PHOTO, 60)
+                finally:
+                    io.open(target, "wb").write(new_src)
                 pics.append(np.asarray(Image.open(f), np.int16) if r else None)
             if pics[0] is None or pics[1] is None:
                 print("%s %s: no frame" % (sc, fx))
