@@ -3555,6 +3555,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
   <TextureShader minTimeSolo="45" maxTimeSolo="118" interest="8" file="..\\Scene2D\\TwinPhotoLab.frag" type="normal" mood="dreamy,psychedelic,calm" probability="0.45" complexity="2" gpuMs="0.83">
     <rig preset="flat"/>
@@ -3610,6 +3611,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
   <TextureShader minTimeSolo="88" maxTimeSolo="232" interest="9" file="..\\Scene2D\\TimeChainLab.frag" type="normal" mood="psychedelic,dreamy,dark" probability="0.45" complexity="6" gpuMs="0.73">
     <rig preset="flat"/>
@@ -3653,6 +3655,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
   <TextureShader minTimeSolo="69" maxTimeSolo="181" interest="8" file="..\\Scene2D\\SequenceLab.frag" type="normal" mood="bright,electronic,psychedelic" probability="0.45" complexity="3" gpuMs="0.67">
     <rig preset="flat"/>
@@ -3663,6 +3666,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
   <TextureShader minTimeSolo="12" maxTimeSolo="32" interest="5" file="..\\Scene2D\\LumaStrataFlight.frag" type="normal" mood="dreamy,dark,psychedelic" probability="0.45" complexity="3" gpuMs="0.67">
     <rig preset="flat"/>

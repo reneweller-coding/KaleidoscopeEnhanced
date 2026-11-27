@@ -19330,6 +19330,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\TwinPhotoLab.frag" type="normal" mood="dreamy,psychedelic,calm" probability="0.45" complexity="2" gpuMs="0.83">
@@ -19411,6 +19412,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\FoldLab.frag" type="normal" mood="calm,dreamy,gallery" probability="0.45" complexity="2" gpuMs="0.65">
@@ -19422,6 +19424,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\MicroscopeLab.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="2" gpuMs="0.67">
@@ -19477,6 +19480,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\MirrorBilliardLab.frag" type="normal" mood="psychedelic,bright,dreamy" probability="0.45" complexity="2" gpuMs="0.61">
@@ -19500,6 +19504,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\SequenceLab.frag" type="normal" mood="bright,electronic,psychedelic" probability="0.45" complexity="3" gpuMs="0.67">
@@ -19511,6 +19516,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\LumaTerraceDrift.frag" type="normal" mood="calm,dreamy,bright" probability="0.45" complexity="1" gpuMs="0.61">

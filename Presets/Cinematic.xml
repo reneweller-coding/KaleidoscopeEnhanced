@@ -2476,6 +2476,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
   <TextureShader minTimeSolo="19" maxTimeSolo="51" interest="5" file="..\\Scene2D\\ChladniPhotoSand.frag" type="normal" mood="dreamy,calm" probability="0.45" complexity="6" gpuMs="0.62">
     <rig preset="flat"/>

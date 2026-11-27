@@ -3645,6 +3645,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
   <TextureShader minTimeSolo="49" maxTimeSolo="130" interest="8" file="..\\Scene2D\\DiffractionLab.frag" type="normal" mood="psychedelic,dark,dreamy" probability="0.45" complexity="5" gpuMs="0.86">
     <rig preset="flat"/>
@@ -3682,6 +3683,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
   <TextureShader minTimeSolo="88" maxTimeSolo="232" interest="9" file="..\\Scene2D\\TimeChainLab.frag" type="normal" mood="psychedelic,dreamy,dark" probability="0.45" complexity="6" gpuMs="0.73">
     <rig preset="flat"/>
@@ -3714,6 +3716,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
   <TextureShader minTimeSolo="76" maxTimeSolo="200" interest="8" file="..\\Scene2D\\SequenceLab.frag" type="normal" mood="bright,electronic,psychedelic" probability="0.45" complexity="3" gpuMs="0.67">
     <rig preset="flat"/>
@@ -3724,6 +3727,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
   <TextureShader minTimeSolo="11" maxTimeSolo="28" interest="4" file="..\\Scene2D\\BitPlaneGrayCascade.frag" type="normal" mood="electronic,psychedelic,bright" probability="0.45" complexity="2" gpuMs="0.63">
     <rig preset="flat"/>
