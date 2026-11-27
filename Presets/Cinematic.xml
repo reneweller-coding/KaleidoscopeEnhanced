@@ -465,6 +465,7 @@
     <float name="raftP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
   </TextureShader>
   <TextureShader minTimeSolo="37" maxTimeSolo="97" interest="6" file="..\Scene2D\TitanMethaneRain.frag" type="normal" mood="space,calm,dreamy" probability="0.45" complexity="3" gpuMs="0.29">
     <rig preset="flat"/>

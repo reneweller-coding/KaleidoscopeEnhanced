@@ -550,6 +550,7 @@
     <float name="plateP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
   </TextureShader>
   <TextureShader minTimeSolo="20" maxTimeSolo="54" interest="5" file="..\Scene2D\SpriteElvesUpperLightning.frag" type="normal" mood="dark,space" probability="0.45" complexity="2" gpuMs="0.37">
     <rig preset="flat"/>
@@ -905,6 +906,7 @@
     <float name="camDistP" minValue="6.5"  maxValue="9.0"></float>
     <expr name="glowP" formula="clamp(0.725 + 0.11*(seed2*2.0-1.0) + 0.2475*(0.6*kick+0.4*snare), 0.45, 1)"/>
     <float name="glowP"    minValue="0.45" maxValue="1.0"></float>
+    <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
   </TextureShader>
   <TextureShader minTimeSolo="20" maxTimeSolo="54" interest="5" file="..\\Scene3D\\PillarHall.frag" type="scene3d" geom="cubes" probability="0.45" mood="dark,dreamy" complexity="9" shadowExtent="60" gpuMs="0.46">
     <rig preset="procedural"/>

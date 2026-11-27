@@ -321,6 +321,7 @@
     <float name="plateP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
   </TextureShader>
   <TextureShader minTimeSolo="32" maxTimeSolo="84" interest="6" file="..\Scene2D\StageRigMovingHeads.frag" type="normal" mood="dark,aggressive,psychedelic" probability="0.45" complexity="7" gpuMs="0.45">
     <rig preset="flat"/>

@@ -883,6 +883,7 @@
     <float name="raftP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
   </TextureShader>
   <TextureShader minTimeSolo="27" maxTimeSolo="72" interest="6" file="..\Scene2D\TitanMethaneRain.frag" type="normal" mood="space,calm,dreamy" probability="0.45" complexity="3" gpuMs="0.29">
     <rig preset="flat"/>
@@ -1056,6 +1057,7 @@
     <float name="camDistP" minValue="6.5"  maxValue="9.0"></float>
     <expr name="glowP" formula="clamp(0.725 + 0.11*(seed2*2.0-1.0) + 0.2475*(0.6*kick+0.4*snare), 0.45, 1)"/>
     <float name="glowP"    minValue="0.45" maxValue="1.0"></float>
+    <float name="reliefP" minValue="-0.4" maxValue="1.2"></float>
   </TextureShader>
   <TextureShader minTimeSolo="8" maxTimeSolo="20" interest="4" file="..\Scene2D\VolumetricSupernova.frag" type="normal" probability="0.5" mood="aggressive,dark" complexity="6" gpuMs="1.98">
     <rig preset="flat"/>

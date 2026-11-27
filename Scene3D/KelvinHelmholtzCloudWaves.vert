@@ -35,10 +35,11 @@ uniform float speedP;     ///< Speed knob, 0..1.
 uniform float hueP;       ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float audioLevel; ///< Overall loudness, 0..1.
 
-out vec4  vCol;    ///< Colour (from the vertex stage).
-out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3  vNormal; ///< Surface normal (from the vertex stage).
-out float vBillow; ///< Billow (from the vertex stage).
+out vec4  vCol;       ///< Colour (from the vertex stage).
+out vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;    ///< Surface normal (from the vertex stage).
+out float vBillow;    ///< Billow (from the vertex stage).
+out vec3  vReliefPos; ///< World point, the frame of vNormal (for the photo relief, patch_relief3d.py).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
@@ -97,6 +98,7 @@ void main()
 
     vUV = grid_uv;
     vBillow = billow_crest;
+    vReliefPos = world_p;
     vNormal = normalize( vec3( -cos( phase ) * 0.6, 1.0, -sin( z * 0.3 ) * 0.3 ) );
 
     // Sunset amber, dusk indigo, cloud white palette
