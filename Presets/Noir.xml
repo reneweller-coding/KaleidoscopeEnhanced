@@ -1784,7 +1784,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <float name="shadowMapP" minValue="0.6" maxValue="1"></float>
-    <float name="shaftP" minValue="0.4" maxValue="0.6"></float>
+    <float name="shaftP" minValue="-1.5" maxValue="0.35"></float>
   </TextureShader>
   <TextureShader interest="5" file="..\\Scene3D\\MeshFoundryPour.frag" type="scene3d" geom="mesh" model="..\\Models\\SandMould.glb" model2="..\\Models\\FoundryLadle.glb" mood="dark,aggressive,dreamy" probability="0.45" complexity="4" minTimeSolo="40" maxTimeSolo="60" gpuMs="0.47">
     <rig preset="mesh-15"/>
@@ -3653,6 +3653,7 @@
     <expr name="voiceP" formula="1"/>
     <float name="depthLook" minValue="-1.51" maxValue="6.49"></float>
     <float name="depthVar" minValue="0" maxValue="99.49"></float>
+    <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
   </TextureShader>
   <TextureShader interest="9" grade="fade,grey,sepia" minTimeSolo="300" maxTimeSolo="720" file="..\\Scene2D\\ChainLabTunnel.frag" type="normal" mood="dark,psychedelic,dreamy,energetic" probability="0.35" complexity="6" gpuMs="0.67">
     <rig preset="flat"/>

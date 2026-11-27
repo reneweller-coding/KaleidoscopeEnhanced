@@ -3179,6 +3179,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
+    <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
   </TextureShader>
   <TextureShader minTimeSolo="58" maxTimeSolo="153" interest="8" file="..\\Scene2D\\DiffractionLab.frag" type="normal" mood="psychedelic,dark,dreamy" probability="0.45" complexity="5" gpuMs="0.86">
     <rig preset="flat"/>
@@ -3206,6 +3207,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
+    <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
   </TextureShader>
   <TextureShader minTimeSolo="88" maxTimeSolo="232" interest="9" file="..\\Scene2D\\TimeChainLab.frag" type="normal" mood="psychedelic,dreamy,dark" probability="0.45" complexity="6" gpuMs="0.73">
     <rig preset="flat"/>
@@ -3216,6 +3218,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
+    <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
   </TextureShader>
   <TextureShader minTimeSolo="88" maxTimeSolo="232" interest="8" file="..\\Scene2D\\SequenceLab.frag" type="normal" mood="bright,electronic,psychedelic" probability="0.45" complexity="3" gpuMs="0.67">
     <rig preset="flat"/>
@@ -3225,6 +3228,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
+    <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
   </TextureShader>
   <TextureShader minTimeSolo="16" maxTimeSolo="42" interest="5" file="..\\Scene2D\\HaarPyramidTiling.frag" type="normal" mood="electronic,aggressive" probability="0.45" complexity="6" gpuMs="0.61">
     <rig preset="flat"/>
@@ -3995,6 +3999,7 @@
     <expr name="voiceP" formula="1"/>
     <float name="depthLook" minValue="-1.51" maxValue="6.49"></float>
     <float name="depthVar" minValue="0" maxValue="99.49"></float>
+    <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
   </TextureShader>
   <TextureShader interest="9" minTimeSolo="240" maxTimeSolo="600" file="..\\Scene2D\\ChainLabTunnel.frag" type="normal" mood="psychedelic,dreamy,energetic" probability="0.45" complexity="6" gpuMs="0.67">
     <rig preset="flat"/>

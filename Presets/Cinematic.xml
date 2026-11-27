@@ -2464,6 +2464,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
     <float name="depthLook" minValue="2.83" maxValue="5.49"></float>
+    <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
   </TextureShader>
   <TextureShader minTimeSolo="46" maxTimeSolo="120" interest="7" file="..\\Scene2D\\GlassLab.frag" type="normal" mood="calm,dreamy,bright" probability="0.45" complexity="2" gpuMs="0.63">
     <rig preset="flat"/>
@@ -2473,6 +2474,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
+    <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
   </TextureShader>
   <TextureShader minTimeSolo="19" maxTimeSolo="51" interest="5" file="..\\Scene2D\\ChladniPhotoSand.frag" type="normal" mood="dreamy,calm" probability="0.45" complexity="6" gpuMs="0.62">
     <rig preset="flat"/>
@@ -3166,6 +3168,7 @@
     <expr name="voiceP" formula="1"/>
     <float name="depthLook" minValue="-1.51" maxValue="6.49"></float>
     <float name="depthVar" minValue="0" maxValue="99.49"></float>
+    <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
   </TextureShader>
   <TextureShader interest="9" minTimeSolo="300" maxTimeSolo="720" file="..\\Scene2D\\ChainLab3D.frag" type="normal" mood="calm,psychedelic,energetic" probability="0.35" complexity="8" gpuMs="1.16">
     <rig preset="flat"/>
