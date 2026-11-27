@@ -2247,6 +2247,39 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
     m_moodValence = audio.valence;
     m_moodArousal = audio.arousal;
     m_moodAmbient = audio.ambientFactor;
+    // Plan 27.11.2026 P1: the photo choice by depth.  The scene that will show the next photo -- the active one, or
+    // the incoming one while a fade runs -- wants a photo with relief if it writes the photo's depth (// @depth), a
+    // flat texture otherwise (the folding material).  KALEIDO_PHOTO_BY_DEPTH=0 switches the wish off.
+    {
+        static const bool ByDepth = !qEnvironmentVariableIsSet( "KALEIDO_PHOTO_BY_DEPTH" )
+                                    || qEnvironmentVariableIntValue( "KALEIDO_PHOTO_BY_DEPTH" ) != 0;
+        int               wish = -1;
+        if ( ByDepth && m_liveTex == 0 && !m_effectTextures.empty() )
+        {
+            const unsigned int i = m_scheduler.texState() != 0 ? m_scheduler.nextTexture() : m_scheduler.actTexture();
+            if ( i < m_effectTextures.size() )
+                wish = m_effectTextures[i]->writesDepth() ? 1 : 0;
+        }
+        m_photoWantDepth = wish;
+        // KALEIDO_PHOTO_STATS=1: how often a depth scene shows a photo with a map, and another scene a flat photo
+        // (frames of the active scene; a line every 1800 frames and the totals so far).
+        static const bool Stats = qEnvironmentVariableIntValue( "KALEIDO_PHOTO_STATS" ) != 0;
+        if ( Stats && m_liveTex == 0 && m_scheduler.actTexture() < m_effectTextures.size() )
+        {
+            const bool depth_scene = m_effectTextures[m_scheduler.actTexture()]->writesDepth();
+            const bool map = EffectShader::M_PhotoDepthAmt[0] > 0.5f;
+            ++m_photoStat[depth_scene ? 0 : 2];
+            if ( depth_scene ? map : !map )
+                ++m_photoStat[depth_scene ? 1 : 3];
+            if ( ( m_photoStat[0] + m_photoStat[2] ) % 1800 == 0 )
+                fprintf( stderr,
+                         "[photo-stats] depth scenes %lld frames, with a map %lld (%.1f %%); other scenes %lld "
+                         "frames, with a flat photo %lld (%.1f %%)\n",
+                         m_photoStat[0], m_photoStat[1], m_photoStat[0] ? 100.0 * m_photoStat[1] / m_photoStat[0] : 0.0,
+                         m_photoStat[2], m_photoStat[3],
+                         m_photoStat[2] ? 100.0 * m_photoStat[3] / m_photoStat[2] : 0.0 );
+        }
+    }
 
     // Lazy-compile warm-up: ONE step per frame, and only ever cheap work.
     //
@@ -5537,9 +5570,18 @@ void ImageLoader::run()
 
             int   best_idx = qrand() % n;
             float best_score = -1e9f;
-            // Five free candidates (the photo memory); the last ten of sixty tries take any, so a small folder
-            // or a memory that blocks too much never stalls the loader.
-            for ( int tries = 0, k = 0; k < 5 && tries < 60; ++tries )
+            // Plan 27.11.2026 P1: the scene that will show this photo wants relief (1) or a flat texture (0), or has
+            // no wish (-1).  A candidate that matches gets PhotoDepthBonus; the mood terms span about 0..1.7, so a
+            // matching photo wins unless it fits the mood clearly worse.  With a wish, ten candidates instead of
+            // five, so a match is almost always among them (707 of 1,266 photos have relief).  Measured on 18
+            // exports: a bonus of 0.12 with eight candidates raised the depth scenes' share of photos with a map only
+            // from 62 to 73 % (docs/engine-internals.md (71)).
+            const int   want = m_shader->m_photoWantDepth.load();
+            const int   cands = want >= 0 ? 10 : 5;
+            const float PhotoDepthBonus = 0.3f;
+            // Five (ten) free candidates (the photo memory); the last ten of sixty tries take any, so a small
+            // folder or a memory that blocks too much never stalls the loader.
+            for ( int tries = 0, k = 0; k < cands && tries < 60; ++tries )
             {
                 if ( isInterruptionRequested() ) // stopping (Linux; see RenderPipeline::stop())
                     return;
@@ -5558,6 +5600,14 @@ void ImageLoader::run()
                     m_stats.insert( path, st );
                 }
                 float score = -( fabsf( st.first - tb ) + 0.7f * fabsf( st.second - ts ) );
+                if ( want >= 0 )
+                {
+                    auto rel = m_relief.find( path );
+                    if ( rel == m_relief.end() )
+                        rel = m_relief.insert( path, PhotoDepth::hasRelief( path ) );
+                    if ( rel.value() == ( want == 1 ) )
+                        score += PhotoDepthBonus;
+                }
                 if ( score > best_score )
                 {
                     best_score = score;
