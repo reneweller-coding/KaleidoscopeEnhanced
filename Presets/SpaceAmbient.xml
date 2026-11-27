@@ -3647,6 +3647,7 @@
     <float name="sharpP" minValue="0.25" maxValue="0.90"></float>
     <float name="fillP"  minValue="0.30" maxValue="1.00"></float>
     <float name="arcP"   minValue="-0.3" maxValue="1.0"></float>
+    <float name="haloP" minValue="-0.3" maxValue="1.0"></float>
   </CombineShader>
   <TransitionShader file="..\Transitions\Crossfade.frag" type="normal" probability="1" complexity="1"></TransitionShader>
   <TransitionShader file="..\Transitions\Swirl.frag" type="normal" minFade="5" mood="psychedelic,dreamy" probability="0.1" complexity="1"></TransitionShader>

@@ -466,6 +466,7 @@
     <int name="sidesP" minValue="0" maxValue="8"></int>
     <float name="strengthP" minValue="0.6" maxValue="1.8"></float>
     <float name="rainbowP" minValue="0.0" maxValue="1.0"></float>
+    <float name="fluidDepthP" minValue="-0.3" maxValue="0.5"></float>
   </TextureShader>
   <TextureShader minTimeSolo="36" maxTimeSolo="95" interest="7" file="..\\Scene2D\\FractalFlame.frag" type="normal" mood="psychedelic,bright,aggressive" probability="0.5" complexity="7" gpuMs="0.43">
     <rig preset="flat"/>
@@ -3629,7 +3630,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
-    <float name="depthLook" minValue="2.83" maxValue="5.49"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
   </TextureShader>
   <TextureShader minTimeSolo="55" maxTimeSolo="146" interest="8" file="..\\Scene2D\\MirrorBilliardLab.frag" type="normal" mood="psychedelic,bright,dreamy" probability="0.45" complexity="2" gpuMs="0.61">

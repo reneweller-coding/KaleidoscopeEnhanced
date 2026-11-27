@@ -87,6 +87,7 @@
     <rig preset="flat"/>
     <int name="sidesP" minValue="0" maxValue="9"></int>
     <float name="zoomP" minValue="0.7" maxValue="1.5"></float>
+    <float name="fluidDepthP" minValue="-0.3" maxValue="0.5"></float>
   </TextureShader>
   <TextureShader minTimeSolo="77" maxTimeSolo="202" interest="8" file="..\\Scene2D\\FractalBloom.frag" type="normal" probability="0.4" mood="bright" complexity="10" gpuMs="0.44">
     <rig preset="flat"/>
@@ -1339,6 +1340,7 @@
     <float name="sidesP" minValue="6" maxValue="10"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="fluidDepthP" minValue="-0.3" maxValue="0.5"></float>
   </TextureShader>
   <TextureShader minTimeSolo="14" maxTimeSolo="36" interest="4" file="..\Scene2D\SectionMemoryHalls.frag" type="normal" mood="calm,dreamy,dark" probability="0.45" complexity="7" gpuMs="0.35">
     <rig preset="flat"/>
@@ -3120,6 +3122,7 @@
     <int name="sidesP" minValue="0" maxValue="8"></int>
     <float name="strengthP" minValue="0.6" maxValue="1.8"></float>
     <float name="rainbowP" minValue="0.0" maxValue="1.0"></float>
+    <float name="fluidDepthP" minValue="-0.3" maxValue="0.5"></float>
   </TextureShader>
   <TextureShader minTimeSolo="14" maxTimeSolo="36" interest="4" file="..\\Scene3D\\SpiralArray.frag" type="scene3d" geom="points" mood="dark,dreamy" probability="0.3" complexity="10" gpuMs="0.42">
     <rig preset="procedural"/>
@@ -3151,6 +3154,7 @@
     <float name="smearP" minValue="0.25" maxValue="0.9"></float>
     <expr name="glowP" formula="clamp(0.55 + 0.1*(seed1*2.0-1.0) + 0.225*(0.6*kick+0.4*snare), 0.3, 0.8)"/>
     <float name="glowP" minValue="0.3" maxValue="0.8"></float>
+    <float name="partDepthP" minValue="-0.5" maxValue="1.0"></float>
   </TextureShader>
   <TextureShader minTimeSolo="32" maxTimeSolo="85" interest="6" file="..\\Scene2D\\GalaxyCollision.frag" type="normal" mood="dark,dreamy,space" probability="0.45" complexity="9" gpuMs="0.41">
     <rig preset="flat"/>
@@ -15447,7 +15451,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
-    <float name="depthLook" minValue="2.83" maxValue="5.49"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
     <float name="depthRaysP" minValue="-0.4" maxValue="0.8"></float>
   </TextureShader>
   <TextureShader minTimeSolo="50" maxTimeSolo="131" interest="7" file="..\\Scene2D\\GlassLab.frag" type="normal" mood="calm,dreamy,bright" probability="0.45" complexity="2" gpuMs="0.63">
@@ -19673,6 +19677,7 @@
     <float name="sharpP" minValue="0.25" maxValue="0.90"></float>
     <float name="fillP"  minValue="0.30" maxValue="1.00"></float>
     <float name="arcP"   minValue="-0.3" maxValue="1.0"></float>
+    <float name="haloP" minValue="-0.3" maxValue="1.0"></float>
   </CombineShader>
   <CombineShader file="..\\FX\\FxHeatShimmer.frag" type="normal" mood="aggressive,bright" probability="0.006" complexity="3">
     <float name="heatP"  minValue="0.40" maxValue="1.60"></float>
