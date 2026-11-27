@@ -107,8 +107,8 @@ the flat achat-amethyst-lk3 (`flat` = 1: no map).
   no knob entry: **20 of 20 frames byte-identical** (photos A and B, the final block).  A photo without a map with
   reliefP = 1 against reliefP = 0: **10 of 10 byte-identical** (the block returns the normal it was given).  The
   reliefP = 0 sets of two versions of the block (photo A) are byte-identical too (the 0 path does not depend on
-  the block's content).  A set with the knob entry at 0 differs from the set without the entry: an added knob takes a roll
-  and moves the later rolls of the run (the trap of (69), T4 and U2) -- 0 is compared with 1, absent with before.
+  the block's content).  A set with the knob entry at 0 differs from the set without the entry: an added knob takes a
+  roll and moves the later rolls of the run (the trap of (69), T4 and U2) -- 0 is compared with 1, absent with before.
 - *The look* (reliefP 0 against 1, mean absolute difference of 255; A / B / C):
 
   | scene | A | B | C |
