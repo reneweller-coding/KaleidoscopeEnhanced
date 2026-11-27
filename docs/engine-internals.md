@@ -9151,7 +9151,16 @@ later two slots, and jobs that measure time alone).  At 22:30 the user's machine
 cores and its handles grew from 25,000 to 100,000 within an hour; the file writes of the jobs were ruled out (400 test
 files on and off the Desktop: no difference), a restart of Explorer fixed it and it stayed calm.  Found by an agent:
 the worktrees had no `kaleidoscope_settings.ini`, so `Tools/private_settings.py` gave their app runs an empty
-settings copy and every compare against a set rendered in the main checkout showed false differences (now copied).
+settings copy and every compare against a set rendered in the main checkout showed false differences (now copied). And the
+final compare of the merged tree against 2026-11-26-base (all switches off; every entry of a changed scene plus
+400 random others, 700 renders) showed 32 changed entries -- 30 of them again in a second run, so not noise, yet
+every branch build gave the same numbers, even the maps branch with the OLD exe, and the old exe under a new name
+in the main checkout gave none: the cause was `Presets/ZZMesh.xml`, a gitignored test preset that exists only in the
+main checkout and changes the frozen frame of some 25 model and simulation scenes (Condensation, ShipFlyby,
+ShipDocking, ProteinFoldingChain, MeshTerrain, KnittingRowsGrow, ...).  With a copy of it in the worktree the 31
+entries leave 10 apart, all of them the scenes that differ between two runs of the old code too.  So: with every
+new switch off the round changes no picture -- and snapshot sets are only comparable when the Presets folders hold
+the same files, ignored ones included.
 
 **For the user:** the depth maps of the pack (installed as `Images\.depth` from DA3 Mono Large without sky head;
 into the photo pack?), the depth looks and voice roles in presets, the picture guard's default, the latency on the
