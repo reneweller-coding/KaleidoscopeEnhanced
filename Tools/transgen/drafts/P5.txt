@@ -1,0 +1,217 @@
+=== DepthFromBehind
+brief: TRANSITION DEPTH FROM BEHIND: the new scene appears first in the far part of the picture and comes forward until it stands in front.
+about: The order of the change is the depth of both scenes (plan P5, 27.11.2026): a place changes early where it lies far in the old scene and in the new one, late where either scene has something near -- the old scene's near things leave last, the new scene's near things arrive last.  The new scene starts a little smaller and paler, as if further away, and grows to its full size and contrast.
+about: Without a depth on a side (a 2D scene, a photo without a map) its brightness stands in for it: dark counts as far.  The front is equalised over the picture, so it covers it evenly whatever the depths are.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: approachP 0.5 2.0 how far back the new scene starts
+knob: softP 0.5 2.0 how soft the depth front is
+moods: dreamy,cinematic,calm
+minfade: 4
+prob: 0.07
+cx: 3
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float far = trOrderBoth( trOrderA( p ), trOrderB( p ) );
+    float w = trThresh( 1.0 - far, d, 0.10 + 0.06 * gKB );
+    // comes forward: smaller (further away) at the start, its full size at the end
+    float e = 1.0 - d;
+    float k = 1.0 + 0.06 * gKA * e * e;
+    vec4  b = tBm( 0.5 + ( p - 0.5 ) * k );
+    // aerial perspective: while it is far it is paler, its contrast drawn towards its mean
+    b.rgb = mix( b.rgb, vec3( trMeanLumaB() ), 0.35 * e );
+    return mix( tA( p ), b, w );
+}
+
+=== DepthFogWall
+brief: TRANSITION DEPTH FOG WALL: fog fills the picture from the back, the scene changes inside it, and the fog clears from the front.
+about: The fog's front runs through the old scene's depth from far to near until the whole picture is veiled (never fully: the scenes stay faintly visible inside it); there the scenes swap, and the fog leaves the new scene from its near things to its far ones.  The fog has the light of the two scenes (it is never brighter than the brighter one) and soft wisps that drift slowly.
+about: Without a depth on a side (a 2D scene, a photo without a map) its brightness stands in for it: dark counts as far.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: fogP 0.5 2.0 how dense the fog gets
+knob: wispP 0.5 2.0 how much the wisps show
+moods: calm,dreamy,cinematic
+minfade: 5
+prob: 0.07
+cx: 3
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float oA = trOrderA( p );
+    float oB = trOrderB( p );
+    // the fog fills the old scene from the back (far places first) ...
+    float inA = trThresh( 1.0 - oA, smoothstep( 0.0, 0.55, d ), 0.2 );
+    // ... and clears off the new one from the front (near places first)
+    float outB = trThresh( oB, smoothstep( 0.45, 1.0, d ), 0.2 );
+    float w = smoothstep( 0.4, 0.6, d );
+    float fog = mix( inA, 1.0 - outB, w );
+    // the scenes stay faintly visible inside the wall; the far places sink deepest
+    float dens = ( 0.60 + 0.12 * gKA ) * ( 0.8 + 0.2 * mix( oA, oB, w ) );
+    float wisp = fbm2( p * vec2( resolution.x / resolution.y, 1.0 ) * 2.5 + vec2( trClock() * 0.6, 0.0 ) );
+    vec3  fogc = trVeil( vec3( 0.80, 0.84, 0.90 ) ) * ( 0.8 + 0.18 * gKB * ( wisp - 0.5 ) );
+    vec4  sc = mix( tA( p ), tB( p ), w );
+    return vec4( mix( sc.rgb, fogc, clamp( fog * dens, 0.0, 1.0 ) ), sc.a );
+}
+
+=== DepthFocusPull
+brief: TRANSITION DEPTH FOCUS PULL: the old scene loses its focus from the back, the new one gains it from the front.
+about: A focus pull through the depth of the scenes: the blur of the old scene starts at its far places and reaches its near ones last; in the middle, with everything soft, the scenes swap, and the new scene comes into focus with its near things first and its background last.  The blur is a disc of thirteen taps whose radius is a share of the picture's height.
+about: Without a depth on a side (a 2D scene, a photo without a map) its brightness stands in for it: dark counts as far.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: blurP 0.5 2.0 how far out of focus the scenes go
+knob: softP 0.5 2.0 how soft the focus front is
+moods: cinematic,dreamy,calm
+minfade: 4
+prob: 0.07
+cx: 3
+huegain: 0.0
+---
+/**  A scene blurred over a disc (thirteen taps on a golden-angle spiral, the centre among them).
+ *
+ * @param t  The scene. (in)
+ * @param p  The place, 0..1. (in)
+ * @param r  The radius in pixels (0: the scene itself). (in)
+ *
+ * @return
+ *   The colour.
+ **/
+vec4 trDisc( sampler2D t, vec2 p, float r )
+{
+    vec4 s = texture( t, p );
+    for ( int i = 1; i < 13; ++i )
+    {
+        float fi = float( i );
+        float a = fi * 2.39996323;
+        vec2  o = r * sqrt( fi / 12.0 ) * vec2( cos( a ), sin( a ) ) / resolution;
+        s += texture( t, clamp( p + o, 0.0, 1.0 ) );
+    }
+    return s / 13.0;
+}
+
+vec4 trans( vec2 p, float d )
+{
+    float oA = trOrderA( p );
+    float oB = trOrderB( p );
+    float rad = resolution.y * 0.016 * gKA;
+    float s = 0.15 + 0.08 * gKB;
+    // the old scene loses its focus from the back: far places first
+    float bA = trThresh( 1.0 - oA, smoothstep( 0.0, 0.6, d ), s );
+    // the new one gains it from the front: near places first
+    float bB = 1.0 - trThresh( oB, smoothstep( 0.4, 1.0, d ), s );
+    // the swap is spread over most of the fade (a swap in the middle third alone did 80 % of the change in a third)
+    float w = smoothstep( 0.12, 0.88, d );
+    return mix( trDisc( tex0, p, rad * bA ), trDisc( tex1, p, rad * bB ), w );
+}
+
+=== DepthLayers
+brief: TRANSITION DEPTH LAYERS: the picture parts into three depth layers, far, middle and near, which change one after the other.
+about: The layers are thirds of the picture by depth, where a place counts as far only if it is far in both scenes; the far layer changes first, the middle one overlapping it, the near one last, each with soft borders, and a layer dims a little while it changes so the three read as layers.
+about: Without a depth on a side (a 2D scene, a photo without a map) its brightness stands in for it: dark counts as far.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: overlapP 0.5 2.0 how long each layer takes (and so how much they overlap)
+knob: edgeP 0.5 2.0 how soft the borders between the layers are
+moods: cinematic,dreamy
+minfade: 4
+prob: 0.07
+cx: 3
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float far = trOrderBoth( trOrderA( p ), trOrderB( p ) );
+    // three layers, near (0), middle (0.5) and far (1), with soft borders between them
+    float e = 0.02 + 0.03 * gKB;
+    float layer = 0.5 * smoothstep( 1.0 / 3.0 - e, 1.0 / 3.0 + e, far ) + 0.5 * smoothstep( 2.0 / 3.0 - e, 2.0 / 3.0 + e, far );
+    // each layer fades over its own stretch of the progress: the far one first, the near one last
+    float len = 0.36 + 0.12 * gKA;
+    float t0 = ( 1.0 - layer ) * ( 1.0 - len );
+    float u = clamp( ( d - t0 ) / len, 0.0, 1.0 );
+    vec4  col = mix( tA( p ), tB( p ), smoothstep( 0.0, 1.0, u ) );
+    // the layer that is changing dims a little
+    col.rgb *= 1.0 - 0.12 * sin( Pi * u );
+    return col;
+}
+
+=== DepthWorldsMerge
+brief: TRANSITION DEPTH WORLDS MERGE: the new scene's world is pushed through the old one from behind; where it lies nearer, it shows, until it stands in front everywhere.
+about: The two depth orders are compared like a depth test: the new world starts behind the whole old one and moves forward through it, so in the middle the two scenes interleave -- the near things of each stand in front of the far things of the other -- and a faint light marks where they intersect.
+about: Without a depth on a side (a 2D scene, a photo without a map) its brightness stands in for it: bright counts as near, so bright parts of the new scene come through the dark parts of the old one first.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: seamP 0.5 2.0 how bright the light on the intersection is
+knob: softP 0.5 2.0 how soft the intersection is
+moods: psychedelic,dreamy
+minfade: 4
+prob: 0.07
+cx: 3
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    float oA = trOrderA( p );
+    float oB = trOrderB( p );
+    float s = 0.05 + 0.04 * gKB;
+    // the new world moves from behind the old one to in front of it: where it is nearer, it shows
+    float x = oA - oB + ( 2.0 * d - 1.0 ) * ( 1.0 + s );
+    vec4  col = mix( tA( p ), tB( p ), smoothstep( -s, s, x ) );
+    // a faint light where the two worlds intersect
+    float seam = exp( -abs( x ) / s ) * trMid( d );
+    col.rgb += trVeil( vec3( 0.75, 0.85, 1.0 ) ) * 0.12 * gKA * seam;
+    return col;
+}
+
+=== DepthDusk
+brief: TRANSITION DEPTH DUSK: the light leaves the old scene from the back, the scenes swap in the dusk, and the light returns to the new one from the front.
+about: Dusk through the depth: the old scene's far places dim first and turn a little blue, the near ones last; in the dim middle (never dark: at most about half the light goes) the scenes swap, and the new scene is lit again from its near things to its far ones.
+about: Without a depth on a side (a 2D scene, a photo without a map) its brightness stands in for it: dark counts as far, so the shadows dim first.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: dimP 0.5 2.0 how much light goes
+knob: blueP 0.5 2.0 how blue the dim places turn
+moods: dark,calm,cinematic
+minfade: 5
+prob: 0.07
+cx: 3
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float oA = trOrderA( p );
+    float oB = trOrderB( p );
+    // the light leaves the old scene from the back ...
+    float darkA = trThresh( 1.0 - oA, smoothstep( 0.0, 0.55, d ), 0.2 );
+    // ... and returns to the new one from the front
+    float litB = trThresh( oB, smoothstep( 0.45, 1.0, d ), 0.2 );
+    float w = smoothstep( 0.4, 0.6, d );
+    float dim = mix( darkA, 1.0 - litB, w );
+    vec4  c = mix( tA( p ), tB( p ), w );
+    vec3  night = c.rgb * vec3( 0.84, 0.92, 1.08 );
+    c.rgb = mix( c.rgb, night, 0.5 * gKB * dim ) * ( 1.0 - ( 0.30 + 0.12 * gKA ) * dim );
+    return c;
+}
+
+=== DepthSilhouette
+brief: TRANSITION DEPTH SILHOUETTE: the new scene appears behind the old scene's near things, which darken into silhouettes against it and then dissolve.
+about: Like a stage lit from behind: the new scene takes the old scene's far places first (the old scene's own depth), the old scene's near things that remain lose their light and stand as dark shapes in front of the new picture, and in the last part these shapes dissolve into it.  They never go black: at most about three quarters of their light goes.
+about: Without a depth on the old side (a 2D scene, a photo without a map) its brightness stands in for it: its bright parts stay longest and darken into the silhouettes.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: shadeP 0.5 2.0 how dark the silhouettes get
+knob: softP 0.5 2.0 how soft the silhouettes' edges are
+moods: dark,cinematic,dreamy
+minfade: 5
+prob: 0.07
+cx: 3
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float oA = trOrderA( p );
+    // the new scene takes the old one's far places first, about two thirds of the picture ...
+    float behind = trThresh( 1.0 - oA, 0.68 * smoothstep( 0.0, 0.6, d ), 0.08 + 0.05 * gKB );
+    // ... the near things that remain lose their light ...
+    vec4  a = tA( p );
+    a.rgb *= 1.0 - ( 0.45 + 0.15 * gKA ) * smoothstep( 0.1, 0.55, d );
+    // ... and dissolve in the last part
+    float w = max( behind, smoothstep( 0.55, 1.0, d ) );
+    return mix( a, tB( p ), w );
+}
