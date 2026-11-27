@@ -98,7 +98,7 @@ See the table at the end of this file ("State") -- it is kept current.
 |---|---|
 | PresetEditor --roundtrip Komplett.xml | ran: ok, 2937 entries |
 | PresetEditor --validate | ran: rc 0, "all 12 file(s) complete vs. Komplett.xml" (the genre presets still hold the old range until regenerated) |
-| Tools/check_schedule.py --quick | started 16:31 in the same job; result in kaleido-wt\p3b_presets.log (last lines, `PRESETS_BAD=0` = good); NOT read when this was written |
+| Tools/check_schedule.py --quick | ran (16:32): rc 0, "schedule: 20 plan(s), 0 with violations" (kaleido-wt/p3b_presets.log, `PRESETS_BAD=0`) -- with the genre presets as they are in the branch, i.e. not regenerated |
 | the size, near / far third against the base look, three labs | measured, see "Measured" (commit 0d844bb2) |
 | limiter (flash) counts of the runs with the new size | read: no more than with the old size, see "Measured" |
 | the sheets | all three looked at: the near layer's light shows clearly in "after - base" on the kick (ChainLab2D, MirrorBilliardLab; weaker in TimeChainLab), the glints as fine points; only at the sheets' small size, only the dark screening photo, no bright photo, no moving picture |
