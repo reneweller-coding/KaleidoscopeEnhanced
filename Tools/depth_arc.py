@@ -348,6 +348,9 @@ def frozen(scenes, fxs, label):
             same_n += int(d.max() == 0)
             print("%s %s: max %d, mean %.4f of 255" % (sc, fx, d.max(), d.mean()), flush=True)
     print("%d of %d identical" % (same_n, len(scenes) * len(fxs)))
+    snap = os.path.join(ROOT, "Presets", "_snap0.xml")   # the shot's preset (PresetEditor --validate would list it)
+    if os.path.exists(snap):
+        os.remove(snap)
 
 
 def frame_at(vid, t, w=384, h=216):
