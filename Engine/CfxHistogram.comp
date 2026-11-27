@@ -79,7 +79,10 @@ void main()
         {
             vec3  c = texelFetch( texFrame, ivec2( x, y ), 0 ).rgb;
             float l = dot( c, vec3( 0.299, 0.587, 0.114 ) );
-            uint  b = uint( clamp( sqrt( max( l, 0.0 ) ), 0.0, 0.999 ) * 256.0 );
+            // 16-bit intermediates (KALEIDO_HDR_BUFFERS) keep a scene's stray NaN, which would pick no defined bin;
+            // light above 1 falls into the top bin, as white does.
+            l = isnan( l ) ? 0.0 : l;
+            uint b = uint( clamp( sqrt( max( l, 0.0 ) ), 0.0, 0.999 ) * 256.0 );
             atomicAdd( hist[b], 1u );
         }
     barrier();

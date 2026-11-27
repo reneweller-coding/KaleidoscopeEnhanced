@@ -14,6 +14,7 @@
  *
  * Knobs: widthP (the braid's width), lineP (the strands' width), hueP.
 //@params widthP lineP
+//@light
 //@audio audioSpectrum[32] audioMelodyPitch audioMelodyConf audioSwell
 //@state 64 1 30 32
 //@body

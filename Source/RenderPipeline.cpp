@@ -102,6 +102,12 @@ float RenderPipeline::featureDelay()
         return 0.f;
     return -M_LatencyLead;
 }
+
+bool RenderPipeline::hdrBuffers()
+{
+    static const bool Hdr = qEnvironmentVariableIntValue( "KALEIDO_HDR_BUFFERS" ) == 1;
+    return Hdr;
+}
 bool                    RenderPipeline::M_Pinned = false;         // VJ pin ('u')
 QHash<QString, float>   RenderPipeline::M_Taste;                  // taste learning (skip/favourite)
 QSet<QString>           RenderPipeline::M_Banned;                 // "never again"
@@ -449,9 +455,9 @@ RenderPipeline::RenderPipeline()
       m_npotSupported( false ),
       m_width( 100 ),
       m_height( 100 ),
-      m_texInternalFormat( GL_RGBA8 ),
+      m_texInternalFormat( hdrBuffers() ? GL_RGBA16F : GL_RGBA8 ), // KALEIDO_HDR_BUFFERS (block L of 26.11.2026)
       m_texFormat( GL_RGBA ),
-      m_texType( GL_UNSIGNED_BYTE )
+      m_texType( hdrBuffers() ? GL_FLOAT : GL_UNSIGNED_BYTE )
       // GL object ids MUST start at 0 ("not created yet"): creation code reuses an
       // existing id and only calls glGen* when the id is still 0.  The old dummy
       // values (1/2) made those guards skip creation -> invalid FBOs -> black frames.

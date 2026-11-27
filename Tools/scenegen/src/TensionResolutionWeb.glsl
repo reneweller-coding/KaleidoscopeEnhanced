@@ -14,6 +14,7 @@
  *
  * Knobs: threadP (how many radial threads), sagP (how far the slack strings sag), hueP.
 //@params threadP sagP
+//@light
 //@audio audioRoughness audioHarmChange audioPhrasePos audioSwell
 //@state 1 1 60
 //@body

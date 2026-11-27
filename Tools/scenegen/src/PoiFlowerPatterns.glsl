@@ -12,6 +12,7 @@
  *
  * Knobs: cellP (the flowers' size), headP (the poi heads' brightness), hueP.
 //@params cellP headP
+//@light
 //@audio audioHarmAdvance audioSectionId audioSectionPrev audioSectionAge
 //@body
 /**  A poi flower's distance and its head's.

@@ -12,6 +12,7 @@
  *
  * Knobs: pitchP (how tightly the arms wind), starP (how dense the stars are), hueP.
 //@params pitchP starP
+//@light
 //@audio audioBarPhase audioSwell
 //@body
 void main()

@@ -13,6 +13,7 @@
  *
  * Knobs: dotP (how many dots), scatterP (how far they scatter), hueP.
 //@params dotP scatterP
+//@light
 //@audio audioPhrasePos audioSectionId audioSectionPrev audioSectionAge
 //@body
 /**  A dot's place in a figure.

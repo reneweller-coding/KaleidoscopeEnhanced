@@ -13,6 +13,7 @@
  *
  * Knobs: pointP (how many particles), vortexP (how many vortices), hueP.
 //@params pointP vortexP
+//@light
 //@audio audioHarmAdvance audioSwell
 //@body
 void main()

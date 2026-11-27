@@ -13,6 +13,7 @@
  *
  * Knobs: treeP (how many trees round the ring), lenP (the branches' length), hueP.
 //@params treeP lenP
+//@light
 //@audio audioHarmAdvance audioSwell
 //@body
 /**  The distance from a point to a segment.

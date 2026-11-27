@@ -125,6 +125,25 @@ int reversals( int i, float l )
     return recent;
 }
 
+/**  A texel of the frame's mip as the limiter counts it: at most 1 per channel, as an 8-bit target holds it, and a
+ * NaN as black.
+ *
+ * @param p      The texel. (in)
+ * @param level  The mip level. (in)
+ *
+ * @return
+ *   The colour, 0..1.
+ *
+ * With 16-bit intermediates (KALEIDO_HDR_BUFFERS) a mip averages light above 1, which the present pass rolls off rather
+ * than shows as more brightness -- and a single stray NaN of a scene reaches every coarse mip above it, where it would
+ * make the limiter's scale NaN for good.  An 8-bit frame passes unchanged.
+ **/
+vec3 frameAt( ivec2 p, int level )
+{
+    const vec3 c = texelFetch( texFrame, p, level ).rgb;
+    return mix( min( c, vec3( 1.0 ) ), vec3( 0.0 ), isnan( c ) );
+}
+
 /** Entry point of this shader stage (the file description says what it computes). */
 void main()
 {
@@ -133,7 +152,7 @@ void main()
     float     mean = 0.0;
     for ( int i = 0; i < n; ++i )
     {
-        const vec3 c = texelFetch( texFrame, ivec2( i % lsize.x, i / lsize.x ), lvl ).rgb;
+        const vec3 c = frameAt( ivec2( i % lsize.x, i / lsize.x ), lvl );
         lum[i] = dot( c, vec3( 0.299, 0.587, 0.114 ) );
         mean += lum[i];
     }
@@ -161,7 +180,7 @@ void main()
     float     lc[128];
     for ( int i = 0; i < m; ++i )
     {
-        const vec3 c = texelFetch( texFrame, ivec2( i % lsize2.x, i / lsize2.x ), lvl2 ).rgb;
+        const vec3 c = frameAt( ivec2( i % lsize2.x, i / lsize2.x ), lvl2 );
         // Relative luminance, as the guideline and the screening count: in sRGB values a swing of 0.1 relative
         // luminance in a bright picture is some 0.05, and MonarchRoostTree and a ShipFlyby flashed 3.5 times a second
         // under the threshold (17.10.2026).

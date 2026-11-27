@@ -13,6 +13,7 @@
  *
  * Knobs: pairP (how many pairs), pointP (how many points per ring), hueP.
 //@params pairP pointP
+//@light
 //@audio audioBass audioSwell
 //@body
 void main()

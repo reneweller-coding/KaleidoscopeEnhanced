@@ -12,6 +12,7 @@
  *
  * Knobs: grainP (how many grains), wellP (how many wells), hueP.
 //@params grainP wellP
+//@light
 //@audio audioHarmAdvance audioSwell
 //@body
 void main()

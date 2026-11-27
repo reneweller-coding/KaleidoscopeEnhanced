@@ -14,12 +14,16 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <vector>
 
 #include "PresentPass.h"
 #include "shader_setup.h"
 
 #ifndef GL_STREAM_READ
 #define GL_STREAM_READ 0x88E1 ///< Usage hint for the mean-colour PBOs: written once by the GPU, read once by the CPU.
+#endif
+#ifndef GL_RGBA16F
+#define GL_RGBA16F 0x881A ///< Half-float RGBA internal format (the 16-bit intermediates), if the GL header lacks it.
 #endif
 
 // Gemeinsames Fullscreen-Dreieck (gl_VertexID-VAO), definiert in RenderPipeline.cpp.
@@ -94,6 +98,10 @@ void PresentPass::setup( int renderW, int renderH,
                          GLenum internalFmt, GLenum fmt, GLenum type )
 {
     updateFinalTexture( renderW, renderH, internalFmt, fmt, type );
+    // 16-bit intermediates (RenderPipeline::hdrBuffers()): Present.frag rolls the light above 1 off (hdrBuffers).
+    if ( !m_hdr && internalFmt == GL_RGBA16F )
+        fprintf( stderr, "Intermediate pictures: RGBA16F (KALEIDO_HDR_BUFFERS)\n" );
+    m_hdr = internalFmt == GL_RGBA16F;
 
     if ( m_fboFinal == 0 )
         glGenFramebuffers( 1, &m_fboFinal );
@@ -167,6 +175,7 @@ void PresentPass::setup( int renderW, int renderH,
         m_presentPhParUni = glGetUniformLocation( m_presentProgId, "depthParPhoto" );
         m_presentPhStereoUni = glGetUniformLocation( m_presentProgId, "stereoPhoto" );
         m_presentPhWinUni = glGetUniformLocation( m_presentProgId, "photoDepthWin" );
+        m_presentHdrUni = glGetUniformLocation( m_presentProgId, "hdrBuffers" );
     }
 
     m_safetyReady = fbo_ok && ( m_presentProgId != 0 ) && ( m_presentTexUni >= 0 );
@@ -352,6 +361,51 @@ void PresentPass::captureHistory( GLuint sourceTex, int renderW, int renderH,
         ++m_histCount;
 }
 
+GLuint PresentPass::measureTexture( const Inputs &in )
+{
+    if ( !m_measureTried )
+    {
+        m_measureTried = true;
+        m_measureProg = setShaders( "..\\standard.vert", "..\\Engine\\LightMeasure.frag" );
+    }
+    if ( !m_measureProg )
+        return in.source;
+    if ( m_measureTex == 0 || m_measureW != in.renderW || m_measureH != in.renderH )
+    {
+        if ( m_measureTex == 0 )
+            glGenTextures( 1, &m_measureTex );
+        glBindTexture( GL_TEXTURE_2D, m_measureTex );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, in.renderW, in.renderH, 0, GL_RGBA, GL_FLOAT, NULL );
+        if ( m_measureFbo == 0 )
+            glGenFramebuffers( 1, &m_measureFbo );
+        glBindFramebuffer( GL_FRAMEBUFFER, m_measureFbo );
+        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_measureTex, 0 );
+        m_measureW = in.renderW;
+        m_measureH = in.renderH;
+    }
+    // The glow Present.frag adds back from the bright pass: the bloom (0.12 + 0.05 beat + 0.10 swell) and the
+    // streaks (0.30 x (0.10 + 0.30 swell + 0.80 drop) of the bloom, their cool tint 0.75 in luma).
+    const AudioFeatures &a = *in.fx;
+    const float          glow = 0.12f + 0.05f * a.beatDecay + 0.10f * a.swell
+                                + 0.30f * 0.75f * ( 0.10f + 0.30f * a.swell + 0.80f * a.dropPulse );
+    glBindFramebuffer( GL_FRAMEBUFFER, m_measureFbo );
+    glViewport( 0, 0, in.renderW, in.renderH );
+    glUseProgram( m_measureProg );
+    glActiveTexture( GL_TEXTURE0 );
+    glBindTexture( GL_TEXTURE_2D, in.source );
+    glUniform1i( glGetUniformLocation( m_measureProg, "tex" ), 0 );
+    glUniform1f( glGetUniformLocation( m_measureProg, "glowWeight" ), glow );
+    drawFullscreen();
+    glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+    glBindTexture( GL_TEXTURE_2D, m_measureTex );
+    glGenerateMipmap( GL_TEXTURE_2D );
+    return m_measureTex;
+}
+
 // Seconds back -> layer index (clamped to what the ring holds).
 float PresentPass::historyLayerBack( float secs ) const
 {
@@ -462,6 +516,9 @@ void PresentPass::run( const Inputs &in )
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, in.source );
     glGenerateMipmap( GL_TEXTURE_2D ); // every frame (bloom samples a mip)
+    // 16-bit intermediates: the limiter measures the frame as an 8-bit target holds it (measureTexture()).
+    const GLuint measured = m_hdr ? measureTexture( in ) : in.source;
+    glBindTexture( GL_TEXTURE_2D, in.source );
 
     // The picture's mean colour for the OSC output (setMeanColourWanted()): the top mip is the mean, read into one
     // of two pixel-pack buffers every 6th frame; the buffer filled 12 frames ago is mapped first -- long done, so
@@ -604,7 +661,7 @@ void PresentPass::run( const Inputs &in )
         glUseProgram( m_limitProg );
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 3, m_autoExpBuf );
         glActiveTexture( GL_TEXTURE0 );
-        glBindTexture( GL_TEXTURE_2D, in.source );
+        glBindTexture( GL_TEXTURE_2D, measured );
         glUniform1i( glGetUniformLocation( m_limitProg, "texFrame" ), 0 );
         glUniform1i( glGetUniformLocation( m_limitProg, "lvl" ), lvl );
         glUniform2i( glGetUniformLocation( m_limitProg, "lsize" ), std::max( 1, in.renderW >> lvl ),
@@ -643,6 +700,7 @@ void PresentPass::run( const Inputs &in )
         m_safetyAccumDt += in.dtFrame;
         if ( m_safetyFrame % 3 == 0 )
         {
+            glBindTexture( GL_TEXTURE_2D, measured );
             int lw = 1, lh = 1;
             glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_WIDTH, &lw );
             glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_HEIGHT, &lh );
@@ -659,7 +717,10 @@ void PresentPass::run( const Inputs &in )
             float lum[64];
             for ( int i = 0; i < npx; ++i )
             {
-                lum[i] = 0.299f * buf[i * 4 + 0] + 0.587f * buf[i * 4 + 1] + 0.114f * buf[i * 4 + 2];
+                // At most 1 per channel, as an 8-bit target holds it: with 16-bit intermediates the light above 1
+                // reaches the screen through the present pass's roll-off, not as more brightness (SafetyLimit.comp).
+                lum[i] = 0.299f * std::min( buf[i * 4 + 0], 1.f ) + 0.587f * std::min( buf[i * 4 + 1], 1.f )
+                         + 0.114f * std::min( buf[i * 4 + 2], 1.f );
                 mean += lum[i];
             }
             mean /= static_cast<float>( npx );
@@ -1013,6 +1074,10 @@ void PresentPass::run( const Inputs &in )
             glUniform2f( m_presentPhWinUni, in.photoWin[0], in.photoWin[1] );
     }
 
+    // 16-bit intermediates: the shoulder after the exposure, the limiter after the shoulder (Present.frag).
+    if ( m_presentHdrUni >= 0 )
+        glUniform1f( m_presentHdrUni, m_hdr ? 1.f : 0.f );
+
     if ( m_presentResUni >= 0 )
         glUniform2f( m_presentResUni, static_cast<float>( in.displayW ), static_cast<float>( in.displayH ) );
     // VJ blackout ('b'): a slewed multiplier on the present brightness
@@ -1084,4 +1149,79 @@ void PresentPass::run( const Inputs &in )
     if ( m_presentOldHueUni >= 0 )
         glUniform1f( m_presentOldHueUni, old_hue ? 1.f : 0.f );
     drawFullscreen();
+
+    // KALEIDO_LIGHT_STATS=<decode factor>: the light block's measuring hook (Tools/light_stats.py).
+    static const float LightStats = []
+    {
+        const char *e = getenv( "KALEIDO_LIGHT_STATS" );
+        return e ? static_cast<float>( atof( e ) ) : 0.f;
+    }();
+    if ( LightStats > 0.f )
+        logLightStats( in, LightStats );
+}
+
+void PresentPass::logLightStats( const Inputs &in, float scale )
+{
+    const int w = in.renderW, h = in.renderH;
+    if ( w <= 0 || h <= 0 || !in.source )
+        return;
+    const size_t              n = static_cast<size_t>( w ) * static_cast<size_t>( h );
+    static std::vector<float> px;
+    px.resize( n * 4 );
+    glActiveTexture( GL_TEXTURE0 );
+    glBindTexture( GL_TEXTURE_2D, in.source );
+    GLint fmt = 0;
+    glGetTexLevelParameteriv( GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &fmt );
+    if ( fmt == GL_RGBA8 )
+    {
+        // An 8-bit target: read its bytes (a quarter of the traffic), exact.
+        static std::vector<unsigned char> bytes;
+        bytes.resize( n * 4 );
+        glGetTexImage( GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes.data() );
+        for ( size_t i = 0; i < n * 4; ++i )
+            px[i] = static_cast<float>( bytes[i] ) * ( 1.f / 255.f );
+    }
+    else
+        glGetTexImage( GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, px.data() );
+
+    double clip = 0.0, over = 0.0, over2 = 0.0, lover = 0.0, white = 0.0, exc = 0.0, b8 = 0.0, bh = 0.0, mean = 0.0;
+    std::vector<size_t> hist( 512, 0 ); // the brightest channel in steps of 1/64, up to 8
+    float               vmax = 0.f;
+    for ( size_t i = 0; i < n; ++i )
+    {
+        const float r = px[4 * i] * scale, g = px[4 * i + 1] * scale, b = px[4 * i + 2] * scale;
+        const float mx = std::max( r, std::max( g, b ) ), mn = std::min( r, std::min( g, b ) );
+        const float l = 0.299f * r + 0.587f * g + 0.114f * b;
+        clip += mx >= 0.995f ? 1.0 : 0.0;
+        over += mx >= 1.05f ? 1.0 : 0.0;
+        over2 += mx >= 2.f ? 1.0 : 0.0;
+        lover += l >= 1.05f ? 1.0 : 0.0;
+        white += mn >= 0.995f ? 1.0 : 0.0;
+        exc += std::max( l - 1.f, 0.f );
+        const float rc = std::min( r, 1.f ), gc = std::min( g, 1.f ), bc = std::min( b, 1.f );
+        // The bloom's bright pass (Engine/BloomBlur.frag: max( c - 0.70, 0 ) * 1.6 per channel), as luma.
+        b8 += 1.6
+              * ( 0.299 * std::max( rc - 0.7f, 0.f ) + 0.587 * std::max( gc - 0.7f, 0.f )
+                  + 0.114 * std::max( bc - 0.7f, 0.f ) );
+        bh += 1.6
+              * ( 0.299 * std::max( r - 0.7f, 0.f ) + 0.587 * std::max( g - 0.7f, 0.f )
+                  + 0.114 * std::max( b - 0.7f, 0.f ) );
+        mean += 0.299 * rc + 0.587 * gc + 0.114 * bc;
+        ++hist[static_cast<size_t>( std::min( 511.f, std::max( 0.f, mx * 64.f ) ) )];
+        vmax = std::max( vmax, mx );
+    }
+    size_t acc = 0, k = 0;
+    for ( ; k < 511; ++k )
+    {
+        acc += hist[k];
+        if ( acc * 1000 >= n * 999 )
+            break;
+    }
+    static int   frame = 0;
+    const double inv = 1.0 / static_cast<double>( n );
+    fprintf( stderr,
+             "[light] f=%d n=%zu clip=%.5f over=%.5f over2=%.5f lover=%.5f white=%.5f exc=%.5f b8=%.5f bh=%.5f "
+             "mean=%.4f p999=%.3f max=%.3f\n",
+             frame++, n, clip * inv, over * inv, over2 * inv, lover * inv, white * inv, exc * inv, b8 * inv, bh * inv,
+             mean * inv, static_cast<double>( k + 1 ) / 64.0, static_cast<double>( vmax ) );
 }

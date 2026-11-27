@@ -13,6 +13,7 @@
  *
  * Knobs: starP (how many stars), apertureP (how large the bokeh grows), hueP.
 //@params starP apertureP
+//@light
 //@audio audioPhrasePos audioSwell
 //@body
 void main()

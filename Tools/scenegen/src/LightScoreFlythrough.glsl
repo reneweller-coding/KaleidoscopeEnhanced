@@ -14,6 +14,7 @@
  *
  * Knobs: laneP (how wide the lanes spread), heightP (the eye's height over the plane), hueP.
 //@params laneP heightP
+//@light
 //@audio audioMelody[96] audioMelodyHead audioMelodyPhase audioOnset audioSwell
 //@body
 /**  The melody's recent mean pitch and spread, every sample weighted by a window over its age so that samples enter

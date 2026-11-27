@@ -12,6 +12,7 @@
  *
  * Knobs: columnP (how many columns), grainP (how many grains per column), hueP.
 //@params columnP grainP
+//@light
 //@audio audioSwell audioPhrasePos
 //@state 1 1 60 32
 //@body

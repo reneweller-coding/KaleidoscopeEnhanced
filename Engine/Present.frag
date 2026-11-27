@@ -44,6 +44,8 @@ layout( std430, binding = 3 ) readonly buffer AutoExp
 uniform sampler2D tex;        ///< The input picture.
 uniform vec2      resolution; ///< Size of the render target in pixels.
 uniform float     scale;      ///< Blackout, DJ-stop and fade dimming (and the limiter where limScale is 0), last.
+uniform float     hdrBuffers; ///< 1 = the intermediates are 16 bit (KALEIDO_HDR_BUFFERS): the picture may hold light
+                              ///< above 1.
 
 uniform float     audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
@@ -527,7 +529,8 @@ void main()
     {
         vec2 euv = ( puv - 0.5 ) / 1.045 + 0.5;
         vec3 g = texture( histTex, vec3( euv, echo.y ) ).rgb;
-        c = 1.0 - ( 1.0 - c ) * ( 1.0 - g * echo.x );
+        // The screen blend, written for light above 1 too where the intermediates are 16 bit (it would dim it).
+        c = ( hdrBuffers > 0.5 ) ? c + g * echo.x * ( 1.0 - min( c, 1.0 ) ) : 1.0 - ( 1.0 - c ) * ( 1.0 - g * echo.x );
     }
 
     // CAS-style sharpening: when the internal render scale is below 1 the
@@ -543,6 +546,11 @@ void main()
         vec3 mx = max( max( max( n, s ), max( e, w ) ), c );
         c = clamp( c + ( 4.0 * c - ( n + s + e + w ) ) * sharpen, mn, mx );
     }
+
+    // 16-bit intermediates keep what an 8-bit target never held: a scene's stray NaN or infinity (a normalize of
+    // zero, a division by it) would reach the grade, and light far above white.  Both are bounded here.
+    if ( hdrBuffers > 0.5 )
+        c = mix( clamp( c, 0.0, 64.0 ), vec3( 0.0 ), isnan( c ) );
 
     // Mood grade along the empirically grounded mapping canon (Palmer 2013,
     // Valdez & Mehrabian 1994): VALENCE carries colour temperature and
@@ -644,6 +652,8 @@ void main()
     // frame, tinted warm) - gives highlights the "photo emulsion" melt.
     {
         vec3 hal = max( texture( tex, puv, 5.0 ).rgb - 0.55, 0.0 );
+        if ( hdrBuffers > 0.5 ) // a NaN in the frame reaches every coarse mip above it
+            hal = mix( min( hal, vec3( 64.0 ) ), vec3( 0.0 ), isnan( hal ) );
         c += hal * vec3( 1.15, 0.72, 0.42 ) * 0.14;
     }
 
@@ -1059,8 +1069,10 @@ void main()
     }
 
     // Photosensitivity limit (applied last): the compute pass's limScale, every frame; where it does not run
-    // (limScale 0), the host folds its own limiter into `scale`.
-    c *= scale * ( limScale > 0.0 ? limScale : 1.0 );
+    // (limScale 0), the host folds its own limiter into `scale`.  With 16-bit intermediates it comes after the
+    // exposure and the shoulder below instead.
+    if ( hdrBuffers < 0.5 )
+        c *= scale * ( limScale > 0.0 ? limScale : 1.0 );
 
     // Percentile auto-exposure ON TOP of the limiter, never instead of it: the
     // limiter is what caps how fast the frame may BRIGHTEN, and that safety
@@ -1071,6 +1083,19 @@ void main()
     // the limiter sees what the viewer sees.
     if ( autoExposure > 0.0 )
         c *= clamp( autoExposure, 0.72, 1.8 );
+
+    // 16-bit intermediates (KALEIDO_HDR_BUFFERS, docs/engine-internals-69-light.md): light above 1 rolls off
+    // instead of breaking off at the final clamp -- a soft shoulder on the brightest channel, the identity up to 0.95
+    // and a Reinhard tail above that reaches 1 only at infinity, so the hue holds (a knee at 0.9 took 16 of 255 off
+    // the whites of scenes that never pass 1) -- and the photosensitivity limit after it, on the value the viewer
+    // sees: a light far above 1 dimmed before the shoulder would hardly darken.
+    if ( hdrBuffers > 0.5 )
+    {
+        float pk = max( c.r, max( c.g, c.b ) );
+        if ( pk > 0.95 )
+            c *= ( 0.95 + ( pk - 0.95 ) / ( 1.0 + ( pk - 0.95 ) * 20.0 ) ) / pk;
+        c *= scale * ( limScale > 0.0 ? limScale : 1.0 );
+    }
 
     // --- Film grain: fine temporal grain, stronger in the shadows (like real
     // emulsion) and a touch more present while music plays.  Zero-mean pixel

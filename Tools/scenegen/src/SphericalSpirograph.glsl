@@ -13,6 +13,7 @@
  *
  * Knobs: tiltP (how far the rolling circle is tilted), threadP (how many threads), hueP.
 //@params tiltP threadP
+//@light
 //@audio audioHarmAdvance audioSwell
 //@body
 /**  The distance on screen to one spherical trochoid.

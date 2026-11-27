@@ -14,6 +14,7 @@
  *
  * Knobs: pointP (how many points), shapeP (the path's shape: circle to wave), hueP.
 //@params pointP shapeP
+//@light
 //@audio audioHarmAdvance audioSwell
 //@body
 /**  The swarm's light for one frequency grid.

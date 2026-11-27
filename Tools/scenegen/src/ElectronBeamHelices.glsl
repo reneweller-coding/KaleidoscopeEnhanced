@@ -12,6 +12,7 @@
  *
  * Knobs: beamP (how many beams), pitchP (how long the screws are), hueP.
 //@params beamP pitchP
+//@light
 //@audio audioBass audioSwell
 //@body
 void main()

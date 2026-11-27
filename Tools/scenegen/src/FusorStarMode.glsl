@@ -14,6 +14,7 @@
  *
  * Knobs: gridP (how fine the cage is), beamP (the beams' width), hueP.
 //@params gridP beamP
+//@light
 //@audio audioSwell audioKick
 //@body
 void main()

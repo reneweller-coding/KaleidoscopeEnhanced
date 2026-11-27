@@ -384,6 +384,39 @@ public:
     void run( const Inputs &in );
 
 private:
+    /**  The light block's measuring hook (KALEIDO_LIGHT_STATS, Tools/light_stats.py): how much of the frame the
+     * present pass takes sits at the upper limit, how much lies above it, and how much glow that light gives.
+     *
+     * @param in     This frame's inputs: the source texture and its size. (in)
+     * @param scale  The factor that decodes the source: 1 for a plain run, 4 for the measurement copies of
+     *               Tools/light_stats.py, whose scenes write a quarter of their light without the final clamp. (in)
+     *
+     * Reads the source back (a sync: for measuring runs only) and prints one line per frame to stderr, `[light]
+     * f=<frame> n=<pixels>` and the shares of the pixels whose brightest channel reaches 0.995 (clip), 1.05 (over),
+     * 2 (over2), whose luma reaches 1.05 (lover), whose darkest channel reaches 0.995 (white); the mean luma above 1
+     * (exc); the bloom's bright pass as it is (b8: the colour clamped to 1, as an 8-bit target holds it) and as it
+     * would be with the light kept (bh); the mean luma of the clamped colour; the 99.9th percentile (p999) and the
+     * maximum of the brightest channel.
+     **/
+    void logLightStats( const Inputs &in, float scale );
+
+    /**  The frame as the photosensitivity limiter measures it with 16-bit intermediates (Engine/LightMeasure.frag):
+     * each pixel at most 1, as an 8-bit target holds it, plus the glow its light above 1 adds beyond the 8-bit
+     * frame's -- mipmapped, so the limiter's mips average what the viewer sees.
+     *
+     * @param in  This frame's inputs: the source texture, its size and the audio the glow's weight follows. (in)
+     *
+     * @return
+     *   The measure frame (m_measureTex), or the source itself where the shader did not build.
+     *
+     * Averaged at 16 bit as it is, a dense field of lights above 1 read as a bright area that the present pass's
+     * roll-off never shows (ParticleTunnelFlight tripped the flash hazard in 48 of 400 logged frames and was dimmed
+     * to 0.35, against none at 8 bit); clamped alone, it missed the glow that light adds and that pulses with the
+     * beat.  A frame without light above 1 is measured exactly as an 8-bit one.  One full-resolution pass and one
+     * mipmap generation a frame, only with the switch (docs/engine-internals-69-light.md).
+     **/
+    GLuint measureTexture( const Inputs &in );
+
     /**  (Re)allocate the mipmapped final-frame texture at the given size.
      *
      * @param w            Texture width. (in)
@@ -555,8 +588,16 @@ private:
     GLint m_presentPalAmtUni = -1;     ///< Uniform location: cover palette strength ("paletteAmt").
     GLint m_presentSceneDepthUni = -1; ///< Uniform location: scene depth sampler ("sceneDepth", always bound to unit
                                        ///< 6).
-    GLint m_presentDepthParUni = -1;   ///< Uniform location: parallax strength ("depthPar").
-    GLint m_presentNearFar2Uni = -1;   ///< Uniform location: near/far plane distances ("nearFar2").
+    GLint  m_presentDepthParUni = -1;  ///< Uniform location: parallax strength ("depthPar").
+    GLint  m_presentNearFar2Uni = -1;  ///< Uniform location: near/far plane distances ("nearFar2").
+    GLint  m_presentHdrUni = -1;       ///< Uniform location: 16-bit intermediates ("hdrBuffers").
+    bool   m_hdr = false;              ///< The intermediates are RGBA16F (setup()): the source may hold light above 1.
+    GLuint m_measureTex = 0;           ///< measureTexture(): the mipmapped RGBA16F frame the limiter reads (HDR only).
+    GLuint m_measureFbo = 0;           ///< measureTexture(): the FBO that draws into m_measureTex.
+    GLuint m_measureProg = 0; ///< measureTexture(): Engine/LightMeasure.frag (0 = not built; the source is read).
+    bool   m_measureTried = false;     ///< measureTexture(): the program was asked for (once).
+    /** Width m_measureTex was allocated at. */
+    int m_measureW = 0, m_measureH = 0; ///< Height m_measureTex was allocated at.
     GLint m_presentPhParUni = -1;      ///< Uniform location: parallax strength on a photo's depth ("depthParPhoto").
     GLint m_presentPhStereoUni = -1;   ///< Uniform location: the photo's depth's share in the stereo ("stereoPhoto").
     GLint m_presentPhWinUni = -1;      ///< Uniform location: the photo's near/far window depths ("photoDepthWin").

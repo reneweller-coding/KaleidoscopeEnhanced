@@ -14,6 +14,7 @@
  *
  * Knobs: lineP (how many field lines), packetP (how long the packets are), hueP.
 //@params lineP packetP
+//@light
 //@audio audioMelody[96] audioMelodyHead audioSwell
 //@body
 /**  The melody's recent mean: the sounding samples of the ring, triangle-weighted toward the newest.

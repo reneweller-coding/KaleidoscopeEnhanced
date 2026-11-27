@@ -13,6 +13,7 @@
  *
  * Knobs: zoomP (how deep the view breathes into the pearls), lineP (the glow's sharpness), hueP.
 //@params zoomP lineP
+//@light
 //@audio audioHarmAdvance audioSwell
 //@body
 /**  The distance to the Maskit limit set (Jos Leys' algorithm with the derivative carried along).

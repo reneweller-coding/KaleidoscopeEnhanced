@@ -162,5 +162,6 @@ void main()
     col += imgPalette( 0.85 ) * center_flare;
 
     col = pow( col, vec3( 0.88 ) );
-    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
+    // The light above white is kept (block L, 16-bit intermediates); an 8-bit target cuts it at 1.
+    fragColor = vec4( clamp( col, 0.0, 3.0 ), 1.0 );
 }

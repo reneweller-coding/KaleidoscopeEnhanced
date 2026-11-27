@@ -32,6 +32,9 @@ uniform float     threshold;  ///< >0 -> bright-pass extract (first pass only)
 vec3 tap( vec2 uv )
 {
     vec3 c = texture( tex, uv ).rgb;
+    // 16-bit intermediates (KALEIDO_HDR_BUFFERS) hold light above 1 -- and a scene's stray NaN or infinity, which the
+    // blur would spread over a patch: bounded here (an 8-bit frame is never touched by this).
+    c = mix( min( c, vec3( 64.0 ) ), vec3( 0.0 ), isnan( c ) );
     if ( threshold > 0.0 )
         c = max( c - threshold, vec3( 0.0 ) ) * 1.6;
     return c;

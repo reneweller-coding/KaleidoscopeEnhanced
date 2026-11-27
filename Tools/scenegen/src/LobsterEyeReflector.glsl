@@ -12,6 +12,7 @@
  *
  * Knobs: poreP (the tubes' size), sourceP (how many sources), hueP.
 //@params poreP sourceP
+//@light
 //@audio audioSwell
 //@body
 /**  The photo's colour calmed toward the colour family.

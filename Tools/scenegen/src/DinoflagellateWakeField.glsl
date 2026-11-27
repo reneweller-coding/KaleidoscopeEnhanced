@@ -13,6 +13,7 @@
  *
  * Knobs: wakeP (how long the wakes last), swimP (how far the melody sways the paths), hueP.
 //@params wakeP swimP
+//@light
 //@audio audioMelody[96] audioMelodyHead audioSwell
 //@body
 vec4 gMelA = vec4(0.5);    // the melody at ages 0..3, smoothed

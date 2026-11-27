@@ -11,6 +11,7 @@
  *
  * Knobs: wireP (how many wires), beadP (the beads' spacing), hueP.
 //@params wireP beadP
+//@light
 //@audio audioSwell
 //@body
 void main()

@@ -11,6 +11,7 @@
  *
  * Knobs: hoopP (how many hoops per row), beadP (how many beads per hoop), hueP.
 //@params hoopP beadP
+//@light
 //@audio audioSwell
 //@body
 void main()

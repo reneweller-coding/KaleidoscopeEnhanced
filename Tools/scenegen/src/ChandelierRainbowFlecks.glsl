@@ -12,6 +12,7 @@
  *
  * Knobs: fleckP (the flecks' size), layerP (how strongly the layers' speeds differ), hueP.
 //@params fleckP layerP
+//@light
 //@audio audioSwell audioKick
 //@body
 void main()

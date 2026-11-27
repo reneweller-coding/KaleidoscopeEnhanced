@@ -14,6 +14,7 @@
  * Knobs: radiusP (the circle's size), foldP (the rosette's symmetry), hueP.  Distinct from BlacksmithSparks, which is
  * an anvil.
 //@params radiusP foldP
+//@light
 //@audio audioSwell audioOnset
 //@body
 void main()

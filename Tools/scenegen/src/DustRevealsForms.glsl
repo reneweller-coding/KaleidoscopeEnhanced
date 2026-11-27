@@ -13,6 +13,7 @@
  *
  * Knobs: grainP (how fine the dust is), windP (how far the wind carries it), hueP.
 //@params grainP windP
+//@light
 //@audio audioPhrasePos audioSectionId audioSectionPrev audioSectionAge
 //@body
 /**  A form's distance.

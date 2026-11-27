@@ -8,6 +8,7 @@
  *
  * Knobs: sizeP (the size of the cells), hueP.
 //@params sizeP
+//@light
 //@audio audioSwell audioAdvance
 //@body
 void main()

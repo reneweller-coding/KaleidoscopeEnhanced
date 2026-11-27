@@ -13,6 +13,7 @@
  *
  * Knobs: ribbonP (how many ribbons), waveP (how far the melody waves them), hueP.
 //@params ribbonP waveP
+//@light
 //@audio audioMelody[96] audioMelodyHead audioRolloff
 //@body
 vec4 gMelA = vec4(0.5);    // the melody at ages 0..3, smoothed

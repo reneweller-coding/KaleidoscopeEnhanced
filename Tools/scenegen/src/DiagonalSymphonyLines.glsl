@@ -11,6 +11,7 @@
  *
  * Knobs: laneP (how many lanes), motifP (the motifs' size), hueP.
 //@params laneP motifP
+//@light
 //@audio audioSpectrum[32]
 //@body
 void main()

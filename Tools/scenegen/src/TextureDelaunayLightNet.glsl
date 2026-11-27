@@ -17,6 +17,7 @@
  *
  * Knobs: nodeP (node spacing), threadP (thread brightness), photoP (photo visibility), hueP.
 //@params nodeP threadP photoP
+//@light
 //@audio audioSpread audioKick audioHigh audioMode audioSwell
 //@body
 float gS;
