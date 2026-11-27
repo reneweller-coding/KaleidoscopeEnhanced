@@ -244,6 +244,25 @@ inline QString mapPath( const QString &photo, QString *tableDir = nullptr )
     return QString();
 }
 
+/**  Whether a photo has relief worth showing: a depth map that its table does not mark flat (plan 27.11.2026 P1).
+ *
+ * @param photo  The photo's path. (in)
+ *
+ * @return
+ *   True if applyToAlpha() would give the photo a depth (Info::map); false without a map, for a flat photo and with
+ *   KALEIDO_NO_DEPTH.  Reads no image: the map's existence and the table row only (both cheap, the table cached).
+ **/
+inline bool hasRelief( const QString &photo )
+{
+    if ( disabled() )
+        return false;
+    QString dir;
+    if ( mapPath( photo, &dir ).isEmpty() )
+        return false;
+    Row r;
+    return !( row( dir, QFileInfo( photo ).fileName(), r ) && r.flat );
+}
+
 /**  Writes a photo's depth map into the alpha channel of its prepared image.
  *
  * @param image  The photo as it goes to the GPU: already mirrored vertically, in Format_ARGB32(_Premultiplied),
