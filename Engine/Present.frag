@@ -359,7 +359,8 @@ float photoDepthAt( vec2 puv )
 // ---- rays (27.11.2026): light shafts through the photo's depth -- BEGIN (function) ----
 const int   RaysTaps = 16;    ///< Samples of the march toward the light.
 const float RaysReach = 0.6;  ///< The longest march, in frame heights.
-const float RaysFar = 0.5;    ///< Farness (1 - the photo's depth) from which a sample lets light through (all of it from 0.85).
+const float RaysFar = 0.5; ///< Farness (1 - the photo's depth) from which a sample lets light through (all of it from
+                           ///< 0.85).
 const float RaysLum = 0.35;   ///< Luminance from which a far sample counts as light (all of it from 0.8).
 const float RaysGain = 1.5;   ///< The shafts' strength at raysP 1.
 const float RaysDecay = 0.93; ///< Weight of a sample against the one before it (the light thins along the march).
