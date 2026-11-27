@@ -16,7 +16,13 @@
  *  of the rim (PhotoRim), without the fill, its normal over a wider step
  *  (PhotoStep, across the map's 8-bit terraces) and a flattened relief
  *  (PhotoFlat, so only its edges catch the light): a photo's relief is a hint.
+ *  With arcP above 0 (plan P2, 27.11.2026) the light behind carries the
+ *  music's tension arc: in a build-up the rim narrows to a thin outline and
+ *  withdraws a little, at a drop it flares, wider and brighter, within half a
+ *  second.
  *    interpolation -> cross-fades the two rim-lit scene layers
+ *    audioBuildUp  -> (arcP) a thinner, fainter rim
+ *    audioDrop     -> (arcP) the rim flares, an envelope of its own (tensionArc())
  *    audioKick     -> flashes the rim-light intensity
  *    audioLevel    -> adds to the rim-light intensity
  *    audioAmbient  -> strengthens the opposing fill light
@@ -71,6 +77,30 @@ uniform float dayPhase;       ///< Phase of the slow day cycle, 0..1.
 uniform float rimP;   ///< preset: rim strength
 uniform float sharpP; ///< preset: how tight the rim band is
 uniform float fillP;  ///< preset: opposing fill light
+
+uniform float audioBuildUp; ///< Build-up tension toward a drop, 0..1 (smoothed: ~0.5 s rise, ~1.2 s fall).
+uniform float audioDrop;    ///< Drop pulse: 1 at the hit, then decaying (about exp( -t / 0.7 s )).
+uniform float arcP;         ///< preset: the tension arc through the depth (plan P2); 0 = off, the old picture
+
+const float PhotoArc = 0.6; ///< The tension arc on a photo, relative to a room (27.11.2026).
+
+/**  The tension arc through the depth (plan P2, 27.11.2026): how far the music builds toward a drop, and how far a
+ * drop has cleared the air.
+ *
+ * @return
+ *   x: the build-up's tension, 0..1, released by a drop; y: the clearing after a drop, 0..1.
+ *
+ * The tension starts below the present pass's held breath (`breath`, the build-up's upper half from 0.5: it takes
+ * colour and light from the whole frame) and works only in the depth.  The clearing is an envelope of its own, never
+ * the pulse: the drop pulse jumps to 1 at the hit and decays as exp( -t / 0.7 s ), so its value says how long ago
+ * the hit was.  The envelope rises from 0 to 1 between 0.15 and 0.55 s after the hit (pulse 0.8 .. 0.45), holds to
+ * about 1.6 s (0.1) and is gone by 4 s (0.003); a pulse of 1 gives 0, so the hit itself is no step.
+ **/
+vec2 tensionArc()
+{
+    float clear = ( 1.0 - smoothstep( 0.45, 0.8, audioDrop ) ) * smoothstep( 0.003, 0.1, audioDrop );
+    return vec2( smoothstep( 0.35, 0.8, audioBuildUp ) * ( 1.0 - clear ), clear );
+}
 
 /**  A hue as a colour (the house palette).
  *
@@ -248,12 +278,27 @@ void main()
     vec3 fillCol = mix( vec3( 0.25, 0.35, 0.55 ), hue2rgb( fract( 0.12 + 0.2 * sin( a ) ) ), 0.35 );
 
     float sharp = clamp( sharpP, 0.0, 1.0 );
+    vec2  arc = vec2( 0.0 );
+    float s = 0.0;
+    if ( arcP > 0.0 ) // plan P2, the tension arc: the build-up tightens the rim toward a thin outline
+    {
+        arc = tensionArc();
+        s = arcP
+            * mix( depthPhoto.y > 0.5 ? PhotoArc : 1.0, depthPhoto.x > 0.5 ? PhotoArc : 1.0,
+                   clamp( interpolation, 0.0, 1.0 ) );
+        sharp = mix( sharp, 1.0, 0.6 * arc.x * s ) * ( 1.0 - 0.5 * arc.y * s );
+    }
     // A photo's depth (a 2D scene, depthPhoto) gets its own light; a 3D layer gets what it always got.
     vec3 A = depthPhoto.x > 0.5 ? litPhoto( tex0, texDepth0, uv, depthValid.x, px, keyDir, keyCol, sharp )
                                 : lit( tex0, texDepth0, uv, depthValid.x, px, keyDir, keyCol, fillDir, fillCol, sharp );
     vec3 B = depthPhoto.y > 0.5 ? litPhoto( tex1, texDepth1, uv, depthValid.y, px, keyDir, keyCol, sharp )
                                 : lit( tex1, texDepth1, uv, depthValid.y, px, keyDir, keyCol, fillDir, fillCol, sharp );
     vec3 col = mix( B, A, clamp( interpolation, 0.0, 1.0 ) );
+    if ( arcP > 0.0 ) // the light itself: a little fainter in the build-up, flaring at the drop
+    {
+        vec3 base = mix( texture( tex1, uv ).rgb, texture( tex0, uv ).rgb, clamp( interpolation, 0.0, 1.0 ) );
+        col = base + ( col - base ) * ( ( 1.0 - 0.3 * arc.x * s ) * ( 1.0 + 1.0 * arc.y * s ) );
+    }
 
     col *= 1.0 + 0.12 * audioBeat + 0.10 * audioSubBass;
     col += keyCol * 0.04 * audioHigh;

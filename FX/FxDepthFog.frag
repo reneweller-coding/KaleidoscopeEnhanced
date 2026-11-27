@@ -13,7 +13,12 @@
  *  uniform fill; the sun's direction and colour drift with dayPhase and the
  *  harmonic hue.  A 2D scene that passes the photo's depth on (26.11.2026,
  *  depthPhoto) gets the same haze with thinner air (PhotoDensity).
+ *  With arcP above 0 (plan P2, 27.11.2026) the fog carries the music's tension
+ *  arc: in a build-up a haze grows from the back toward the front, a drop
+ *  clears it -- and the usual air with it -- within half a second.
  *    interpolation -> cross-fades the two fogged scene layers
+ *    audioBuildUp  -> (arcP) the haze's density and how far forward its front reaches
+ *    audioDrop     -> (arcP) clears the haze and thins the air, an envelope of its own (tensionArc())
  *    audioSubBass  -> thickens the fog density and widens the forward-scatter halo
  *    audioKick     -> flashes the sun colour brighter
  *    audioLevel    -> brightens the sun colour
@@ -66,6 +71,46 @@ uniform float densityP; ///< preset: how thick the air is
 uniform float heightP;  ///< preset: how fast the layer thins with height
 uniform float glowP;    ///< preset: strength of the forward scattering
 
+uniform float audioBuildUp; ///< Build-up tension toward a drop, 0..1 (smoothed: ~0.5 s rise, ~1.2 s fall).
+uniform float audioDrop;    ///< Drop pulse: 1 at the hit, then decaying (about exp( -t / 0.7 s )).
+uniform float arcP;         ///< preset: the tension arc through the depth (plan P2); 0 = off, the old picture
+
+const float PhotoArc = 0.6; ///< The tension arc on a photo, relative to a room (27.11.2026).
+
+vec2 gArc = vec2( 0.0 );  ///< This frame's tension arc (tensionArc()), set in main() when arcP is above 0.
+vec3 gHaze = vec3( 0.0 ); ///< The colour of the build-up's haze, set in main() when arcP is above 0.
+
+/**  The tension arc through the depth (plan P2, 27.11.2026): how far the music builds toward a drop, and how far a
+ * drop has cleared the air.
+ *
+ * @return
+ *   x: the build-up's tension, 0..1, released by a drop; y: the clearing after a drop, 0..1.
+ *
+ * The tension starts below the present pass's held breath (`breath`, the build-up's upper half from 0.5: it takes
+ * colour and light from the whole frame) and works only in the depth.  The clearing is an envelope of its own, never
+ * the pulse: the drop pulse jumps to 1 at the hit and decays as exp( -t / 0.7 s ), so its value says how long ago
+ * the hit was.  The envelope rises from 0 to 1 between 0.15 and 0.55 s after the hit (pulse 0.8 .. 0.45), holds to
+ * about 1.6 s (0.1) and is gone by 4 s (0.003); a pulse of 1 gives 0, so the hit itself is no step.
+ **/
+vec2 tensionArc()
+{
+    float clear = ( 1.0 - smoothstep( 0.45, 0.8, audioDrop ) ) * smoothstep( 0.003, 0.1, audioDrop );
+    return vec2( smoothstep( 0.35, 0.8, audioBuildUp ) * ( 1.0 - clear ), clear );
+}
+
+/**  How far a point lies, on a log scale.
+ *
+ * @param z  Linear distance. (in)
+ *
+ * @return
+ *   0 at 4 units (the near end of a room) .. 1 at 60 and beyond (the sky); a photo's depth spans 0.26 (its near
+ *   end, 8 units) .. 1 (its far end, 80).
+ **/
+float farness( float z )
+{
+    return clamp( log( z / 4.0 ) / log( 15.0 ), 0.0, 1.0 );
+}
+
 /**  A hue as a colour (the house palette).
  *
  * @param h  The hue, 0..1. (in)
@@ -105,6 +150,32 @@ float phaseHG( float cosT, float g )
     float g2 = g * g;
     float d = 1.0 + g2 - 2.0 * g * cosT;
     return ( 1.0 - g2 ) / ( 12.566371 * max( pow( d, 1.5 ), 1e-4 ) );
+}
+
+/**  The fog with the tension arc (arcP above 0): in a build-up a haze grows from the back toward the front, a drop
+ * clears it and thins the usual air below its density.
+ *
+ * @param c      The frame's colour. (in)
+ * @param air    The colour of the air with the sun's in-scattering. (in)
+ * @param ext    The usual fog's extinction, 0..1. (in)
+ * @param z      Linear distance. (in)
+ * @param valid  The share of real depth, 0..1. (in)
+ * @param ph     1 where the depth is a photo's: PhotoArc of the arc. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ *
+ * The haze's front walks from beyond the far end (no tension) to farness 0.45 (full tension), so the back goes first
+ * and the near stays clear; its colour is a pale mix of the air and the sun without the kick (gHaze), a veil and no
+ * second dimming -- the held breath already dims the whole frame.
+ **/
+vec3 arcFogged( vec3 c, vec3 air, float ext, float z, float valid, float ph )
+{
+    float s = arcP * ( ph > 0.5 ? PhotoArc : 1.0 );
+    float front = 1.1 - 0.65 * gArc.x;
+    float haze = 0.7 * gArc.x * smoothstep( front - 0.15, front + 0.15, farness( z ) ) * min( valid, 1.0 );
+    vec3  col = mix( c, air, ext * ( 1.0 - 0.6 * gArc.y * s ) );
+    return mix( col, gHaze, clamp( haze * s, 0.0, 1.0 ) );
 }
 
 /**  The frame at a pixel behind the depth fog, with the sun's in-scattering.
@@ -165,6 +236,8 @@ vec3 fogged( sampler2D src, sampler2D dep, vec2 uv, vec3 sunDir, vec3 sunCol,
 
     if ( valid < 1.0 )
         ext *= valid;
+    if ( arcP > 0.0 ) // plan P2: the tension arc (0: the old picture, this line skipped)
+        return arcFogged( c, air, ext, z, valid, ph );
     return mix( c, air, ext );
 }
 
@@ -181,10 +254,16 @@ void main()
     vec3 sunCol = mix( vec3( 1.0, 0.72, 0.42 ), vec3( 0.85, 0.92, 1.0 ),
                        clamp( 0.5 + 0.5 * cos( sa ), 0.0, 1.0 ) );
     sunCol = mix( sunCol, hue2rgb( fract( 0.08 + 0.10 * sin( audioChromaHue ) ) ), 0.22 );
+    vec3 sunTint = sunCol; // the sun's colour without the kick: the build-up's haze must not pulse
     sunCol *= 0.7 + 0.9 * audioLevel + 0.5 * audioKick;
 
     vec3 airCol = mix( vec3( 0.045, 0.060, 0.095 ), vec3( 0.16, 0.20, 0.28 ),
                        0.3 + 0.5 * audioAmbient );
+    if ( arcP > 0.0 ) // plan P2: the tension arc
+    {
+        gArc = tensionArc();
+        gHaze = mix( airCol, sunTint * ( 0.6 + 0.5 * audioLevel ), 0.35 );
+    }
 
     vec3 a = fogged( tex0, texDepth0, uv, sunDir, sunCol, airCol, depthValid.x, depthPhoto.x );
     vec3 b = fogged( tex1, texDepth1, uv, sunDir, sunCol, airCol, depthValid.y, depthPhoto.y );

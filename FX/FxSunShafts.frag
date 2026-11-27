@@ -13,7 +13,12 @@
  *  unoccluded bloom marks the source itself.  A 2D scene that passes the
  *  photo's depth on (26.11.2026, depthPhoto) lets the light through where the
  *  photo is far (its farthest third), at a fraction of the strength (PhotoShaft).
+ *  With arcP above 0 (plan P2, 27.11.2026) the shafts carry the music's
+ *  tension arc: in a build-up they narrow toward the light, at a drop they
+ *  break through, wider and brighter, within half a second.
  *    interpolation -> cross-fades the two scene layers and their shaft-occlusion terms
+ *    audioBuildUp  -> (arcP) narrows the shafts
+ *    audioDrop     -> (arcP) the shafts break through, an envelope of its own (tensionArc())
  *    audioKick     -> nudges the light source's position
  *    audioLevel    -> brightens the shafts
  *    audioChromaHue-> tints the shaft/bloom colour with the harmonic hue
@@ -65,6 +70,30 @@ uniform float lengthP; ///< preset: how far the march reaches
 uniform float dustP;   ///< preset: haze density
 
 const int Steps = 28; ///< Samples along the march toward the light.
+
+uniform float audioBuildUp; ///< Build-up tension toward a drop, 0..1 (smoothed: ~0.5 s rise, ~1.2 s fall).
+uniform float audioDrop;    ///< Drop pulse: 1 at the hit, then decaying (about exp( -t / 0.7 s )).
+uniform float arcP;         ///< preset: the tension arc through the depth (plan P2); 0 = off, the old picture
+
+const float PhotoArc = 0.6; ///< The tension arc on a photo, relative to a room (27.11.2026).
+
+/**  The tension arc through the depth (plan P2, 27.11.2026): how far the music builds toward a drop, and how far a
+ * drop has cleared the air.
+ *
+ * @return
+ *   x: the build-up's tension, 0..1, released by a drop; y: the clearing after a drop, 0..1.
+ *
+ * The tension starts below the present pass's held breath (`breath`, the build-up's upper half from 0.5: it takes
+ * colour and light from the whole frame) and works only in the depth.  The clearing is an envelope of its own, never
+ * the pulse: the drop pulse jumps to 1 at the hit and decays as exp( -t / 0.7 s ), so its value says how long ago
+ * the hit was.  The envelope rises from 0 to 1 between 0.15 and 0.55 s after the hit (pulse 0.8 .. 0.45), holds to
+ * about 1.6 s (0.1) and is gone by 4 s (0.003); a pulse of 1 gives 0, so the hit itself is no step.
+ **/
+vec2 tensionArc()
+{
+    float clear = ( 1.0 - smoothstep( 0.45, 0.8, audioDrop ) ) * smoothstep( 0.003, 0.1, audioDrop );
+    return vec2( smoothstep( 0.35, 0.8, audioBuildUp ) * ( 1.0 - clear ), clear );
+}
 
 /**  Depth buffer value to linear distance.
  *
@@ -179,6 +208,17 @@ void main()
     // stops having a position.
     float dl = length( ( uv - lightUV ) * vec2( resolution.x / resolution.y, 1.0 ) );
     shaft *= exp( -dl * 1.5 );
+    if ( arcP > 0.0 )
+    {
+        // Plan P2, the tension arc: the build-up pulls the light in toward its source and leaves only the most open
+        // paths (a power on the openness: the beams narrow); a drop lets it out wider and brighter.
+        vec2  arc = tensionArc();
+        float s = arcP
+                  * mix( depthPhoto.y > 0.5 ? PhotoArc : 1.0, depthPhoto.x > 0.5 ? PhotoArc : 1.0,
+                         clamp( interpolation, 0.0, 1.0 ) );
+        shaft = pow( max( shaft, 0.0 ), 1.0 + 0.8 * arc.x * s ) * exp( -dl * ( 2.5 * arc.x - 0.6 * arc.y ) * s )
+                * ( 1.0 + 0.9 * arc.y * s );
+    }
 
     // Warm the shafts slightly and let the harmony tint them, bounded so they
     // stay sunlight rather than becoming a colour wash.
