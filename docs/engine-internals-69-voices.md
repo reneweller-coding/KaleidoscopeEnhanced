@@ -196,7 +196,7 @@ against the base run without the expr -- see the trap below for why `base0` came
 | labs: hit median kick / snare / hat / bass | 0.059 / 0.016 / 0.029 / 0.063 | 0.057 / 0.012 / 0.044 / 0.070 |
 | the 21 most-shown scenes with roles: lr | median +0.000 | **median +0.349, min +0.051** |
 | the 39 most-shown without roles: lr | median 0.000 | median 0.000 (max +0.099) |
-| limiter samples dimmed (full runs), labs / most shown | 0 / 379 | 0 / 231 |
+| limiter samples dimmed (full runs), labs / most shown | 0 / 379 (base0: 0 / 230) | 0 / 231 |
 
 - *The stereo role shows in every scene that has it*, and nowhere else.  The lead panned left leaves the mono sum
   untouched, so this is the balance alone.
@@ -227,9 +227,11 @@ against the base run without the expr -- see the trap below for why `base0` came
   the hit-locked change per muted voice rises a little in most labs (kick in 15 of 24, 2 equal, e.g. EngravingLab
   0.069 -> 0.092, PartitionLab 0.120 -> 0.144) -- what muting one voice takes away of the roles is small, because the
   envelopes the roles follow hear the other voices too.
-- *The limiter* fires less, not more: 0 -> 0 in the labs, 379 -> 231 samples in the 60.  The count is a noisy
-  number: scenes without roles, the same code in both runs, moved by up to 120 samples (MirrorBallRoom 0 -> 120,
-  HyperWarpTunnel 77 -> 0) -- the limiter's state carries over from the scene before.
+- *The limiter* fires as often as before: frame-matched (base0 against roles) 0 -> 0 samples in the labs and
+  230 -> 231 in the 60 -- one sample more, in CrystalThroatTunnel; the 39 scenes without roles 221 -> 221.  Against
+  the run without the expr the numbers moved by up to 120 samples per scene (MirrorBallRoom 0 -> 120, HyperWarpTunnel
+  77 -> 0) although the code was the same: the limiter's state carries over from the scene before, and those runs
+  showed other pictures (the trap below).
 - *The acceptance as the plan words it* -- in the labs every voice above the level of the null pairs (amp <= 0.46 %,
   struct <= 0.04) -- holds: every voice reads 7-11 % in every lab.  It held before the roles too (the drift); the
   number that shows a role is the stereo, and the gain field for the snare's ring.
