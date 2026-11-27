@@ -30,6 +30,8 @@ against the full mix -- what each voice does in the picture.
     python Tools/reactivity.py --voices --report --tag base            # Tools/scene_voices.tsv + contact sheets
     python Tools/reactivity.py --voices --scenes ChainLab2D --tag l6 --expr depthLook=6 --halves
                                          # each voice in the near and the far half of the picture (by its depth)
+    ... --tag l6 --expr depthLook=6 --halves --against l0   # what look 6 adds to each voice, per half, against a
+                                         # run with depthLook=0 (both with KALEIDO_VOICES_KEEP=1)
 
 Controls: no scene of the catalogue is free of audio (every scene reacts, by the house rules), so the "still" side
 is made: the photo itself (Engine/ProfileStill.frag as a scene) and null pairs -- reactive scenes rendered silence
@@ -536,6 +538,52 @@ def measure_halves(F, V, onset, D):
     return out
 
 
+def look_halves(tag, against, label="pick_00"):
+    """--against: what a look adds to each voice's answer, per half of the picture (plan 27.11.2026, P3).
+
+    In a lab every muted voice reads a few percent from the drift alone -- the walk and the flow follow the music's
+    advance, so the muted run's geometry wanders off -- and the halves' own numbers drown in it.  Two runs with the
+    same rolls (the same <expr> knobs, one value differing: the look) drift alike, so the difference of their
+    differences, (full - muted) of this run minus (full - muted) of the other, keeps what the look does with the voice.
+    Needs the videos of both runs (KALEIDO_VOICES_KEEP=1) and this run's depth view (--halves).
+
+    @return
+      {scene: {voice: {"near": {amp, sync}, "far": {...}}}}; amp = mean |difference of differences| in % of full scale, sync =
+      how well its signed mean in the half follows the voice's hits (best Pearson over lags 0..VLAGS).
+    """
+    vd = lambda t, k: os.path.join(VWORK, t, "videos", "%s_%s.mp4" % (label, k))
+    ev = screen.windows_from_log(os.path.join(VWORK, tag, "%s_full.log" % label))
+    _, env = voice_audio(len(ev) - 2)
+    D = decode_gray(vd(tag, "depthview")).astype(np.float32) / 255.0
+    F = decode_gray(vd(tag, "full")).astype(np.float32) / 255.0
+    G = decode_gray(vd(against, "full")).astype(np.float32) / 255.0
+    out = {}
+    for v in VOICES:
+        V = decode_gray(vd(tag, "no_" + v)).astype(np.float32) / 255.0
+        W = decode_gray(vd(against, "no_" + v)).astype(np.float32) / 255.0
+        n = min(len(F), len(G), len(V), len(W), len(D))
+        for k, (t0w, name) in enumerate(ev):
+            if k == 0 or k == len(ev) - 1:
+                continue
+            a = max(1, int(round((t0w + screen.EXPORT_OFFSET + GUARD_IN) * VFPS)))
+            b = min(n, int(round((ev[k + 1][0] + screen.EXPORT_OFFSET - GUARD_OUT) * VFPS)))
+            X = (F[a:b] - V[a:b]) - (G[a:b] - W[a:b])
+            Dw = D[a:b]
+            med = np.median(Dw.reshape(len(Dw), -1), axis=1)[:, None, None]
+            r = out.setdefault(name, {}).setdefault(v, {})
+            for half, M in (("near", Dw > med), ("far", Dw <= med)):
+                cnt = np.maximum(M.sum(axis=(1, 2)), 1)
+                sm = (X * M).sum(axis=(1, 2)) / cnt
+                r[half] = {"amp": round(float(((np.abs(X) * M).sum(axis=(1, 2)) / cnt).mean()) * 100.0, 4),
+                           "sync": round(_corr_lag(_hp(sm), _hp(env[v][a:b])), 4)}
+            print("  %-20s %-6s near amp %.3f sync %.2f | far amp %.3f sync %.2f | amp near/far %.2f" % (
+                name, v, r["near"]["amp"], r["near"]["sync"], r["far"]["amp"], r["far"]["sync"],
+                r["near"]["amp"] / max(r["far"]["amp"], 1e-6)), flush=True)
+    io.open(os.path.join(VWORK, tag, "%s_against_%s.json" % (label, against)), "w",
+            encoding="utf-8").write(json.dumps(out, indent=0))
+    return out
+
+
 def run_voice_chunk(tag, label, entries, names, plain, cross, null=False):
     """Renders one chunk once per variant (and the full mix a second time for the null pair) and measures it.
 
@@ -747,6 +795,10 @@ def voices_main(a):
             continue
         entries = [with_exprs(blocks[n], exprs) for n in part]
         run_voice_chunk(a.tag, "%s_%02d" % (setname, i), entries, part, plain, cross, null=(a.set == "controls"))
+        if a.against:
+            print("%s against %s, %s_%02d (what the difference makes of each voice, per half):" % (
+                a.tag, a.against, setname, i))
+            look_halves(a.tag, a.against, "%s_%02d" % (setname, i))
     if a.set == "controls":
         controls_voices(a.tag)
     return 0
@@ -928,6 +980,9 @@ def main():
     ap.add_argument("--plan", action="store_true", help="--voices: print the set's chunks and stop")
     ap.add_argument("--halves", action="store_true", help="--voices: measure the near and the far half of the "
                                                           "picture apart, by the scenes' depth (one render more)")
+    ap.add_argument("--against", default="", help="--voices --halves: a run of the same set with the same rolls and "
+                                                  "one knob different (both with KALEIDO_VOICES_KEEP=1): what the "
+                                                  "difference does with each voice, per half (look_halves())")
     ap.add_argument("--sheets", default=VSHEETS, help="--voices --report: the folder for the contact sheets")
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")

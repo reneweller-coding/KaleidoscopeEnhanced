@@ -521,40 +521,20 @@ vec3 depthLookCol(int look, int vi, vec2 p, vec2 c, vec3 ph, float lod, inout fl
         return r.rgb;
     }
     if (look == 6) {                     // frequency by depth (plan P3, 27.11.2026): the music spread over the depth
-        // The depth splits the photo softly into near, middle and far (the maps are stretched per photo, so the
-        // thresholds sit at about the thirds); a photo without a map keeps its colour (have = 0), and a cross-fade to
-        // or from one fades the look.  Light and colour only, on the photo's own colours: the frame never moves.
+        // The depth splits the photo softly into near, middle and far around the photo's mean depth (fdLayers());
+        // the bass brightens the near layer, the mids raise the middle layer's colour, the highs set fine round glints
+        // into the far layer (freqDepth()).  A photo without a map keeps its colour (have = 0), and a cross-fade to or
+        // from one fades the look.  Light and colour only, on the photo's own colours: the frame never moves.
         float have = interpolation * photoDepthAmt.x + (1.0 - interpolation) * photoDepthAmt.y;
-        float t1 = dv(vi, 12.0, 0.28, 0.40), t2 = dv(vi, 13.0, 0.58, 0.70), e = dv(vi, 14.0, 0.06, 0.12);
-        float bass = clamp(audioBass, 0.0, 1.0);
+        vec3 t = fdLayers(vi);
         // near, a slight size: the photo pulled toward its subject (or the centre) swells the near layer over what
         // lies behind it -- with the slow swell and a fifth of the bass, at most 0.8..2.5 % (the rule for spatial
         // scales: the swell, at most 0.2 of the bass); at rest the very colour of the chain
-        float sz = dv(vi, 15.0, 0.008, 0.025) * have * (0.8 * sw + 0.2 * bass);
+        float sz = dv(vi, 15.0, 0.008, 0.025) * have * (0.8 * sw + 0.2 * clamp(audioBass, 0.0, 1.0));
         vec4 r = imgDepthOff(c, (0.5 + o0 - c) * sz, (0.5 + o1 - c) * sz, lod);
-        float wS = smoothstep(t2 - e, t2 + e, r.w) * have;
-        vec3 col = mix(ph, r.rgb, wS);
+        float wS = smoothstep(t.y - t.z, t.y + t.z, r.w) * have;
         pd = mix(pd, r.w, wS);
-        float wN = smoothstep(t2 - e, t2 + e, pd) * have;
-        float wF = (1.0 - smoothstep(t1 - e, t1 + e, pd)) * have;
-        float wM = max(have - wN - wF, 0.0);
-        // near: the bass brightens it (the kick's hit and the bass line under it)
-        col *= 1.0 + dv(vi, 16.0, 0.16, 0.32) * clamp(0.7 * audioKick + 0.3 * bass, 0.0, 1.0) * wN;
-        // middle: the mids raise its own colour (the chroma around its luma; no colour of its own)
-        float l = luma(col);
-        col = max(l + (col - l) * (1.0 + dv(vi, 17.0, 0.5, 1.1) * clamp(audioMid, 0.0, 1.0) * wM), 0.0);
-        // far: the highs set fine round glints into it -- jittered points in cells of 1/110 .. 1/170 of the height,
-        // each with a size and a twinkle of its own, the field drifting with the music's advance (rule V8e: the
-        // jitter (+-0.2) and the radius (<= 0.24) keep every point inside its cell)
-        float hi = clamp(0.65 * audioHat + 0.35 * audioHigh, 0.0, 1.0);
-        vec2 g = p * dv(vi, 18.0, 110.0, 170.0) + vec2(0.29, 0.13) * sceneAdvance;
-        vec2 gc = floor(g);
-        vec2 gf = fract(g) - 0.5 - 0.4 * (hash22(gc + 3.0) - 0.5);
-        float gs = 0.6 + 0.4 * hash21(gc + 11.0);
-        float pt = step(dv(vi, 19.0, 0.76, 0.88), hash21(gc + 29.0)) * smoothstep(0.24 * gs, 0.06 * gs, length(gf));
-        float tw = 0.55 + 0.45 * sin(6.2831853 * hash21(gc + 7.0) + 1.1 * sceneAdvance);
-        float gl = dv(vi, 20.0, 1.2, 2.2) * hi * pt * tw * wF;
-        return col * (1.0 + gl) + 0.3 * gl * imgLod(c, 5.0);   // a glint shines in the photo's broad colour there
+        return freqDepth(mix(ph, r.rgb, wS), pd, p, imgLod(c, 5.0), vi);   // the glints shine in the photo's broad colour
     }
     // look 5, subject stays whole (M3): inside the subject's soft mask the photo unfolded, around it the chain
     // folding around the subject; the mask's edge breathes with the swell.

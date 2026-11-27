@@ -267,6 +267,41 @@ vec2 anchorOff( vec2 f, float conf, float amt )
 {
     return ( f - 0.5 ) * smoothstep( 0.45, 0.55, conf ) * amt;
 }
+float fdVar( int vi, float j, float lo, float hi )
+{
+    return vi == 0 ? 0.5 * ( lo + hi )
+                   : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
+}
+vec3 fdLayers( int vi )
+{
+    float m = photoDepthLod( vec2( 0.5 ), 12.0 );
+    float h = fdVar( vi, 12.0, 0.10, 0.18 );
+    return vec3( m - h, m + h, fdVar( vi, 14.0, 0.05, 0.10 ) );
+}
+vec3 freqDepth( vec3 col, float d, vec2 p, vec3 tint, int vi )
+{
+    float have = interpolation * photoDepthAmt.x + ( 1.0 - interpolation ) * photoDepthAmt.y;
+    vec3  t = fdLayers( vi );
+    float w_n = smoothstep( t.y - t.z, t.y + t.z, d ) * have;
+    float w_f = ( 1.0 - smoothstep( t.x - t.z, t.x + t.z, d ) ) * have;
+    float w_m = max( have - w_n - w_f, 0.0 );
+    vec3  own = tint / max( max( tint.r, max( tint.g, tint.b ) ), 0.05 );
+    float bn = fdVar( vi, 16.0, 0.16, 0.32 ) * clamp( 0.7 * audioKick + 0.3 * clamp( audioBass, 0.0, 1.0 ), 0.0, 1.0 )
+               * w_n;
+    col = col * ( 1.0 + bn ) + 0.25 * bn * own;
+    float l = luma( col );
+    col = max( l + ( col - l ) * ( 1.0 + fdVar( vi, 17.0, 0.5, 1.1 ) * clamp( audioMid, 0.0, 1.0 ) * w_m ), 0.0 );
+    float hi = clamp( 0.8 * audioHat + 0.2 * audioHigh, 0.0, 1.0 );
+    vec2  g = p * fdVar( vi, 18.0, 110.0, 170.0 ) + vec2( 0.29, 0.13 ) * sceneAdvance;
+    vec2  gc = floor( g );
+    vec2  gf = fract( g ) - 0.5 - 0.4 * ( hash22( gc + 3.0 ) - 0.5 );
+    float gs = 0.6 + 0.4 * hash21( gc + 11.0 );
+    float pt = step( fdVar( vi, 19.0, 0.66, 0.80 ), hash21( gc + 29.0 ) )
+               * smoothstep( 0.24 * gs, 0.06 * gs, length( gf ) );
+    float tw = 0.55 + 0.45 * sin( 6.2831853 * hash21( gc + 7.0 ) + 1.1 * sceneAdvance );
+    float gl = fdVar( vi, 20.0, 1.2, 2.2 ) * hi * pt * tw * w_f;
+    return col * ( 1.0 + gl ) + 0.5 * gl * own;
+}
 uniform float voiceP; ///< Strength of the voices' roles, 0..1 (0: the scene as it was; set by an expr element in the
                       ///< preset).
 /**  The voices' roles (plan 26.11.2026): kick, snare, hi-hat, melody, stereo, build-up and bar scale the picture's
@@ -530,38 +565,17 @@ vec3 depthLookCol( int look, int vi, vec2 p, vec2 c, vec3 ph, float lod, inout f
 
 
 
+
         float have = interpolation * photoDepthAmt.x + ( 1.0 - interpolation ) * photoDepthAmt.y;
-        float t1 = dv( vi, 12.0, 0.28, 0.40 ), t2 = dv( vi, 13.0, 0.58, 0.70 ), e = dv( vi, 14.0, 0.06, 0.12 );
-        float bass = clamp( audioBass, 0.0, 1.0 );
+        vec3  t = fdLayers( vi );
 
 
 
-        float sz = dv( vi, 15.0, 0.008, 0.025 ) * have * ( 0.8 * sw + 0.2 * bass );
+        float sz = dv( vi, 15.0, 0.008, 0.025 ) * have * ( 0.8 * sw + 0.2 * clamp( audioBass, 0.0, 1.0 ) );
         vec4  r = imgDepthOff( c, ( 0.5 + o0 - c ) * sz, ( 0.5 + o1 - c ) * sz, lod );
-        float w_s = smoothstep( t2 - e, t2 + e, r.w ) * have;
-        vec3  col = mix( ph, r.rgb, w_s );
+        float w_s = smoothstep( t.y - t.z, t.y + t.z, r.w ) * have;
         pd = mix( pd, r.w, w_s );
-        float w_n = smoothstep( t2 - e, t2 + e, pd ) * have;
-        float w_f = ( 1.0 - smoothstep( t1 - e, t1 + e, pd ) ) * have;
-        float w_m = max( have - w_n - w_f, 0.0 );
-
-        col *= 1.0 + dv( vi, 16.0, 0.16, 0.32 ) * clamp( 0.7 * audioKick + 0.3 * bass, 0.0, 1.0 ) * w_n;
-
-        float l = luma( col );
-        col = max( l + ( col - l ) * ( 1.0 + dv( vi, 17.0, 0.5, 1.1 ) * clamp( audioMid, 0.0, 1.0 ) * w_m ), 0.0 );
-
-
-
-        float hi = clamp( 0.65 * audioHat + 0.35 * audioHigh, 0.0, 1.0 );
-        vec2  g = p * dv( vi, 18.0, 110.0, 170.0 ) + vec2( 0.29, 0.13 ) * sceneAdvance;
-        vec2  gc = floor( g );
-        vec2  gf = fract( g ) - 0.5 - 0.4 * ( hash22( gc + 3.0 ) - 0.5 );
-        float gs = 0.6 + 0.4 * hash21( gc + 11.0 );
-        float pt = step( dv( vi, 19.0, 0.76, 0.88 ), hash21( gc + 29.0 ) )
-                   * smoothstep( 0.24 * gs, 0.06 * gs, length( gf ) );
-        float tw = 0.55 + 0.45 * sin( 6.2831853 * hash21( gc + 7.0 ) + 1.1 * sceneAdvance );
-        float gl = dv( vi, 20.0, 1.2, 2.2 ) * hi * pt * tw * w_f;
-        return col * ( 1.0 + gl ) + 0.3 * gl * imgLod( c, 5.0 );
+        return freqDepth( mix( ph, r.rgb, w_s ), pd, p, imgLod( c, 5.0 ), vi );
     }
 
 
