@@ -92,8 +92,10 @@ the run-to-run control).
    shows it nearly whole (`q * 0.8 + 0.5`).  A subject near the photo's edge (the sheet's photo: y 0.87) brings the
    edge's mirror seam to the screen's middle.  Options: keep; limit the offset (e.g. to 0.25); roll the anchor less
    often than 75 %.
-2. **Look 6 in the roll.**  As in the two older labs it is not rolled.  `minValue="2.50" maxValue="6.49"` would give
-   look 0 25 %, the anchor 50 %, look 6 25 % (and a `depthVar` line 0..99.49 its variants) -- after look6labs' new
-   freqDepth() has been seen.
+2. **Look 6 in the roll.**  Not rolled here (the roll is the one the two older labs have at cdab7da3).  look6labs
+   rolls it in TimeChainLab and MirrorBilliardLab on its branch: `minValue="2.70" maxValue="5.90"` (look 0 25 %,
+   the anchor 62.5 %, look 6 12.5 %); freqDepth()'s signature is unchanged there, so StripLab's call fits.  The
+   same line in StripLab's entry rolls look 6 here too (and a `depthVar` line 0..99.49 its variants) -- once look
+   6 has been seen in StripLab with music.
 3. **The other six one-lookup labs** (FoldLab, GlassLab, SequenceLab, DefectLab, MeterLab, PartitionLab): one command,
    then a sheet each.
