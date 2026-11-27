@@ -415,6 +415,11 @@ const char *kDE[S_COUNT] = {
     /* S_WR_TAPALONG_RESULT */ "Vorschlag: %1 ms (Streuung %2 ms, %3 Schläge)",
     /* S_WR_TAPALONG_APPLY */ "Vorschlag übernehmen",
     /* S_WR_TAPALONG_NOBEAT */ "Kein Takt erkannt – Musik mit klarem Schlag spielen.",
+    /* S_OSD_HDR */ "16-Bit-Zwischenbilder (ab dem nächsten Start)",
+    /* S_WR_HDR */ "16-Bit-Licht (nächster Start)",
+    /* S_SETUP_HDR */
+    "16-Bit-Zwischenbilder: Licht über Weiß bleibt für das Leuchten erhalten (0,1–0,4 ms je Bild, etwa 330 MB "
+    "Grafikspeicher)",
 };
 
 /** The English texts, in the same order as kDE. */
@@ -807,6 +812,11 @@ const char *kEN[S_COUNT] = {
     /* S_WR_TAPALONG_RESULT */ "Suggestion: %1 ms (spread %2 ms, %3 beats)",
     /* S_WR_TAPALONG_APPLY */ "Apply the suggestion",
     /* S_WR_TAPALONG_NOBEAT */ "No beat found – play music with a clear beat.",
+    /* S_OSD_HDR */ "16-bit intermediates (from the next start)",
+    /* S_WR_HDR */ "16-bit light (next start)",
+    /* S_SETUP_HDR */
+    "16-bit intermediates: light above white survives into the glow (0.1–0.4 ms a frame, about 330 MB of GPU "
+    "memory)",
 };
 
 } // namespace

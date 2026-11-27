@@ -226,7 +226,7 @@ submenus), **Back** goes one level up, **Esc** closes it. It hides itself after
 |---|---|
 | Presets | every preset; the running one is marked, OK switches to it |
 | Scene | next scene, hold scene, favourite, mark, save marked, never show again, undo favourite, forget this song's cues, banned scenes (each one allowed again with OK) |
-| Picture & overlays | blackout, freeze, stage lamps, strict light protection, picture guard, now-playing title, lyrics mode, line slam, artist images, music videos |
+| Picture & overlays | blackout, freeze, stage lamps, strict light protection, picture guard, 16-bit intermediates (from the next start), now-playing title, lyrics mode, line slam, artist images, music videos |
 | Fine tuning | reactivity, trails, mood colour, latency (lead or delay) (sliders) |
 | Audio | audio source, tap tempo |
 | Stereo 3D | mode, depth |
@@ -265,15 +265,16 @@ each other never showed -- the picture dims to 60 % until it stops. The strict
 mode (menu, Setup tool, `lightProtectionStrict=true`) halves the rise and takes
 the beat flashes out of the stage lamps and the title.
 
-**Picture guard.** Switched on (menu Picture & overlays, the remote's Display
-tab, `pictureGuard=true` in the ini), it watches for a picture that stays black
+**Picture guard.** On by default (since 27.11.2026; switch it off in the menu
+Picture & overlays, on the remote's Display tab or with `pictureGuard=false` in
+the ini), it watches for a picture that stays black
 or stands still while music plays: 20 seconds of it and the next photo fades in
 (within 4 s; a dark photo is the usual cause), 15 more and the scene ends early
 -- on the phrase where the beat grid is known, with the preset's own fade. It
 never acts during a blackout, a freeze or a pin, a DJ stop, a scene fade, a
 song's fade-out, the rest mode or silence, and not on the rating walk. The
 darkest scenes by design stay well above its threshold (see
-docs/engine-internals-69-guard.md for the measurement). What it did is counted
+docs/engine-internals.md, section (69), for the measurement). What it did is counted
 per scene and per photo in `kaleidoscope_guard.tsv` beside the settings file
 -- it does not change the taste; whether the counts should steer the choice is
 up to you. Each action is one log line (`GUARD photo dark scene=...`), which
@@ -591,12 +592,20 @@ Build it with `msbuild ExportTool\ExportTool.vcxproj /p:Configuration=Release /p
 How the frame clock works, and what the encoder settings are based on:
 [docs/engine-internals.md](docs/engine-internals.md#16102026-4-video-export-on-a-frame-clock).
 
-### Experimental: glow from real brightness
+### Glow from real brightness (16-bit intermediates)
 
-`KALEIDO_HDR_BUFFERS=1` renders every intermediate picture at 16 bit (RGBA16F) instead of 8: light above white --
-particle swarms, lasers, sparks, lamp cores -- survives to the glow instead of being cut flat, and the final picture
-rolls it off softly. Off by default; it costs some 0.1–0.4 ms of GPU time a frame and about 330 MB of GPU memory.
-The photosensitivity limiter keeps measuring what you see. Details: docs/engine-internals.md, section (69).
+Every intermediate picture is rendered at 16 bit (RGBA16F) instead of 8: light above white -- particle swarms,
+lasers, sparks, lamp cores -- survives to the glow instead of being cut flat, and the final picture rolls it off
+softly. On by default since 27.11.2026. It costs some 0.1–0.4 ms of GPU time a frame and about 330 MB of GPU memory
+(measured on an RTX 5090 at 2880 x 1620). The photosensitivity limiter keeps measuring what you see.
+
+To switch it off -- an older graphics card short of memory, or for the old 8-bit picture -- untick *16-bit
+intermediates* in the Setup tool, in the menu (Picture & overlays) or on the remote (Image & 3D), or set
+`hdrBuffers=false` in `kaleidoscope_settings.ini`. The targets are made when the program starts, so the change
+applies at the **next start**. `KALEIDO_HDR_BUFFERS=0` or `=1` overrides the setting for one run (for tools and
+comparisons). Where the driver cannot render into 16-bit targets, the program falls back to 8 bit by itself and says
+so in its log (`Intermediate pictures: RGBA16F targets incomplete ... -- 8 bit`). The rewind history stays 8 bit:
+in a rewind, light above white shows as white. Details: docs/engine-internals.md, sections (69) and (70).
 
 ---
 

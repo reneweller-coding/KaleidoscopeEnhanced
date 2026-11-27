@@ -447,6 +447,10 @@ enum StrIdE
     S_WR_TAPALONG_RESULT,
     S_WR_TAPALONG_APPLY,
     S_WR_TAPALONG_NOBEAT,
+    // 16-bit intermediates as a setting (27.11.2026).
+    S_OSD_HDR,
+    S_WR_HDR,
+    S_SETUP_HDR,
 
     S_COUNT
 };

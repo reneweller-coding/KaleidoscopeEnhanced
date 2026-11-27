@@ -333,6 +333,9 @@ def main():
     sys.stdout.reconfigure(encoding="utf-8")
     os.makedirs(WORK, exist_ok=True)
     mode = "plain" if a.plain else "copy"
+    # The measurement copies see above 1 through an RGBA8 target (a quarter of the colour, decoded x4): 8-bit
+    # intermediates, now that 16 bit is the default (27.11.2026) -- unless the caller says otherwise.
+    os.environ.setdefault("KALEIDO_HDR_BUFFERS", "0")
     if a.default_settings:
         # The measurement of 26.11.2026 ran in a worktree without a settings file -- the app's defaults; its last
         # part keeps that condition after the user's file was copied in.

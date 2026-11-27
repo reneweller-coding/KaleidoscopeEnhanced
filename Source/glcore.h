@@ -340,6 +340,15 @@ extern "C"
 #ifndef GL_SAMPLES_PASSED
 #define GL_SAMPLES_PASSED 0x8914 ///< Occlusion-query target: samples that passed the depth test.
 #endif
+#ifndef GL_MIN
+#define GL_MIN 0x8007 ///< Blend equation: the smaller of source and destination (capSceneLight()).
+#endif
+#ifndef GL_FUNC_ADD
+#define GL_FUNC_ADD 0x8006 ///< Blend equation: source plus destination (the default).
+#endif
+#ifndef GL_BLEND_EQUATION_RGB
+#define GL_BLEND_EQUATION_RGB 0x8009 ///< glGetIntegerv: the current RGB blend equation.
+#endif
 #ifndef GL_QUERY_RESULT
 #define GL_QUERY_RESULT 0x8866 ///< glGetQueryObjectuiv: fetch the finished query's count.
 #endif
@@ -355,6 +364,8 @@ extern "C"
     GLC_FN( void, glTexImage3D, (GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const void *))
     GLC_FN( void, glFramebufferTextureLayer, ( GLenum, GLenum, GLuint, GLint, GLint ) )
     GLC_FN( void, glBlitFramebuffer, ( GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum ) )
+    // The light cap of a scene with 16-bit intermediates: a quad blended with GL_MIN (capSceneLight()).
+    GLC_FN( void, glBlendEquation, ( GLenum ) )
     // MSAA for the opaque 3D geometry pass: render into a multisample texture,
     // resolve (blit) down to the regular render targets before anything
     // downstream (combine, depth-based post) ever samples them.
@@ -448,6 +459,7 @@ extern "C"
 #define glTexImage3D               glcore_glTexImage3D
 #define glFramebufferTextureLayer  glcore_glFramebufferTextureLayer
 #define glBlitFramebuffer          glcore_glBlitFramebuffer
+#define glBlendEquation            glcore_glBlendEquation
 #define glTexImage2DMultisample    glcore_glTexImage2DMultisample
     /// @endcond
     ///@}

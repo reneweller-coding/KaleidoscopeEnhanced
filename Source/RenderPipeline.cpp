@@ -72,7 +72,6 @@ float RenderPipeline::M_RenderScaleMax = 1.0f; // no supersampling unless asked 
 bool  RenderPipeline::M_RenderScaleFromCli = false;
 float RenderPipeline::M_LightShow = 0.0f;      // corner lamps / light-show OFF by default
 bool  RenderPipeline::M_StrictLight = false;   // strict light protection (ini lightProtectionStrict)
-bool  RenderPipeline::M_PictureGuard = false;  // the picture guard (ini pictureGuard)
 bool  RenderPipeline::M_SpoutEnabled = false;  // Spout sender (CLI -o)
 bool  RenderPipeline::M_SpoutClean = false;    // Spout sends the displayed frame, not the raw render
 float RenderPipeline::M_DisplayHz = 60.f;      // the panel rate (glwidget sets it)
@@ -103,10 +102,67 @@ float RenderPipeline::featureDelay()
     return -M_LatencyLead;
 }
 
+// The two defaults the user switched on on 27.11.2026 (ini hdrBuffers, pictureGuard).
+bool RenderPipeline::M_HdrBuffers = DefaultHdrBuffers;
+bool RenderPipeline::M_PictureGuard = DefaultPictureGuard;
+
 bool RenderPipeline::hdrBuffers()
 {
-    static const bool Hdr = qEnvironmentVariableIntValue( "KALEIDO_HDR_BUFFERS" ) == 1;
+    // Latched at the first call (the first pipeline's constructor, after loadSettings()): a change of the setting
+    // during the session applies at the next start.
+    static const bool Hdr = hdrBuffersFor( qgetenv( "KALEIDO_HDR_BUFFERS" ), M_HdrBuffers );
     return Hdr;
+}
+
+bool RenderPipeline::hdrBuffersFor( const QByteArray &env, bool setting )
+{
+    const QByteArray e = env.trimmed();
+    if ( e == "0" )
+        return false;
+    if ( e == "1" )
+        return true;
+    return setting;
+}
+
+/**  Whether this driver gives complete, renderable RGBA16F targets with mipmaps (the intermediates need all three).
+ * Probed once with a small texture; a GL 3.3 driver must support them, but Mesa builds and old drivers have been seen
+ * without float render targets.  If not, the pipelines fall back to 8 bit (reinit()), with one log line.
+ *
+ * @return
+ *   True if a 16-bit target is complete and drew no GL error.
+ **/
+static bool hdrTargetsComplete()
+{
+    static int Result = -1;
+    if ( Result >= 0 )
+        return Result == 1;
+    while ( glGetError() != GL_NO_ERROR )
+    {
+    }
+    GLint prev_fbo = 0, prev_tex = 0;
+    glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prev_fbo );
+    glGetIntegerv( GL_TEXTURE_BINDING_2D, &prev_tex );
+    GLuint tex = 0, fbo = 0;
+    glGenTextures( 1, &tex );
+    glBindTexture( GL_TEXTURE_2D, tex );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, 64, 64, 0, GL_RGBA, GL_FLOAT, NULL );
+    glGenerateMipmap( GL_TEXTURE_2D );
+    glGenFramebuffers( 1, &fbo );
+    glBindFramebuffer( GL_FRAMEBUFFER, fbo );
+    glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0 );
+    const GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
+    const GLenum err = glGetError();
+    glBindFramebuffer( GL_FRAMEBUFFER, static_cast<GLuint>( prev_fbo ) );
+    glBindTexture( GL_TEXTURE_2D, static_cast<GLuint>( prev_tex ) );
+    glDeleteFramebuffers( 1, &fbo );
+    glDeleteTextures( 1, &tex );
+    Result = ( status == GL_FRAMEBUFFER_COMPLETE && err == GL_NO_ERROR ) ? 1 : 0;
+    if ( !Result )
+        fprintf( stderr, "Intermediate pictures: RGBA16F targets incomplete on this driver (status 0x%x, error 0x%x) "
+                         "-- 8 bit (RGBA8) instead\n",
+                 status, err );
+    return Result == 1;
 }
 bool                    RenderPipeline::M_Pinned = false;         // VJ pin ('u')
 QHash<QString, float>   RenderPipeline::M_Taste;                  // taste learning (skip/favourite)
@@ -212,6 +268,8 @@ void RenderPipeline::loadSettings()
         M_LatencyLead = clampParam( qEnvironmentVariable( "KALEIDO_LATENCY" ).toFloat(), LatencyMin, LatencyMax );
     // The picture guard (PictureGuard.h, docs/PLAN_2026-11-26.md W1).
     M_PictureGuard = s.value( "pictureGuard", M_PictureGuard ).toBool();
+    // 16-bit intermediates (docs/engine-internals.md (70)): read here, used from the first pipeline on (hdrBuffers()).
+    M_HdrBuffers = s.value( "hdrBuffers", M_HdrBuffers ).toBool();
     setStereoMode( s.value( "stereoMode", M_StereoMode ).toInt() ); // 0..5; anything else is off
     M_SpoutClean = s.value( "spoutSource" ).toString().trimmed().compare( "clean", Qt::CaseInsensitive ) == 0;
     // Photo source. Empty (the shipped default) means "whatever the preset
@@ -378,6 +436,7 @@ QList<QPair<QString, QVariant>> RenderPipeline::lookSettings()
         { "mood", M_MoodStrength },
         { "latencyLead", M_LatencyLead },
         { "pictureGuard", M_PictureGuard },
+        { "hdrBuffers", M_HdrBuffers },
         { "stereoMode", M_StereoMode },
         { "stereoDepth", M_StereoDepth },
         { "renderScale", M_RenderScale },
@@ -455,7 +514,7 @@ RenderPipeline::RenderPipeline()
       m_npotSupported( false ),
       m_width( 100 ),
       m_height( 100 ),
-      m_texInternalFormat( hdrBuffers() ? GL_RGBA16F : GL_RGBA8 ), // KALEIDO_HDR_BUFFERS (block L of 26.11.2026)
+      m_texInternalFormat( hdrBuffers() ? GL_RGBA16F : GL_RGBA8 ), // setting hdrBuffers / KALEIDO_HDR_BUFFERS
       m_texFormat( GL_RGBA ),
       m_texType( hdrBuffers() ? GL_FLOAT : GL_UNSIGNED_BYTE )
       // GL object ids MUST start at 0 ("not created yet"): creation code reuses an
@@ -1004,6 +1063,12 @@ void RenderPipeline::reinit( int width, int height )
     }
 
     checkGLErrors( "reinit() 0" );
+    // 16-bit intermediates only where the driver renders into them (probed once): else 8 bit, as before 27.11.2026.
+    if ( m_texInternalFormat == GL_RGBA16F && !hdrTargetsComplete() )
+    {
+        m_texInternalFormat = GL_RGBA8;
+        m_texType = GL_UNSIGNED_BYTE;
+    }
     createTexture(); // create texture
 
     createFBOTexture( m_texIDFBOEffectTexture1 );
@@ -2837,14 +2902,20 @@ void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
 // ---------------------------------------------------------------------------
 int RenderPipeline::guardMode()
 {
-    static const QByteArray Env = qgetenv( "KALEIDO_GUARD" ).trimmed().toLower();
-    if ( Env == "0" || Env == "off" )
+    static const QByteArray Env = qgetenv( "KALEIDO_GUARD" );
+    return guardModeFor( Env, M_PictureGuard, scriptedRun() );
+}
+
+int RenderPipeline::guardModeFor( const QByteArray &env, bool setting, bool scripted )
+{
+    const QByteArray e = env.trimmed().toLower();
+    if ( e == "0" || e == "off" )
         return 0;
-    if ( Env == "log" )
+    if ( e == "log" )
         return 2;
-    if ( Env == "1" || Env == "on" )
+    if ( e == "1" || e == "on" )
         return 1;
-    return M_PictureGuard && !scriptedRun() ? 1 : 0;
+    return setting && !scripted ? 1 : 0;
 }
 
 void RenderPipeline::updateGuard( const AudioFeatures &audio, const AudioFeatures &audioFx, float dtWall )
@@ -2981,6 +3052,50 @@ float RenderPipeline::photoDepthLayer( EffectShader *scene )
         return 0.f;
     const float t = std::min( std::max( m_interpolationTexture, 0.f ), 1.f );
     return t * EffectShader::M_PhotoDepthAmt[0] + ( 1.f - t ) * EffectShader::M_PhotoDepthAmt[1];
+}
+
+void RenderPipeline::capSceneLight( EffectShader *e, GLuint fbo )
+{
+    if ( m_texInternalFormat != GL_RGBA16F || !e )
+        return;
+    const float cap = e->hdrCap();
+    if ( cap <= 0.f )
+        return;
+    if ( m_hdrCapProg == 0 )
+    {
+        m_hdrCapProg = setShaders( "..\\standard.vert", "..\\Engine\\HdrCap.frag" );
+        m_hdrCapUni = m_hdrCapProg ? glGetUniformLocation( m_hdrCapProg, "capLight" ) : -1;
+    }
+    if ( m_hdrCapProg == 0 || !glBlendEquation )
+        return;
+    extern GLuint fullscreenVAO();
+    // GL_MIN ignores the blend factors: every channel becomes min( the scene's, the cap ); the alpha is far above
+    // any value.  No depth test or write, no clear: the frame and its depth stay as the scene left them.
+    GLint           prev_fbo = 0, prev_eq = GL_FUNC_ADD;
+    const GLboolean blend = glIsEnabled( GL_BLEND ), depth = glIsEnabled( GL_DEPTH_TEST );
+    GLboolean       depth_mask = GL_TRUE;
+    glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prev_fbo );
+    glGetIntegerv( GL_BLEND_EQUATION_RGB, &prev_eq );
+    glGetBooleanv( GL_DEPTH_WRITEMASK, &depth_mask );
+    glBindFramebuffer( GL_FRAMEBUFFER, fbo );
+    glViewport( 0, 0, m_width, m_height );
+    glDisable( GL_DEPTH_TEST );
+    glDepthMask( GL_FALSE );
+    glEnable( GL_BLEND );
+    glBlendEquation( GL_MIN );
+    glUseProgram( m_hdrCapProg );
+    glUniform1f( m_hdrCapUni, cap );
+    glBindVertexArray( fullscreenVAO() );
+    glDrawArrays( GL_TRIANGLES, 0, 3 );
+    glBindVertexArray( 0 );
+    glBlendEquation( static_cast<GLenum>( prev_eq ) );
+    if ( !blend )
+        glDisable( GL_BLEND );
+    if ( depth )
+        glEnable( GL_DEPTH_TEST );
+    glDepthMask( depth_mask );
+    glBindFramebuffer( GL_FRAMEBUFFER, static_cast<GLuint>( prev_fbo ) );
+    checkGLErrors( "capSceneLight()" );
 }
 
 void RenderPipeline::renderDepthViews()
@@ -3345,6 +3460,8 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
         resolveMsaa( m_fboEffectTexture1, m_width, m_height );
         checkGLErrors( "resolveMsaa() 1" );
     }
+    if ( !( m_trueStereoPacked && tex1_is_3d ) )
+        capSceneLight( m_effectTextures[m_scheduler.actTexture()], m_fboEffectTexture1 );
 
     // Transparent geometry goes in afterwards, over the opaque frame this scene
     // just produced and against the depth it just wrote.
@@ -3413,6 +3530,8 @@ void RenderPipeline::renderNextScenePass( const AudioFeatures &audioFx )
             resolveMsaa( m_fboEffectTexture2, m_width, m_height );
             checkGLErrors( "resolveMsaa() 2" );
         }
+        if ( !( m_trueStereoPacked && tex2_is_3d ) && !full_packed )
+            capSceneLight( m_effectTextures[m_scheduler.nextTexture()], m_fboEffectTexture2 );
     }
 }
 

@@ -4695,6 +4695,10 @@ std::vector<OsdItem> GLwidget::osdRootItems()
         { return RenderPipeline::pictureGuard(); },
                        []( bool b )
         { RenderPipeline::setPictureGuard( b ); } ),
+            osdToggle( S_OSD_HDR, []
+        { return RenderPipeline::hdrBuffersSetting(); },
+                       []( bool b )
+        { RenderPipeline::setHdrBuffers( b ); } ),
             osdToggle( S_OSD_NOWPLAYING, [this]
         { return nowPlayingEnabled(); },
                        [this]( bool b )
