@@ -12278,7 +12278,7 @@ idle GPU; the 8-bit fallback and Mesa (CI); the GPU memory with the quarter meas
 `mix()` may compile to `x + ( y - x ) * a`, one ulp off -- not bit-identical by construction, and a stale NaN in the
 unused target would still be read; left alone.
 
-## P8a -- live depth: Depth Anything V2 Small on the GPU, beside the app
+#### P8a -- live depth: Depth Anything V2 Small on the GPU, beside the app
 
 Measurement only; nothing in the app.  The question (plan P8): can a webcam or Spout picture get a depth map 10 to 15
 times a second without the app falling below 100 fps, and what would it add to the packages?
@@ -13557,12 +13557,11 @@ FX/FxRimLight.frag while it runs, so never run both at once.  Tools/halo_shot.py
   line.  Wider reads more as a glow, and needs more taps or a blur pass.
 
 ### P7, first stage -- the fluid in the photo's relief (fluidDepthP)
-# (72) simfluid -- the fluid in the photo's relief (plan 27.11. P7, first stage)
 
 Sprint of 27.11.2026, 16:25-16:50, branch `wt-simfluid`. Read the section "Verified / not verified" before merging:
 the code is built, the picture was **not** looked at.
 
-## Which fluid reaches the screen
+#### Which fluid reaches the screen
 
 Two fluids exist. Only one is ever drawn:
 
@@ -13575,7 +13574,7 @@ So the work went into the GpuSims path; `Source/ComputeFX.cpp` is not touched at
 The other "fluid" names in Komplett.xml (FluidInkMarble, NeonFluidDynamics, FluidPhotoMarblingEbru, Ferrofluid...,
 Superfluid..., SPHFluidSplash) are analytic or have their own state pass; they do not sample `texFluid`.
 
-## What changed
+#### What changed
 
 **The knob.** `fluidDepthP`, a scene parameter (0..1; 0 = the old step). Its way:
 
@@ -13624,7 +13623,7 @@ scales the displacement, as before); no new audio input, no camera, no `time * a
 stand verbatim in the `else` branch (not rewritten with a variable base, so the compiler sees the same expressions);
 the uniform's default is 0; the slew adds exactly 0. The branch depends on uniforms only (no derivative trouble).
 
-## Verified / not verified
+#### Verified / not verified
 
 Verified (27.11., 16:40-16:43; frozen snapshots of Fluid, FluidInkMandala, Schlieren with `Tools/scene_snapshots.py`'s
 `render()`, photo kristallhoehle-indigo-fuchsia-2.jpg (has a map), seed 7, 640 x 360 JPG, mean absolute difference
@@ -13659,7 +13658,7 @@ NOT verified:
 - `Tools/shadercheck.py`, the self test `Kaleidoscope.exe -q`;
 - the constants: a first guess, not tuned.
 
-## How to verify (lead)
+#### How to verify (lead)
 
 `Release\Kaleidoscope_old.exe` in the worktree is a copy of the build of cdab7da3 (gitignored). The snapshot photo of
 `2026-11-26-base` (kristallhoehle-indigo-fuchsia-2.jpg) has a map.
@@ -13684,14 +13683,14 @@ repository.)
 A photo without a map: `--photo <a photo that photo_info.tsv marks flat>` -- knob 0 and knob 0.4 must be equal.
 Photo change: run the app with a preset of the three scenes and `KALEIDO_FLUID_DEPTH=0.4`, watch a photo cross-fade.
 
-## Still missing of the plan's P7
+#### Still missing of the plan's P7
 
 - the look itself judged on three photos (clip before/after), the constants tuned, GPU time measured;
 - the second stage, occlusion: the simulation layer behind everything nearer than `photoSubject`, only at
   `photoMask > 0.6` -- belongs into the three scenes' compositing (they would then use `fluidDepthP` or a second knob);
 - `ComputeFX::stepNSFluid` (no scene shows it) and the other simulations (particles: agent "simpart").
 
-## For the user
+#### For the user
 
 - Whether and with which range `fluidDepthP` goes into Komplett.xml (now not registered = off). From the two frozen
   frames: about 0.2..0.5; 1.0 kills the swirl. Registering it changes the three scenes' rolls for a given seed
