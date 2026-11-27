@@ -25,6 +25,7 @@
 
 #include "AudioFeatures.h"
 #include "FeatureDelay.h"
+#include "DrumSeparator.h"
 #include "TempoTracker.h"
 
 struct IMMDeviceEnumerator; // fwd (WASAPI) — only a pointer is used in the header
@@ -246,6 +247,12 @@ public:
      * PresetEditor --features ... --section-trace FILE).  Off (null) in the app.
      **/
     static FILE *M_SectionTrace;
+    /** When set, every analysed block appends the drum envelopes to this file (16 float32: time, the band groups'
+     * envelopes kick/snare/hat (the old signal), the separator's envelopes, its ODFs, its activations, whether it hit
+     * per drum) -- for checking Tools/drum_lab.py against the C++ (PresetEditor --features ... --drum-trace FILE).
+     * Off (null) in the app.
+     **/
+    static FILE *M_DrumTrace;
     /**  Offline analysis of samples in memory: the same pipeline as analyzeWavToTimeline(), for checks that build
      * their own signal (`Kaleidoscope.exe -q`).
      *
@@ -608,7 +615,16 @@ private:
      **/
     float m_onsetAvgGrp[3] = {};  ///< Running ODF averages per instrument group (kick/snare/hat).
     int   m_onsetCoolGrp[3] = {}; ///< Per-group re-trigger cooldowns, in blocks.
-    float m_onsetEnvGrp[3] = {};  ///< Decaying output envelopes per instrument group.
+    float m_onsetEnvGrp[3] = {};  ///< Decaying output envelopes per instrument group: the analyser's own readers
+                                  ///< (sections, build-up) and, per #m_oldDrum, the published kick/snare/hat.
+    /** The separator's kick/snare/hat envelopes (27.11.2026; Tools/drum_lab.py), published per #m_oldDrum. */
+    DrumSeparator m_drums;
+    /** All three drums from the band groups (KALEIDO_OLD_DRUMS=1): the separator is skipped. */
+    bool m_oldDrums = false;
+    /** Per drum (kick, snare, hat): publish its band group's envelope.  Read once at construction: unset kick and
+     * snare (the separator lost to them on a real kit), 1 all, 0 none, else the drums named in KALEIDO_OLD_DRUMS. */
+    bool   m_oldDrum[3] = {};
+    double m_drumClock = 0.0; ///< Seconds analysed (#M_DrumTrace's time).
 
     /** Build-up / drop detection state (see AudioFeatures::buildUp/dropPulse).
      *

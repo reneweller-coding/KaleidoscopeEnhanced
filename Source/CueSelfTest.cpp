@@ -470,6 +470,154 @@ std::vector<float> drumTrack( int rate, double seconds )
     return pcm;
 }
 
+/**  The drum envelopes (DrumSeparator, 27.11.2026): a kick on the beat, a hat on the off-beat and a plucked lead
+ * at 1.8-2.8 kHz on two sixteenths per beat.  The kick and the hat must follow their drums and the lead must drive
+ * neither -- the band groups before them heard the lead in their "hat" (it lies above 1.7 kHz).  The old way is
+ * run beside it (KALEIDO_OLD_DRUMS=1; the separator alone with KALEIDO_OLD_DRUMS=none).
+ **/
+void drumChecks()
+{
+    printf( "\ndrum envelopes (DrumSeparator)\n" );
+    const int           rate = 48000;
+    const double        secs = 8.0, spb = 0.5;
+    std::vector<float>  pcm( static_cast<size_t>( rate * secs ), 0.f );
+    std::vector<double> kicks, hats, leads;
+    auto                add = [&]( double t0, double len, double gain, auto &&sig )
+    {
+        const size_t i0 = static_cast<size_t>( t0 * rate );
+        for ( size_t i = 0; i < static_cast<size_t>( len * rate ) && i0 + i < pcm.size(); ++i )
+            pcm[i0 + i] += static_cast<float>( gain * sig( static_cast<double>( i ) / rate, i ) );
+    };
+    unsigned noise = 12345u;
+    for ( int b = 1; b < static_cast<int>( secs / spb ); ++b )
+    {
+        const double t0 = b * spb;
+        double       ph = 0.0;
+        add( t0, 0.3, 0.8,
+             [&]( double t, size_t )
+        {
+            ph += 6.283185307 * ( 45.0 + 105.0 * std::exp( -t * 25.0 ) ) / rate;
+            return std::sin( ph ) * std::exp( -t / 0.12 );
+        } );
+        kicks.push_back( t0 );
+        double prev[8] = {};
+        add( t0 + spb / 2, 0.05, 0.25,
+             [&]( double t, size_t i )
+        {
+            noise = noise * 1664525u + 1013904223u;
+            const double x = ( noise >> 8 ) / 8388608.0 - 1.0;
+            double       m = x;
+            for ( double p : prev )
+                m += p;
+            for ( int j = 7; j > 0; --j )
+                prev[j] = prev[j - 1];
+            prev[0] = x;
+            return ( i >= 8 ? x - m / 9.0 : 0.0 ) * std::exp( -t / 0.012 ); // high-passed noise
+        } );
+        hats.push_back( t0 + spb / 2 );
+        for ( int q : { 1, 3 } )
+        {
+            const double f = 1760.0 * std::pow( 2.0, ( ( b * 3 + q ) % 7 ) / 12.0 );
+            add( t0 + q * spb / 4, 0.12, 0.25, [&]( double t, size_t )
+            { return std::sin( 6.283185307 * f * t ) * std::min( t / 0.005, 1.0 ) * std::exp( -t / 0.08 ); } );
+            leads.push_back( t0 + q * spb / 4 );
+        }
+    }
+    float peak = 1e-6f;
+    for ( float v : pcm )
+        peak = std::max( peak, std::fabs( v ) );
+    for ( float &v : pcm )
+        v *= 0.8f / peak;
+
+    // The hits: blocks where an envelope jumps; the share of events with a hit 0..60 ms after them.
+    // Every analysis below names its drums (the default keeps kick and snare old); the caller's setting comes back.
+    const bool       had_env = qEnvironmentVariableIsSet( "KALEIDO_OLD_DRUMS" );
+    const QByteArray saved_env = qgetenv( "KALEIDO_OLD_DRUMS" );
+    auto             analyse = [&]( bool old_way )
+    {
+        qputenv( "KALEIDO_OLD_DRUMS", old_way ? "1" : "none" );
+        std::vector<AudioFeatures> tl =
+            AudioAnalyzer::analyzeSamples( pcm.data(), static_cast<int>( pcm.size() ), 1, rate );
+        if ( had_env )
+            qputenv( "KALEIDO_OLD_DRUMS", saved_env );
+        else
+            qunsetenv( "KALEIDO_OLD_DRUMS" );
+        return tl;
+    };
+    auto shares = [&]( bool old_way, float out[3][3] )
+    {
+        const std::vector<AudioFeatures> tl = analyse( old_way );
+        const double                     blk = 480.0 / rate;
+        for ( int d = 0; d < 3; ++d )
+        {
+            std::vector<double> hit;
+            for ( size_t i = 1; i < tl.size(); ++i )
+            {
+                const float a = d == 0 ? tl[i].onsetKick : d == 1 ? tl[i].onsetSnare
+                                                                  : tl[i].onsetHat;
+                const float p = d == 0 ? tl[i - 1].onsetKick : d == 1 ? tl[i - 1].onsetSnare
+                                                                      : tl[i - 1].onsetHat;
+                if ( a > p + 0.3f )
+                    hit.push_back( static_cast<double>( i + 1 ) * blk );
+            }
+            const std::vector<double> *ev[3] = { &kicks, &hats, &leads };
+            for ( int e = 0; e < 3; ++e )
+            {
+                int n = 0;
+                for ( double o : *ev[e] )
+                    if ( std::any_of( hit.begin(), hit.end(),
+                                      [o]( double h )
+                    { return h >= o - 0.01 && h <= o + 0.06; } ) )
+                        ++n;
+                out[d][e] = static_cast<float>( n ) / static_cast<float>( ev[e]->size() );
+            }
+        }
+    };
+    float nw[3][3], od[3][3];
+    shares( false, nw );
+    shares( true, od );
+    // The default (KALEIDO_OLD_DRUMS unset): kick and snare from the band groups, the hat from the separator.
+    {
+        qunsetenv( "KALEIDO_OLD_DRUMS" );
+        const std::vector<AudioFeatures> def =
+            AudioAnalyzer::analyzeSamples( pcm.data(), static_cast<int>( pcm.size() ), 1, rate );
+        if ( had_env )
+            qputenv( "KALEIDO_OLD_DRUMS", saved_env );
+        const std::vector<AudioFeatures> o = analyse( true ), n = analyse( false );
+        bool                             same = def.size() == o.size() && def.size() == n.size();
+        for ( size_t i = 0; same && i < def.size(); ++i )
+            same = def[i].onsetKick == o[i].onsetKick && def[i].onsetSnare == o[i].onsetSnare
+                   && def[i].onsetHat == n[i].onsetHat;
+        check( same, "by default the kick and the snare keep the band groups' envelopes, the hat is the separator's" );
+    }
+    // The cost: the whole analysis per 10-ms block with and without the separator (best of three).
+    {
+        double best[2] = { 1e9, 1e9 };
+        for ( int rep = 0; rep < 3; ++rep )
+            for ( int w = 0; w < 2; ++w )
+            {
+                QElapsedTimer tm;
+                tm.start();
+                const std::vector<AudioFeatures> tl = analyse( w == 0 );
+                const double us = static_cast<double>( tm.nsecsElapsed() ) / 1000.0 / std::max<size_t>( 1, tl.size() );
+                best[w] = std::min( best[w], us );
+            }
+        printf( "  (info) analysis per 10-ms block: %.1f us without the separator, %.1f us with it\n", best[0],
+                best[1] );
+    }
+    auto pc = []( float v )
+    { return std::to_string( static_cast<int>( std::lround( v * 100.f ) ) ) + " %"; };
+    check( nw[0][0] >= 0.8f && nw[0][2] <= 0.2f && nw[0][1] <= 0.2f,
+           "the kick envelope follows the kicks, not the lead",
+           "on kicks " + pc( nw[0][0] ) + ", on lead notes " + pc( nw[0][2] ) + ", on hats " + pc( nw[0][1] )
+               + " (band groups: " + pc( od[0][0] ) + " / " + pc( od[0][2] ) + " / " + pc( od[0][1] ) + ")" );
+    check( nw[2][1] >= 0.8f && nw[2][2] <= 0.2f && nw[2][0] <= 0.2f, "the hat envelope follows the hats, not the lead",
+           "on hats " + pc( nw[2][1] ) + ", on lead notes " + pc( nw[2][2] ) + ", on kicks " + pc( nw[2][0] )
+               + " (band groups: " + pc( od[2][1] ) + " / " + pc( od[2][2] ) + " / " + pc( od[2][0] ) + ")" );
+    check( nw[1][2] <= 0.2f, "the snare envelope stays out of the lead (there is no snare)",
+           "on lead notes " + pc( nw[1][2] ) + " (band groups: " + pc( od[1][2] ) + ")" );
+}
+
 /**  The input stage and the events (16.10.2026): one-block events that a frame reader missed, silence that never
  * reached the analysis, 5.1 read with the stride of stereo, 96 kHz, broken samples, a conditioner gone NaN -- and
  * (20.11.2026) capture packets of a millisecond under the beat tracker.
@@ -2322,6 +2470,7 @@ int runCueSelfTest()
     longRunChecks();
     harmonyChecks();
     inputChecks();
+    drumChecks();
     outputChecks();
     settingsChecks();
     rhythmChecks();

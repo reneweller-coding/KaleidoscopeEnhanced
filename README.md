@@ -607,6 +607,14 @@ comparisons). Where the driver cannot render into 16-bit targets, the program fa
 so in its log (`Intermediate pictures: RGBA16F targets incomplete ... -- 8 bit`). The rewind history stays 8 bit:
 in a rewind, light above white shows as white. Details: docs/engine-internals.md, sections (69) and (70).
 
+### Kick, snare and hi-hat
+
+Since 27.11.2026 the scenes' `audioHat` follows the hi-hat itself: the analysis splits each onset onto drum templates
+(Source/DrumSeparator.h), so a lead melody no longer flashes the hi-hat. `audioKick` and `audioSnare` keep the earlier
+band-group onsets by default -- the separator's kick and snare did better on synthetic music but not on a real drum
+kit. `KALEIDO_OLD_DRUMS` chooses: `1` all three as before, `0` all three from the separator, or the drums named
+(`kick,snare` is the default). Details: docs/engine-internals-70-analyzer.md.
+
 ---
 
 ## Stereo 3D in a headset

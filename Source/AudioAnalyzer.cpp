@@ -35,6 +35,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <chrono>
+#include <string>
 
 #include <QtCore/QElapsedTimer>
 
@@ -183,6 +184,21 @@ AudioAnalyzer::AudioAnalyzer( QObject *parent )
     : QThread( parent )
 {
     m_tapClock.start(); // tap-tempo clock (read from both threads, set once)
+    {
+        // Which drums keep the band groups' envelope.  Unset: kick and snare (on a real kit the separator's snare
+        // found fewer snares and its kick answered the piano more -- docs/engine-internals-70-analyzer.md), the hat
+        // from the separator.  KALEIDO_OLD_DRUMS=1 (or all): all three as before 27.11.2026; 0 (or none): all three
+        // from the separator; otherwise the drums named (kick, snare, hat, any order) keep the old one.
+        const char        *old_drums = getenv( "KALEIDO_OLD_DRUMS" );
+        const std::string  v = old_drums ? old_drums : "";
+        const bool         all = v == "1" || v == "all";
+        const bool         none = v == "0" || v == "none";
+        static const char *Names[3] = { "kick", "snare", "hat" };
+        static const bool  Default[3] = { true, true, false };
+        for ( int d = 0; d < 3; ++d )
+            m_oldDrum[d] = !old_drums ? Default[d] : all || ( !none && v.find( Names[d] ) != std::string::npos );
+        m_oldDrums = m_oldDrum[0] && m_oldDrum[1] && m_oldDrum[2];
+    }
     std::memset( m_bassHistory, 0, sizeof( m_bassHistory ) );
     std::memset( m_envHistory, 0, sizeof( m_envHistory ) );
     std::memset( m_ringBuf, 0, sizeof( m_ringBuf ) );
@@ -723,6 +739,7 @@ bool  AudioAnalyzer::M_ExternalClock = true;
 float AudioAnalyzer::M_ClockDelay = 0.06f;
 FILE *AudioAnalyzer::M_TempoTrace = nullptr;
 FILE *AudioAnalyzer::M_SectionTrace = nullptr;
+FILE *AudioAnalyzer::M_DrumTrace = nullptr;
 
 void AudioAnalyzer::externalBeat( const char *source, qint64 refMs, float bpm, bool phase )
 {
@@ -2560,6 +2577,13 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                 m_onsetAvgGrp[g] = 0.95f * m_onsetAvgGrp[g] + 0.05f * odf;
                 m_onsetEnvGrp[g] *= 0.93f; // ~150 ms decay
             }
+
+            // The drums the shaders see (27.11.2026): the band groups above follow whatever rises in their bands
+            // -- in the screening music the bass line drove the "kick" and the lead's sixteenths the "snare" and
+            // the "hat".  The separator decomposes the percussive onset spectrum onto drum templates instead
+            // (DrumSeparator.h).  The groups stay for the analyser's own readers (sections, build-up), unchanged.
+            if ( !m_oldDrums )
+                m_drums.process( mags, FFTSize, sampleRate );
         }
 
         // ---- Section-change detection (verse, chorus, a break, a drop) ----
@@ -3708,9 +3732,24 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     m_features.tempoKickExplained = ( m_tempo.kickCount() >= 6 ) ? m_tempo.kickExplained() : 0.f;
     m_features.sectionId = m_secCurId;
     m_features.sectionKnown = m_secKnown;
-    m_features.onsetKick = m_onsetEnvGrp[0];
-    m_features.onsetSnare = m_onsetEnvGrp[1];
-    m_features.onsetHat = m_onsetEnvGrp[2];
+    float *const drum_out[3] = { &m_features.onsetKick, &m_features.onsetSnare, &m_features.onsetHat };
+    for ( int d = 0; d < 3; ++d )
+        *drum_out[d] = m_oldDrum[d] ? m_onsetEnvGrp[d] : m_drums.envelope( d );
+    m_drumClock += sampleRate > 0 ? static_cast<double>( numFrames ) / sampleRate : 0.0;
+    if ( M_DrumTrace )
+    {
+        float rec[16];
+        rec[0] = static_cast<float>( m_drumClock );
+        for ( int d = 0; d < 3; ++d )
+        {
+            rec[1 + d] = m_onsetEnvGrp[d];
+            rec[4 + d] = m_drums.envelope( d );
+            rec[7 + d] = m_drums.odf( d );
+            rec[10 + d] = m_drums.activation( d );
+            rec[13 + d] = m_drums.hit( d ) ? 1.f : 0.f;
+        }
+        fwrite( rec, sizeof( float ), 16, M_DrumTrace );
+    }
     m_features.buildUp = m_sBuildUp;
     m_features.dropPulse = m_dropPulse;
     m_features.dropCount = m_dropCount;
