@@ -542,6 +542,13 @@ Build it with `msbuild ExportTool\ExportTool.vcxproj /p:Configuration=Release /p
 How the frame clock works, and what the encoder settings are based on:
 [docs/engine-internals.md](docs/engine-internals.md#16102026-4-video-export-on-a-frame-clock).
 
+### Experimental: glow from real brightness
+
+`KALEIDO_HDR_BUFFERS=1` renders every intermediate picture at 16 bit (RGBA16F) instead of 8: light above white --
+particle swarms, lasers, sparks, lamp cores -- survives to the glow instead of being cut flat, and the final picture
+rolls it off softly. Off by default; it costs some 0.1–0.4 ms of GPU time a frame and about 330 MB of GPU memory.
+The photosensitivity limiter keeps measuring what you see. Details: docs/engine-internals.md, section (69).
+
 ---
 
 ## Stereo 3D in a headset
