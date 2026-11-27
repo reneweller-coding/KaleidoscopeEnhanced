@@ -55,10 +55,25 @@ whole screen (the sky shell covers it) -- NOT timed in the sprint.
 
 #### Verified / not verified
 
-See the report of the agent (the numbers of the snapshot comparisons are in the commit messages and in the list
-below).
+Verified:
 
-VERIFIED_PLACEHOLDER
+- The patch is idempotent (second run: 7 x "unchanged"); `patch_shadow3d.py` then `patch_shaft3d.py` on MeshZoetrope
+  gives the same files again (md5).
+- `Tools/shadercheck.py --new HEAD` through the lock, WITH the real GLSL compile: 7 files, 0 errors, 0 warnings (run
+  before MeshSeismograph got its third call site; after that only the static rules ran again: 0/0 -- see below
+  whether the compile was repeated).  `cgvr_format.py --check` on the seven: 0 would change; `doc_shaders.py --check`:
+  0 errors; `temporal_budget.py`: 0 errors (4 old warnings); `shake_scan.py`: 0 new hits.
+- Knob absent = the old picture: frozen snapshots of MeshZoetrope, MeshDominoWave, MeshMetronomes with the old files
+  (`wt-shafts3d-before`) and with the patched files and no `shaftP` entry (`wt-shafts3d-off`), both with the presets'
+  `shadowMapP` 0.6..1 (so the depth pass and the shadow lookup run): the three JPGs are byte-identical (md5), the
+  tool's compare says 0 changed.
+
+NOT verified at the time of this commit (see the later commits / the report for what was added):
+
+- The picture with `shaftP` above 0 (nobody has looked at it yet), its strength, the grain.
+- MeshTuningForks, MeshSeismograph, MeshFoundryPour, MeshPendulumWave were not rendered at all (identity follows
+  from the same `if`, but was not shown by a snapshot).
+- GPU cost with the knob on.  Motion, music, the transition into and out of the scenes.
 
 #### How to verify (from the worktree, Qt bin first in PATH, KALEIDO_NO_ACTIVATE=1)
 
