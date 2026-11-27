@@ -80,12 +80,14 @@ made (it needs the lock exclusively; no time in the sprint).  With the knob at 0
 
 #### How to verify
 
-    python Tools/scene_snapshots.py render wt-relief2-off --only SandDuneBarchanMigration KelvinHelmholtzCloudWaves
-    python Tools/scene_snapshots.py compare 2026-11-26-base wt-relief2-off      (knob 0: expect identical, or equal to
-                                                                               the state of cdab7da3 -- the preset
-                                                                               commit below changes the rolls)
+    (worktree at cdab7da3)   python Tools/scene_snapshots.py render wt-relief2-before --only SandDuneBarchanMigration KelvinHelmholtzCloudWaves
+    (worktree at 50472a9e)   python Tools/scene_snapshots.py render wt-relief2-off    --only SandDuneBarchanMigration KelvinHelmholtzCloudWaves
+    python Tools/scene_snapshots.py compare wt-relief2-before wt-relief2-off --tol 0     (knob 0: expect identical)
 
-  each through `python C:\Users\Rene\Desktop\kaleido-wt\heavy.py "<label>" -- ...`.  For the look: the wrapper of
+  50472a9e = the code without the preset entries (commit 2eadc52d adds `reliefParP` -0.3..0.6 to the two entries of
+  Presets/Komplett.xml, at the end of each entry so the other knobs roll as before; with it the frozen frame may show
+  the parallax, depending on the roll).  The common baseline `2026-11-26-base` is older than stage 1 and does not
+  serve here.  Each through `python C:\Users\Rene\Desktop\kaleido-wt\heavy.py "<label>" -- ...`.  For the look: the wrapper of
   stage 1 (section (71), "Snapshots ... appends a knob at the END of an entry") with `reliefParP` 0 | 0.5 | 1 and
   `reliefP` 1, photo basaltstufen-tuerkis (map relief 5.59) and a flat one (achat-amethyst-lk3: must be identical).
 
