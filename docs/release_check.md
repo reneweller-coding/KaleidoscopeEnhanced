@@ -1,4 +1,4 @@
-# Release check 2026-11-27 20:04
+# Release check 2026-11-27 23:53
 
 **GREEN** -- 0 red step(s)
 
@@ -15,4 +15,4 @@
 | layout | green | files: 3525  same 3525 | 0 min |
 | doxygen | green | C++: 0 warning(s); shaders: 0 warning(s) | 2 min |
 | chain | green | 0 of 12 combinations differ | 13 min |
-| perf | green | ChainLab2D 120 fps, GPU p90 1.50 ms; ChainLabTunnel 120 fps, GPU p90 1.32 ms; ChainLab3D 120 fps, GPU p90 3.24 ms; ChainSlice3D 120 fps, GPU p90 2.20 ms; Chain3DKifsTetra 120 fps, GPU p90 1.37 ms; Chain3DMandelbox 120 fps, GPU p90 1.97 ms; Chain3DOctaGyroid 120 fps, GPU p90 1.18 ms; Chain3DPolarTunnelBoxes 120 fps, GPU p90 1.17 ms; Chain3DTwistTorus 120 fps, GPU p90 1.29 ms; ChainP4mSpiralKaleidoWarp 120 fps, GPU p90 0.56 ms; ChainWaveDrosteHex 120 fps, GPU p90 1.26 ms | 6 min |
+| perf | green | ChainLab2D 120 fps, GPU p90 0.93 ms; ChainLabTunnel 120 fps, GPU p90 1.32 ms; ChainLab3D 120 fps, GPU p90 4.59 ms; ChainSlice3D 120 fps, GPU p90 2.51 ms; Chain3DKifsTetra 120 fps, GPU p90 1.43 ms; Chain3DMandelbox 120 fps, GPU p90 2.28 ms; Chain3DOctaGyroid 120 fps, GPU p90 1.59 ms; Chain3DPolarTunnelBoxes 120 fps, GPU p90 1.62 ms; Chain3DTwistTorus 120 fps, GPU p90 1.75 ms; ChainP4mSpiralKaleidoWarp 120 fps, GPU p90 0.60 ms; ChainWaveDrosteHex 120 fps, GPU p90 0.67 ms | 6 min |
