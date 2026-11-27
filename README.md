@@ -153,7 +153,11 @@ For comparisons: `KALEIDO_NO_DEPTH=1` ignores all maps, `KALEIDO_DEPTH_DIR=<fold
 takes the maps (and their `photo_info.tsv`) from one flat folder first,
 `KALEIDO_SHOW_DEPTH=1` shows each scene's depth as a grey picture (white = near),
 and `KALEIDO_DEPTH_RANGE=near,far` sets the distances a photo's depth is laid on
-(default 8,80, the units of the 3D scenes).
+(default 8,80, the units of the 3D scenes). Seven transitions (`Transitions\Depth*.frag`:
+from behind, fog wall, focus pull, layers, worlds merge, dusk, silhouette) move
+through the depth of both scenes, and by brightness where a scene has none;
+between two scenes with depth one fade in four takes one of them
+(`KALEIDO_DEPTH_TRANS=0` leaves the roll alone).
 
 Building the packs yourself, from folders you have filled:
 

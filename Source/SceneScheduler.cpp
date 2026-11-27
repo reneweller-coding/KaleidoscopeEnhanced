@@ -998,6 +998,44 @@ void SceneScheduler::tick( const Tick &t )
                         if ( zoom >= 0 )
                             m_actTransition = static_cast<unsigned int>( zoom );
                     }
+                    // Through the depth (27.11.2026, plan P5): the Depth*.frag transitions run between any two
+                    // scenes, but only between two with a real depth -- a 3D scene, or a 2D scene that passes on the
+                    // depth of a photo with a map -- do they show it; elsewhere they go by brightness.  So between two
+                    // such scenes one fade in four is rolled among them (mood and probability as always).
+                    // KALEIDO_DEPTH_TRANS=0 leaves the roll alone.
+                    static const bool DepthPrefer = !getenv( "KALEIDO_DEPTH_TRANS" )
+                                                    || atoi( getenv( "KALEIDO_DEPTH_TRANS" ) ) != 0;
+                    auto              has_depth = []( EffectShader *e )
+                    {
+                        return e->is3D()
+                               || ( e->writesDepth()
+                                    && std::max( EffectShader::M_PhotoDepthAmt[0], EffectShader::M_PhotoDepthAmt[1] )
+                                           > 0.5f );
+                    };
+                    if ( DepthPrefer && has_depth( tex[m_actTexture] ) && has_depth( tex[m_nextTexture] )
+                         && rand() % 4 == 0 )
+                    {
+                        std::vector<unsigned int> depth_tr;
+                        for ( unsigned int i = 0; i < tr.size(); ++i )
+                        {
+                            const char *f = tr[i]->fragmentName();
+                            const char *b = f ? f : "";
+                            for ( const char *c = b; *c; ++c )
+                                if ( *c == '\\' || *c == '/' )
+                                    b = c + 1;
+                            if ( strncmp( b, "Depth", 5 ) == 0 )
+                                depth_tr.push_back( i );
+                        }
+                        for ( unsigned int i = 0; i < MaxSearch && !depth_tr.empty(); ++i )
+                        {
+                            const unsigned int k = depth_tr[rand() % depth_tr.size()];
+                            if ( tr[k]->useShader() && moodAccept( tr[k] ) )
+                            {
+                                m_actTransition = k;
+                                break;
+                            }
+                        }
+                    }
                     // The rating walk shows one scene after another to be judged: a plain cross-fade between
                     // them, not a shatter or a spiral that would be judged along with the scene.
                     if ( m_rateSecs > 0.f )
