@@ -2,6 +2,12 @@
 
 Plan 26.11.2026, packages I1, I2, I3 (agent "voices", branch `wt-voices`).
 
+| package | what | result |
+|---|---|---|
+| I1 | `Tools/reactivity.py --voices`: the screening music with one voice muted (kick, snare, hat, lead, bass) or the lead hard left, against the full mix; `Tools/scene_voices.tsv`, sheets per voice | controls hold (null pairs 0..0.46 %, the photo alone the floor); labs and the 60 most shown: kick answered by about half, snare and hat by almost none, the stereo only by the stereo scenes; the analyser's kick/snare/hat envelopes do not follow their instruments in this music |
+| I2 | `voiceRoles()` (gen.py `VOICE_LIB`, knob `voiceP`, new uniform `audioStereoBal`) in the 20 labs, the four chain labs and the 41 chain scenes | voiceP 0: the old picture (snapshots; three labs differ by one level in 3-10 pixels); voiceP 1: the stereo lean in every scene that has it (lr 0 -> +0.12..+0.51), the ring on the drum grid, the band following the melody; limiter 0 -> 0 / 230 -> 231; clips per lab |
+| I3 | the same in ten of the most-shown generated scenes, as a demonstration | zero voices 4.4 -> 3.5 on average; before/after clips |
+
 #### I1 -- what each voice does in the picture
 
 *The instrument.*  `Tools/reactivity.py --voices` (B1's tool, a mode of its own).  The screening music
@@ -293,3 +299,31 @@ the roles go into the presets (an `<expr name="voiceP" formula="1"/>` per entry,
   chain classes it never calls.  The tool builds each scene twice with today's gen.py (from the committed source and
   from the changed one) and merges the difference into the committed frag (`git merge-file`): 41 chain scenes got
   exactly the voices' hunks, the 20 labs (no drift) the plain rebuild.
+- `KALEIDO_VOICES_KEEP=1` keeps the variants' videos (`.screen/reactivity/voices/<run>/videos`, about 40-70 MB a run)
+  so a new measure can be computed without rendering again.
+- Two jobs of one agent at once (heavy.py runs two slots since 27.11. 01:50) must not overlap where one checks old
+  frags out or rebuilds the exe: the scratch scripts took a lock of their own (`.screen/mylock.py`).  Its first
+  version found its own PowerShell query (the pattern was in the query's command line) and every job waited for
+  ever -- exclude the querying process.
+
+#### For the user
+
+- Whether the roles become part of the shows: per preset entry `<expr name="voiceP" formula="1"/>` (or a softer
+  value), after looking at the clips (`kaleido-wt\sheets\voices\clips\`, `clips_i3\`).  Until then voiceP is 0
+  everywhere and nothing changes.
+- The analyser's kick, snare and hat are band-group onsets, not instruments: in the screening music the bass drives
+  the "kick" and the lead's sixteenths the "snare" and the "hat".  Separating instruments would be a project of its
+  own (and would change the 1,393 scenes that read `audioKick`).
+- glowP's afterglow never reaches the app's ChainLab3D and ChainSlice3D (the appended `finish(col)` in their
+  `Final_*.frag`); fixing it is a visible change.
+- StereoSearchlights and BeeWaggleDance read `audioStereo` (the width, 0..1) as a balance (-1..1); `audioStereoBal`
+  is what they mean -- a visible change.
+- The hand-written scenes among the most shown (HeliosphericCurrentSheet, BismuthLabyrinth, Voyager, ...) and the
+  three generated ones whose merge conflicted (TextureNeonTrace, RheoscopicSwirl, TextureLanternField) have no roles.
+
+#### Not verified
+
+- The roles with real music (the clips use a synthetic track); stereo and build-up with real mixes.
+- Bit for bit in the three labs where the editor shows one level in 3-10 pixels (BandLab, FoldLab,
+  PulsarRidgelineStack); the other changed scenes were checked by snapshots or editor renders, not all by both.
+- `Tools/cgvr_doxygen.py` (Doxygen) was not run; perf_labs (GPU time of the labs with voiceP 1) was not measured.
