@@ -113,7 +113,8 @@ vec2 reliefSlope( vec2 uv, float lod )
  *             frame of the point given to reliefFrame(). (in)
  * @param f    The pixel's derivatives (reliefFrame()). (in)
  * @param uv   The photo coordinate as the scene samples the colour (tiled or not). (in)
- * @param amt  Depth of the relief: 1 = 12 % of the photo's width on the surface. (in)
+ * @param amt  Depth of the relief: 1 = 15 % of the photo's width on the surface (less on the map's steep edges).
+ *             (in)
  *
  * @return
  *   The tilted normal (unit length); n itself where the photo has no map, where the photo is minified so far that a
@@ -127,8 +128,10 @@ vec2 reliefSlope( vec2 uv, float lod )
  * the surface:
  *   grad_s h = ( h_x ( sy x n ) + h_y ( n x sx ) ) / ( sx . ( sy x n ) ),   n' = normalize( n - A grad_s h ),
  * with the relief's depth A a share of the photo's extent on the surface (world length per unit of uv), so the tilt
- * does not depend on the scene's scale; a soft limit keeps it below about 45 degrees (the edges of the depth map are
- * steps).  Only textureLod() here: it may run inside pixel-dependent branches (reliefFrame() may not).
+ * does not depend on the scene's scale.  The map's edges are steps (an object in front of another): their slope is
+ * compressed (g / (1 + |g| / 8)) and the tilt softly limited below about 45 degrees -- uncompressed, the edges
+ * saturated at any depth and drew dark cracks.  Only textureLod() here: it may run inside pixel-dependent branches
+ * (reliefFrame() may not).
  **/
 vec3 reliefNormal( vec3 n, ReliefFrame f, vec2 uv, float amt )
 {
@@ -144,9 +147,10 @@ vec3 reliefNormal( vec3 n, ReliefFrame f, vec2 uv, float amt )
         return n;
     float lod = clamp( log2( max( fp, 1.0 ) ) + 1.0, 2.0, 6.0 );
     vec2  g = 0.5 * ( reliefSlope( uv, lod ) + reliefSlope( uv, lod + 2.0 ) ); // depth per unit of uv
+    g /= 1.0 + length( g ) * 0.125; // a step of the map is an occlusion edge, not a cliff: steep slopes compressed
     float wl = sqrt( ( dot( f.sx, f.sx ) + dot( f.sy, f.sy ) ) / uvl );        // world length per unit of uv
     vec3  sg = ( dot( g, f.ux ) * r1 + dot( g, f.uy ) * r2 ) / det;            // the surface gradient of the depth
-    vec3  t = sg * ( 0.12 * amt * wl * fade );
+    vec3  t = sg * ( 0.15 * amt * wl * fade );
     t /= sqrt( 1.0 + dot( t, t ) * 1.23 ); // soft limit: |t| < 0.9
     return normalize( n - t );
 }

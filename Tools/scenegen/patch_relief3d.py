@@ -121,7 +121,7 @@ vec2 reliefSlope( vec2 uv, float lod )
  *             of the point given to reliefFrame(). (in)
  * @param f    The pixel's derivatives (reliefFrame()). (in)
  * @param uv   The photo coordinate as the scene samples the colour (tiled or not). (in)
- * @param amt  Depth of the relief: 1 = 12 % of the photo's width on the surface. (in)
+ * @param amt  Depth of the relief: 1 = 15 % of the photo's width on the surface (less on the map's steep edges). (in)
  *
  * @return
  *   The tilted normal (unit length); n itself where the photo has no map, where the photo is minified so far that a
@@ -135,8 +135,10 @@ vec2 reliefSlope( vec2 uv, float lod )
  * the surface:
  *   grad_s h = ( h_x ( sy x n ) + h_y ( n x sx ) ) / ( sx . ( sy x n ) ),   n' = normalize( n - A grad_s h ),
  * with the relief's depth A a share of the photo's extent on the surface (world length per unit of uv), so the tilt
- * does not depend on the scene's scale; a soft limit keeps it below about 45 degrees (the edges of the depth map are
- * steps).  Only textureLod() here: it may run inside pixel-dependent branches (reliefFrame() may not).
+ * does not depend on the scene's scale.  The map's edges are steps (an object in front of another): their slope is
+ * compressed (g / (1 + |g| / 8)) and the tilt softly limited below about 45 degrees -- uncompressed, the edges
+ * saturated at any depth and drew dark cracks.  Only textureLod() here: it may run inside pixel-dependent branches
+ * (reliefFrame() may not).
  **/
 vec3 reliefNormal( vec3 n, ReliefFrame f, vec2 uv, float amt )
 {
@@ -152,9 +154,10 @@ vec3 reliefNormal( vec3 n, ReliefFrame f, vec2 uv, float amt )
         return n;
     float lod = clamp( log2( max( fp, 1.0 ) ) + 1.0, 2.0, 6.0 );
     vec2  g = 0.5 * ( reliefSlope( uv, lod ) + reliefSlope( uv, lod + 2.0 ) ); // depth per unit of uv
-    float wl = sqrt( ( dot( f.sx, f.sx ) + dot( f.sy, f.sy ) ) / uvl );       // world length per unit of uv
-    vec3  sg = ( dot( g, f.ux ) * r1 + dot( g, f.uy ) * r2 ) / det;           // the surface gradient of the depth
-    vec3  t = sg * ( 0.12 * amt * wl * fade );
+    g /= 1.0 + length( g ) * 0.125; // a step of the map is an occlusion edge, not a cliff: steep slopes compressed
+    float wl = sqrt( ( dot( f.sx, f.sx ) + dot( f.sy, f.sy ) ) / uvl ); // world length per unit of uv
+    vec3  sg = ( dot( g, f.ux ) * r1 + dot( g, f.uy ) * r2 ) / det;     // the surface gradient of the depth
+    vec3  t = sg * ( 0.15 * amt * wl * fade );
     t /= sqrt( 1.0 + dot( t, t ) * 1.23 ); // soft limit: |t| < 0.9
     return normalize( n - t );
 }
@@ -199,15 +202,16 @@ SITES = {
         "        n = reliefNormal( n, reliefFrame( tePos, teUV * 3.0 ), fract( teUV * 3.0 ),\n"
         "                          reliefP * ( 1.0 - smoothstep( 0.2, 0.8, teCrystal ) ) );\n")],
     # The dune field: one photo stretched over the whole carpet; the dunes' own normal goes into diffuse and glint.
-    # A third of the depth: the dunes are lit hard (diffuse and the sand colour both follow the light), and at full
-    # depth the relief broke the smooth slopes into cracks (sheet of 27.11.).
+    # Half the depth: the dunes are lit hard (diffuse and the sand colour both follow the light), and at full depth
+    # the relief broke the smooth slopes into cracks (sheet of 27.11.).  The normal goes in as it comes (not
+    # normalized): where the block returns it unchanged (no map) the light is the old one bit for bit.
     "SandDuneBarchanMigration": [(
         "    vec3  light_dir = normalize( vec3( 0.8, 0.5, -0.4 ) );\n"
         "    float diff = max( dot( vNormal, light_dir ), 0.0 );\n"
         "    float spec = pow( max( dot( reflect( -light_dir, vNormal ), vec3( 0.0, 1.0, 0.0 ) ), 0.0 ), spec_exp );\n",
         "    vec3 dune_n = vNormal;\n"
         "    if ( reliefP > 0.0 ) // the photo's relief in the sand (patch_relief3d.py)\n"
-        "        dune_n = reliefNormal( normalize( vNormal ), reliefFrame( vWorldPos, vTexCoord ), vTexCoord, 0.35 * reliefP );\n"
+        "        dune_n = reliefNormal( vNormal, reliefFrame( vWorldPos, vTexCoord ), vTexCoord, 0.5 * reliefP );\n"
         "    vec3  light_dir = normalize( vec3( 0.8, 0.5, -0.4 ) );\n"
         "    float diff = max( dot( dune_n, light_dir ), 0.0 );\n"
         "    float spec = pow( max( dot( reflect( -light_dir, dune_n ), vec3( 0.0, 1.0, 0.0 ) ), 0.0 ), spec_exp );\n")],
