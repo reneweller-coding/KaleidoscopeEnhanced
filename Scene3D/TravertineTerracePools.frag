@@ -139,12 +139,14 @@ vec2 reliefSlope( vec2 uv, float lod )
  * level 2 (256 texels of the 1024 photo, coarser as the photo shrinks on the screen) for the detail, two levels
  * coarser for the shapes -- with the fine one alone the relief was the photo's depth edges as thin lines and little
  * else.  The chain rule takes the slope to the screen (dh/dx = grad h . duv/dx), Mikkelsen's surface gradient onto
- * the surface:
- *   grad_s h = ( h_x ( sy x n ) + h_y ( n x sx ) ) / ( sx . ( sy x n ) ),   n' = normalize( n - A grad_s h ),
- * with the relief's depth A a share of the photo's extent on the surface (world length per unit of uv), so the tilt
- * does not depend on the scene's scale.  The map's edges are steps (an object in front of another): their slope is
- * compressed (g / (1 + |g| / 8)) and the tilt softly limited below about 45 degrees -- uncompressed, the edges
- * saturated at any depth and drew dark cracks.  Only textureLod() here: it may run inside pixel-dependent branches
+ * the surface, with the facet's own normal c = sx x sy in his frame:
+ *   grad_s h = ( h_x ( sy x c ) + h_y ( c x sx ) ) / ( c . c ),   n' = normalize( n - A ( grad_s h )_n ),
+ * ( )_n the part in the plane of the shading normal n.  With n itself in the frame (the paper's form) the determinant
+ * n . ( sx x sy ) vanished wherever a scene's analytic normal stands far from its coarse facets (the dunes: dark
+ * cracks).  The relief's depth A is a share of the photo's extent on the surface (world length per unit of uv), so the
+ * tilt does not depend on the scene's scale.  The map's edges are steps (an object in front of another): their slope
+ * is compressed (g / (1 + |g| / 8)) and the tilt softly limited below about 45 degrees -- uncompressed, the edges
+ * saturated at any depth.  Only textureLod() here: it may run inside pixel-dependent branches
  * (reliefFrame() may not).
  **/
 vec3 reliefNormal( vec3 n, ReliefFrame f, vec2 uv, float amt )
@@ -153,8 +155,9 @@ vec3 reliefNormal( vec3 n, ReliefFrame f, vec2 uv, float amt )
     vec2  ax = f.ux * ts, ay = f.uy * ts;
     float fp = sqrt( max( dot( ax, ax ), dot( ay, ay ) ) ); // the pixel's footprint in texels of the full photo
     float fade = 1.0 - smoothstep( 24.0, 64.0, fp );
-    vec3  r1 = cross( f.sy, n ), r2 = cross( n, f.sx );
-    float det = dot( f.sx, r1 );
+    vec3  c = cross( f.sx, f.sy ); // the facet's own normal (n may be a smooth or analytic one that differs)
+    vec3  r1 = cross( f.sy, c ), r2 = cross( c, f.sx );
+    float det = dot( c, c );
     float uvl = dot( f.ux, f.ux ) + dot( f.uy, f.uy );
     float has = interpolation * photoDepthAmt.x + ( 1.0 - interpolation ) * photoDepthAmt.y;
     if ( !( has > 0.0 ) || !( fade > 0.0 ) || !( abs( det ) > 1e-20 ) || !( uvl > 1e-16 ) || !( amt > 0.0 ) )
@@ -164,7 +167,8 @@ vec3 reliefNormal( vec3 n, ReliefFrame f, vec2 uv, float amt )
     g /= 1.0 + length( g ) * 0.125; // a step of the map is an occlusion edge, not a cliff: steep slopes compressed
     float wl = sqrt( ( dot( f.sx, f.sx ) + dot( f.sy, f.sy ) ) / uvl );        // world length per unit of uv
     vec3  sg = ( dot( g, f.ux ) * r1 + dot( g, f.uy ) * r2 ) / det;            // the surface gradient of the depth
-    vec3  t = sg * ( 0.15 * amt * wl * fade );
+    sg -= n * dot( n, sg ) / max( dot( n, n ), 1e-6 );                         // ... in the plane of the shading normal
+    vec3 t = sg * ( 0.15 * amt * wl * fade );
     t /= sqrt( 1.0 + dot( t, t ) * 1.23 ); // soft limit: |t| < 0.9
     return normalize( n - t );
 }
