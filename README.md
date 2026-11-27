@@ -619,6 +619,14 @@ band-group onsets by default -- the separator's kick and snare did better on syn
 kit. `KALEIDO_OLD_DRUMS` chooses: `1` all three as before, `0` all three from the separator, or the drums named
 (`kick,snare` is the default). Details: docs/engine-internals-70-analyzer.md.
 
+### Build-up
+
+`audioBuildUp` (the tension before a drop: the depth arc, the held breath, the scheduler's drop cut) has a second
+version since 27.11.2026: the groove's bass taken out while the top of the spectrum rises (filter sweep, noise riser).
+On the score-cued demos it marks the EDM build-ups far better than the old one (it rises toward the drop instead of
+falling, and reads low in the grooves), but not every demo improves, so the old one stays the default.
+`KALEIDO_OLD_BUILDUP=0` publishes the new one, `1` the old one. Details: docs/engine-internals-71-buildup.md.
+
 ---
 
 ## Stereo 3D in a headset

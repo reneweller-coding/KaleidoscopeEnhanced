@@ -253,6 +253,12 @@ public:
      * Off (null) in the app.
      **/
     static FILE *M_DrumTrace;
+    /** When set, every analysed block appends the build-up's inputs and outputs to this file (12 float32: time, music
+     * presence, the fast bass and the groove level in dB, the centroid, the top's share, the gap, centroid and top
+     * terms, the raw value, the new and the old build-up) -- for checking Tools/buildup_lab.py against the C++
+     * (PresetEditor --features ... --buildup-trace FILE).  Off (null) in the app.
+     **/
+    static FILE *M_BuildUpTrace;
     /**  Offline analysis of samples in memory: the same pipeline as analyzeWavToTimeline(), for checks that build
      * their own signal (`Kaleidoscope.exe -q`).
      *
@@ -648,6 +654,17 @@ private:
     int   m_bldWarm = 0; ///< Bias-correction counter (EMA warm-up), also used as a block-count clock for build-up/drop
                          ///< logging.
     float m_sBuildUp = 0.f;                       ///< Smoothed 0..1 build-up output; see AudioFeatures::buildUp.
+    // ---- the build-up from the groove's missing bass and the rising top (27.11.2026; Tools/buildup_lab.py) ----
+    float m_bldPAll = 0.f;      ///< This block's power over bands 8..31 (above the bass): the new build-up's input.
+    float m_bldCent = 0.f;      ///< Their power-weighted mean band index (the centroid above the bass).
+    float m_bldHiRel = 0.f;     ///< The share of bands 20..31 (2.9-16 kHz) in them, in dB.
+    float m_bldCentF = 0.f;     ///< ~1-s average of #m_bldCent.
+    float m_bldCentS = 0.f;     ///< ~6-s average of #m_bldCent (the centroid rising: #m_bldCentF above it).
+    float m_bldHiF = 0.f;       ///< ~1-s average of #m_bldHiRel.
+    float m_bldHiS = 0.f;       ///< ~6-s average of #m_bldHiRel (the top rising: #m_bldHiF above it).
+    bool  m_bldNewInit = false; ///< The averages above start at the first non-silent block.
+    float m_sBuildUpNew = 0.f;  ///< The new build-up, smoothed (published with KALEIDO_OLD_BUILDUP=0).
+    bool  m_oldBuildUp = true;  ///< Publish #m_sBuildUp, the build-up of before 27.11.2026 (the default for now).
     // ---- the drop: the bass back at its groove level (see processBlock) ----
     static const int DropSlots = 90;              ///< Half-second slots of the groove level's 45-s memory.
     float            m_dropBassP = 0.f;           ///< This block's bass power, the 32 bands' lowest eight (40..180 Hz).

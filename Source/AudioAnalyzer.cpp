@@ -199,6 +199,15 @@ AudioAnalyzer::AudioAnalyzer( QObject *parent )
             m_oldDrum[d] = !old_drums ? Default[d] : all || ( !none && v.find( Names[d] ) != std::string::npos );
         m_oldDrums = m_oldDrum[0] && m_oldDrum[1] && m_oldDrum[2];
     }
+    // Which build-up is published (docs/engine-internals-71-buildup.md): KALEIDO_OLD_BUILDUP=1 the one of before
+    // 27.11.2026, 0 the new one; unset the old one -- the new one is far better on the EDM builds of the score-cued
+    // demos but not on every demo (the Cinematic and Ritual crescendos, two breakdowns), so it waits for the user.
+    {
+        constexpr bool NewByDefault = false;
+        m_oldBuildUp = qEnvironmentVariableIsSet( "KALEIDO_OLD_BUILDUP" )
+                           ? qEnvironmentVariableIntValue( "KALEIDO_OLD_BUILDUP" ) != 0
+                           : !NewByDefault;
+    }
     std::memset( m_bassHistory, 0, sizeof( m_bassHistory ) );
     std::memset( m_envHistory, 0, sizeof( m_envHistory ) );
     std::memset( m_ringBuf, 0, sizeof( m_ringBuf ) );
@@ -740,6 +749,7 @@ float AudioAnalyzer::M_ClockDelay = 0.06f;
 FILE *AudioAnalyzer::M_TempoTrace = nullptr;
 FILE *AudioAnalyzer::M_SectionTrace = nullptr;
 FILE *AudioAnalyzer::M_DrumTrace = nullptr;
+FILE *AudioAnalyzer::M_BuildUpTrace = nullptr;
 
 void AudioAnalyzer::externalBeat( const char *source, qint64 refMs, float bpm, bool phase )
 {
@@ -2503,6 +2513,22 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         m_dropBassP = 0.f;
         for ( int b = 0; b < 8; ++b )
             m_dropBassP += raw[b] * raw[b];
+        // The new build-up's inputs above the bass (bands 8..31, so that the bass leaving is no brightening): their
+        // power, its mean band index and the top's share (bands 20..31) in dB.
+        {
+            float p_all = 0.f, p_idx = 0.f, p_hi = 0.f;
+            for ( int b = 8; b < NB; ++b )
+            {
+                const float p = raw[b] * raw[b];
+                p_all += p;
+                p_idx += p * static_cast<float>( b );
+                if ( b >= 20 )
+                    p_hi += p;
+            }
+            m_bldPAll = p_all;
+            m_bldCent = p_idx / ( p_all + 1e-12f );
+            m_bldHiRel = 10.f * std::log10( ( p_hi + 1e-12f ) / ( p_all + 1e-12f ) );
+        }
         for ( int b = 0; b < NB; ++b )
         {
             float v = std::min( raw[b] / m_specRef, 1.f );
@@ -3460,6 +3486,66 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             for ( int i = 0; i < DropSlots; ++i )
                 groove = std::max( groove, m_dropSlots[i] );
 
+            // ---- The build-up, new (27.11.2026; docs/engine-internals-71-buildup.md, Tools/buildup_lab.py) ----
+            // Measured against the 43 demos' score cues, the signal above read 0.53 AUC between the builds and the
+            // grooves (chance) and FELL inside the builds (corr. with time -0.09): its fast-over-slow rises fire
+            // where something new comes in and fade while the build goes on.  What separates a build in the demos
+            // is what the production literature names (Solberg 2014; Butler 2006; the drop detection of Yadati et
+            // al. 2014 starts from the same section contrast): the groove's low end taken out (the bass under its
+            // groove level, the drop detector's own measure) while the top rises -- the filter opening, the noise
+            // riser (the centroid and the 2.9-16 kHz share above the bass, 1-s over 6-s average).  The gap alone
+            // also reads a breakdown, so it is weighted by the rise: gap * (Base + (1 - Base) * rise); a build that
+            // keeps its bass (Psytrance) counts by the rise alone, both of them, at half weight.  The old signal
+            // still arms the drop detector below (its numbers stay those of engine-internals (62)).
+            {
+                constexpr float GapLo = 6.f, GapHi = 30.f, CentScale = 1.5f, HiScale = 3.f, Base = 0.2f;
+                constexpr float NoGap = 0.5f;
+                if ( m_bldPAll > 1e-10f )
+                {
+                    if ( !m_bldNewInit )
+                    {
+                        m_bldCentF = m_bldCentS = m_bldCent;
+                        m_bldHiF = m_bldHiS = m_bldHiRel;
+                        m_bldNewInit = true;
+                    }
+                    const float a_tf = 1.f - std::exp( -block / 1.f );
+                    const float a_ts = 1.f - std::exp( -block / 6.f );
+                    m_bldCentF += a_tf * ( m_bldCent - m_bldCentF );
+                    m_bldCentS += a_ts * ( m_bldCent - m_bldCentS );
+                    m_bldHiF += a_tf * ( m_bldHiRel - m_bldHiF );
+                    m_bldHiS += a_ts * ( m_bldHiRel - m_bldHiS );
+                }
+                float gap = 0.f, c_rise = 0.f, h_rise = 0.f, raw_new = 0.f;
+                if ( m_bldNewInit )
+                {
+                    gap = std::min( std::max( ( groove - fast_db - GapLo ) / ( GapHi - GapLo ), 0.f ), 1.f );
+                    c_rise = std::min( std::max( ( m_bldCentF - m_bldCentS ) / CentScale, 0.f ), 1.f );
+                    h_rise = std::min( std::max( ( m_bldHiF - m_bldHiS ) / HiScale, 0.f ), 1.f );
+                    raw_new = std::max( gap * ( Base + ( 1.f - Base ) * std::max( c_rise, h_rise ) ),
+                                        NoGap * std::min( c_rise, h_rise ) )
+                              * m_sMusicPresence;
+                    const float a_up = 1.f - std::exp( -block / 0.5f ); // rise ~0.5 s, fall ~1.2 s, as before
+                    const float a_dn = 1.f - std::exp( -block / 1.2f );
+                    m_sBuildUpNew += ( raw_new > m_sBuildUpNew ? a_up : a_dn ) * ( raw_new - m_sBuildUpNew );
+                }
+                if ( M_BuildUpTrace )
+                {
+                    const float rec[12] = { static_cast<float>( m_bldWarm ) * block,
+                                            m_sMusicPresence,
+                                            fast_db,
+                                            groove,
+                                            m_bldCent,
+                                            m_bldHiRel,
+                                            gap,
+                                            c_rise,
+                                            h_rise,
+                                            raw_new,
+                                            m_sBuildUpNew,
+                                            m_sBuildUp };
+                    fwrite( rec, sizeof( float ), 12, M_BuildUpTrace );
+                }
+            }
+
             const bool warm = m_bldWarm > 3000;
             if ( m_sBuildUp > 0.45f && warm )
                 m_dropArmed = 800.f; // ~8 s
@@ -3750,7 +3836,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         }
         fwrite( rec, sizeof( float ), 16, M_DrumTrace );
     }
-    m_features.buildUp = m_sBuildUp;
+    m_features.buildUp = m_oldBuildUp ? m_sBuildUp : m_sBuildUpNew;
     m_features.dropPulse = m_dropPulse;
     m_features.dropCount = m_dropCount;
     m_features.breakHold = m_stopActive ? 1.f : 0.f;
