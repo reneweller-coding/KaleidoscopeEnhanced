@@ -397,14 +397,19 @@ vec3 raysLight( vec2 puv )
     float y0 = dot( clamp( textureLod( tex, puv, 0.0 ).rgb, 0.0, 1.0 ), vec3( 0.299, 0.587, 0.114 ) );
     for ( int i = 0; i < RaysTaps; ++i )
     {
-        vec2  q = clamp( puv + stp * ( float( i ) + ign ), 0.0, 1.0 );
-        float z = textureLod( sceneDepth, q, 0.0 ).r;
-        float fr = 1.0 - clamp( ( z - photoDepthWin.y ) / ( photoDepthWin.x - photoDepthWin.y ), 0.0, 1.0 );
-        vec3  s = clamp( textureLod( tex, q, 0.0 ).rgb, 0.0, 1.0 );
+        vec2 q = clamp( puv + stp * ( float( i ) + ign ), 0.0, 1.0 );
+        // The colour from mip 2: shafts are soft anyway, and a quarter of the resolution keeps sixteen scattered
+        // reads in the cache (full resolution: +0.65 ms a frame in ChainLab2D, 27.11.2026).  The depth only where
+        // the sample can give light at all.
+        vec3  s = clamp( textureLod( tex, q, 2.0 ).rgb, 0.0, 1.0 );
         float y = dot( s, vec3( 0.299, 0.587, 0.114 ) );
-        acc += s
-               * ( smoothstep( RaysFar, 0.85, fr ) * smoothstep( RaysLum, 0.8, y ) * smoothstep( 0.0, RaysOver, y - y0 )
-                   * wgt );
+        float lit = smoothstep( RaysLum, 0.8, y ) * smoothstep( 0.0, RaysOver, y - y0 );
+        if ( lit > 0.0 )
+        {
+            float z = textureLod( sceneDepth, q, 0.0 ).r;
+            float fr = 1.0 - clamp( ( z - photoDepthWin.y ) / ( photoDepthWin.x - photoDepthWin.y ), 0.0, 1.0 );
+            acc += s * ( smoothstep( RaysFar, 0.85, fr ) * lit * wgt );
+        }
         sum += wgt;
         wgt *= RaysDecay;
     }
