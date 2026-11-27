@@ -286,21 +286,21 @@ vec3 freqDepth( vec3 col, float d, vec2 p, vec3 tint, int vi )
     float w_f = ( 1.0 - smoothstep( t.x - t.z, t.x + t.z, d ) ) * have;
     float w_m = max( have - w_n - w_f, 0.0 );
     vec3  own = tint / max( max( tint.r, max( tint.g, tint.b ) ), 0.05 );
-    float bn = fdVar( vi, 16.0, 0.16, 0.32 ) * clamp( 0.7 * audioKick + 0.3 * clamp( audioBass, 0.0, 1.0 ), 0.0, 1.0 )
+    float bn = fdVar( vi, 16.0, 0.45, 0.75 ) * clamp( 0.7 * audioKick + 0.3 * clamp( audioBass, 0.0, 1.0 ), 0.0, 1.0 )
                * w_n;
-    col = col * ( 1.0 + bn ) + 0.25 * bn * own;
+    col = col * ( 1.0 + bn ) + 0.4 * bn * own;
     float l = luma( col );
     col = max( l + ( col - l ) * ( 1.0 + fdVar( vi, 17.0, 0.5, 1.1 ) * clamp( audioMid, 0.0, 1.0 ) * w_m ), 0.0 );
     float hi = clamp( 0.8 * audioHat + 0.2 * audioHigh, 0.0, 1.0 );
-    vec2  g = p * fdVar( vi, 18.0, 110.0, 170.0 ) + vec2( 0.29, 0.13 ) * sceneAdvance;
+    vec2  g = p * fdVar( vi, 18.0, 64.0, 100.0 ) + vec2( 0.29, 0.13 ) * sceneAdvance;
     vec2  gc = floor( g );
     vec2  gf = fract( g ) - 0.5 - 0.4 * ( hash22( gc + 3.0 ) - 0.5 );
     float gs = 0.6 + 0.4 * hash21( gc + 11.0 );
-    float pt = step( fdVar( vi, 19.0, 0.66, 0.80 ), hash21( gc + 29.0 ) )
+    float pt = step( fdVar( vi, 19.0, 0.44, 0.60 ), hash21( gc + 29.0 ) )
                * smoothstep( 0.24 * gs, 0.06 * gs, length( gf ) );
     float tw = 0.55 + 0.45 * sin( 6.2831853 * hash21( gc + 7.0 ) + 1.1 * sceneAdvance );
-    float gl = fdVar( vi, 20.0, 1.2, 2.2 ) * hi * pt * tw * w_f;
-    return col * ( 1.0 + gl ) + 0.5 * gl * own;
+    float gl = fdVar( vi, 20.0, 2.4, 3.6 ) * hi * pt * tw * w_f;
+    return col * ( 1.0 + gl ) + 0.8 * gl * own;
 }
 uniform float voiceP; ///< Strength of the voices' roles, 0..1 (0: the scene as it was; set by an expr element in the
                       ///< preset).

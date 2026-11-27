@@ -19405,7 +19405,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
-    <float name="depthLook" minValue="2.83" maxValue="5.49"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\StripLab.frag" type="normal" mood="dreamy,psychedelic,calm" probability="0.45" complexity="5" gpuMs="0.60">
@@ -19436,7 +19436,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
-    <float name="depthLook" minValue="2.83" maxValue="5.49"></float>
+    <float name="depthLook" minValue="2.70" maxValue="5.90"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\DefectLab.frag" type="normal" mood="psychedelic,dreamy,dark" probability="0.45" complexity="1" gpuMs="0.63">
