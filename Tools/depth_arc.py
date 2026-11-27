@@ -127,7 +127,7 @@ def render(demo, scene, fx, arc, old=None, size="960x540"):
     _, _, cross = screen.read_master()
     cfg = "ZZArc"
     xml = ('<?xml version="1.0" encoding="utf-8" ?>\n<configuration ImageDirectory="..\\\\Images" '
-           'ConfigurationName="%s" hidden="true" >\n\n' % cfg + scene_blk + "\n" + fx_blk + "\n" + cross
+           'ConfigurationName="%s" hidden="true"%s >\n\n' % (cfg, os.environ.get("DEPTH_ARC_ROOT", "")) + scene_blk + "\n" + fx_blk + "\n" + cross
            + "</configuration>\n")
     preset = os.path.join(ROOT, "Presets", cfg + ".xml")
     io.open(preset, "w", encoding="utf-8").write(xml)

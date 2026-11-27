@@ -1347,6 +1347,10 @@ void GLwidget::initializeGL()
         exit( 0 );
     }
 
+    // The build-up signal the active preset asks for (buildUp="new" in the EDM presets).  Before the export's early
+    // return: the export's analyser follows the same choice as the live one.
+    AudioAnalyzer::setPresetBuildUpNew( m_actConfiguration && m_actConfiguration->newBuildUp() );
+
     // Video export: no capture, no now-playing, no MIDI, no frame timer -- the
     // export drives the frames itself (exportStep()).
     if ( m_export )
@@ -1391,10 +1395,7 @@ void GLwidget::initializeGL()
 
     // Start audio analyser (WASAPI loopback – captures any playing audio)
     m_audioAnalyzer = new AudioAnalyzer( this );
-    // The build-up signal the active preset asks for (buildUp="new" in the EDM presets); the export's analyser
-    // follows the same choice.
-    AudioAnalyzer::setPresetBuildUpNew( m_actConfiguration && m_actConfiguration->newBuildUp() );
-    m_audioAnalyzer->followPresetBuildUp();
+    m_audioAnalyzer->followPresetBuildUp(); // the active preset's build-up signal (set above, and at a preset change)
     // The source chosen last time (audio menu); missing devices fall back to the default until they come back.
     {
         QSettings     st( SettingsFile::path(), QSettings::IniFormat );
