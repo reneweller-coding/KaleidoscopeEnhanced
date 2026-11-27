@@ -216,6 +216,12 @@ white wall and a lamp give the same glow.  But most scenes cut their own output 
   same run-to-run variation not caught by four renders.  For the merge: a changed scene that differs in the
   full-catalogue comparison should be rendered once more before it is judged; the run-to-run variation is the
   catalogue's own.
+- *Against the common baseline* 2026-11-26-base (b87fcc34, the main checkout, the user's settings; checked at 07:25
+  when it held 1,566 entries): my switch-off sets with the user's settings -- L1 32 of 36 byte-identical (the rest:
+  Spaceship__6, BeeWaggleDance, CherenkovCascadeShower of the noise floor, and ChainLab2D 0.13); L2 first batch 12 of
+  12 for the before-set, the after-set 2 of 4 (HyperspaceKaleidoscopicMatrix 0.01, TextureDelaunayLightNet 0.003);
+  second batch 20 of 30 (QuantumSlipstream 4.3 and the other two-frame scenes; OrbitalSunrise 2.0 reads the time of
+  day, `dayPhase`; LightningStorm, an open scene, 13.8 -- its discharge is a GPU simulation).
 - *Switch on with the lift, against switch off* (sheets `sheets/light/L2_off_vs_on_1.jpg`, `L2_off_vs_on_2.jpg`
   for the first batch, `L2_batch2_off_vs_on_1.jpg`, `_2.jpg` for the second): first batch 1.0..2.7 of 255
   (MarangoniConvectionTearsOfWine 2.7, WeatherProjectSun 2.3, VolcanicLightningAshColumn 2.0 ...), second batch
