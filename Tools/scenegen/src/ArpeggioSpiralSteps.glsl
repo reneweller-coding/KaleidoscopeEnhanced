@@ -14,6 +14,7 @@
  *
  * Knobs: turnP (how tightly the stair winds), heightP (how far the pitches rise), hueP.
 //@params turnP heightP
+//@light
 //@audio audioMelody[96] audioMelodyHead audioMelodyPhase audioSwell
 //@body
 /**  The melody's recent mean pitch and spread, every sample weighted by a window over its age so that samples enter

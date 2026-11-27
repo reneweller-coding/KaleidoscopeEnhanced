@@ -12,6 +12,7 @@
  *
  * Knobs: spreadP (how far the cloud spreads), starP (the stars' size).
 //@params spreadP starP
+//@light
 //@audio audioSwell
 //@body
 /**  A colour from sRGB to Lab (D65), scaled: L / 100, a / 100, b / 100.

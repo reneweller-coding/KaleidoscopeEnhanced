@@ -12,6 +12,7 @@
  *
  * Knobs: trackP (how many tracks), reliefP (the relief's base height), hueP.
 //@params trackP reliefP
+//@light
 //@audio audioBass audioSwell
 //@body
 void main()

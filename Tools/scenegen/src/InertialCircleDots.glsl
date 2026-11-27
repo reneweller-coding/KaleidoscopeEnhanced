@@ -11,6 +11,7 @@
  *
  * Knobs: driftP (how fast the matter drifts), trailP (how long the trails are), hueP.
 //@params driftP trailP
+//@light
 //@audio audioSwell
 //@body
 void main()

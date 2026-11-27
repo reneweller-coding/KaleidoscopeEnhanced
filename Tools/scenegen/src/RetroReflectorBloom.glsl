@@ -14,6 +14,7 @@
  * Knobs: cellP (the reflectors' size), lobeP (how sharp the lobes), hueP.  Distinct from the glitter of the list of
  * 30.09.: here the facet pattern itself.
 //@params cellP lobeP
+//@light
 //@audio audioOnset audioSwell
 //@body
 void main()

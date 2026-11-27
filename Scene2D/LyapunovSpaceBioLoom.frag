@@ -156,5 +156,6 @@ void main()
     base_col += vec3( 1.4, 1.1, 1.8 ) * boundary_glow * ( 1.0 + 2.5 * audioKick );
 
     base_col = pow( base_col, vec3( 0.88 ) );
-    fragColor = vec4( clamp( base_col, 0.0, 1.0 ), 1.0 );
+    // The light above white is kept (block L, 16-bit intermediates); an 8-bit target cuts it at 1.
+    fragColor = vec4( clamp( base_col, 0.0, 3.0 ), 1.0 );
 }

@@ -12,6 +12,7 @@
  *
  * Knobs: pearlP (how close the pearls sit), twistP (how tight the twist is), hueP.
 //@params pearlP twistP
+//@light
 //@audio audioLevel audioSwell
 //@body
 void main()

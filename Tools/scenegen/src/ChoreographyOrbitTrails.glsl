@@ -12,6 +12,7 @@
  *
  * Knobs: bodyP (how many bodies), cellP (the cells' size), hueP.
 //@params bodyP cellP
+//@light
 //@audio audioSectionId audioSectionPrev audioSectionAge audioSwell
 //@body
 /**  A point of a choreography's path.

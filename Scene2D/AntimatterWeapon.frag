@@ -259,5 +259,6 @@ void main()
     // Soft-knee exposure
     vec3 cat_tone = max( col, 0.0 );
     cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
-    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
+    // The light above white is kept (block L, 16-bit intermediates); an 8-bit target cuts it at 1.
+    fragColor = vec4( clamp( cat_tone, 0.0, 3.0 ), 1.0 );
 }

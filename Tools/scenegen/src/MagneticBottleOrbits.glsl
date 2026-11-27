@@ -13,6 +13,7 @@
  *
  * Knobs: gyroP (how fast the particles gyrate), rowP (how many rows), hueP.
 //@params gyroP rowP
+//@light
 //@audio audioHarmAdvance audioSwell
 //@body
 void main()

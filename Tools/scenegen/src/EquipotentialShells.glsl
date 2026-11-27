@@ -14,6 +14,7 @@
  *
  * Knobs: shellP (how close the shells lie), spreadP (how far the charges roam), hueP.
 //@params shellP spreadP
+//@light
 //@audio audioChroma[12] audioSwell
 //@body
 /**  The compressed potential of the charges.

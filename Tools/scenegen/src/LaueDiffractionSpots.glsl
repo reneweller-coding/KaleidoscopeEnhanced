@@ -12,6 +12,7 @@
  *
  * Knobs: spreadP (how far the spots spread on the screen), spotP (the spots' size), hueP.
 //@params spreadP spotP
+//@light
 //@audio audioSwell
 //@body
 void main()

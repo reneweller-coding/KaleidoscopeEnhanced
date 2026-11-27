@@ -174,5 +174,6 @@ void main()
     float vig = 1.0 - smoothstep( 0.85, 1.4, rad );
     fluid_col *= vig;
 
-    fragColor = vec4( clamp( fluid_col, 0.0, 1.0 ), 1.0 );
+    // The light above white is kept (block L, 16-bit intermediates); an 8-bit target cuts it at 1.
+    fragColor = vec4( clamp( fluid_col, 0.0, 3.0 ), 1.0 );
 }

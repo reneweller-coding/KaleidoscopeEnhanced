@@ -17,6 +17,7 @@
  *
  * Knobs: dotP (light spacing), armsP (spiral arms), photoP (photo colours), hueP.
 //@params dotP armsP photoP
+//@light
 //@audio audioSpread audioKick audioMode audioHigh audioSwell
 //@body
 float phaseAt(vec2 x, float T, float arms)

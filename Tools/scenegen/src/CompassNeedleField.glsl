@@ -13,6 +13,7 @@
  *
  * Knobs: needleP (the needles' spacing), magnetP (how strong the magnets are against the background field), hueP.
 //@params needleP magnetP
+//@light
 //@audio audioChroma[12] audioSwell
 //@body
 void main()

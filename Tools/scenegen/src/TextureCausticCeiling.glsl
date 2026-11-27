@@ -23,6 +23,7 @@
  * Knobs: waveP (share of photo relief vs. free waves), scaleP, fringeP
  * (colour fringes), hueP.
 //@params waveP scaleP fringeP
+//@light
 //@audio audioSpread audioRoughness audioMode audioHigh audioSwell
 //@body
 float gT, gW, gRough;

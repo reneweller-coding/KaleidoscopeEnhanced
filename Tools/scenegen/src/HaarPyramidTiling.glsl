@@ -11,6 +11,7 @@
  *
  * Knobs: depthP (how many levels), gainP (the base gain of the bands), hueP.
 //@params depthP gainP
+//@light
 //@audio audioSpread audioSwell
 //@body
 void main()

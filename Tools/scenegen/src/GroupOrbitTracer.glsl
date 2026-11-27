@@ -13,6 +13,7 @@
  *
  * Knobs: trailP (how long the trails are), sizeP (the figure's size), hueP.
 //@params trailP sizeP
+//@light
 //@audio audioSectionId audioSectionPrev audioSectionAge audioSwell
 //@body
 /**  A place folded into one mirror sector of the dihedral group with n rotations.

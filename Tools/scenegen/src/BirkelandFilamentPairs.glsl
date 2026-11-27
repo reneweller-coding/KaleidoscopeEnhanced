@@ -11,6 +11,7 @@
  *
  * Knobs: pairP (how many pairs), twistP (how tightly they twist), hueP.
 //@params pairP twistP
+//@light
 //@audio audioSwell
 //@body
 void main()
