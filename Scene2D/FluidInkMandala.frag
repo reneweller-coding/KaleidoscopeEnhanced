@@ -46,9 +46,11 @@ uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float ringsP; ///< Rings knob: ring count, 3..5.
-uniform float sidesP; ///< Sides knob: fold count, 6..10.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float ringsP;      ///< Rings knob: ring count, 3..5.
+uniform float sidesP;      ///< Sides knob: fold count, 6..10.
+uniform float hueP;        ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float fluidDepthP; ///< The photo's depth as a landscape for the fluid, 0..1 (0: off); read by the host for
+                           ///< FluidSim.frag.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

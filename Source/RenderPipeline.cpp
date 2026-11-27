@@ -3249,6 +3249,27 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
         sim_frame.dyeTexA = m_liveTex ? m_liveTex : m_actTex;
         sim_frame.dyeTexB = m_liveTex ? m_liveTex : m_nextTex;
         sim_frame.dyeInterp = m_interpolationTexture;
+        // Plan 27.11. P7: the photo's depth as a landscape for the fluid (Engine/FluidSim.frag).  The knob is the rolled
+        // fluidDepthP of the scene that samples the fluid -- the incoming one as soon as it does; a scene without the
+        // knob: 0, the old step -- and GpuSims slews it.  KALEIDO_FLUID_DEPTH=<0..1> forces it (comparisons).  A live
+        // input has no map.
+        if ( need.fluid )
+        {
+            static const float Forced = qEnvironmentVariableIsSet( "KALEIDO_FLUID_DEPTH" )
+                                            ? qEnvironmentVariable( "KALEIDO_FLUID_DEPTH" ).toFloat()
+                                            : -1.f;
+            const auto knob = []( EffectShader *e ) {
+                float v = 0.f;
+                for ( const auto &p : e->namedParameters() )
+                    if ( p.first == "fluidDepthP" )
+                        v = p.second;
+                return v;
+            };
+            sim_frame.fluidDepth =
+                Forced >= 0.f ? Forced : knob( ( fading && nxt_e->usesFluid() ) ? nxt_e : akt_e );
+            sim_frame.depthAmtA = ( !m_liveTex && m_actDepth.map ) ? 1.f : 0.f;
+            sim_frame.depthAmtB = ( !m_liveTex && m_nextDepth.map ) ? 1.f : 0.f;
+        }
         sim_frame.hold = M_Freeze; // a frozen picture: the sims stand too
         // The sims were tuned per frame at LiveRefHz: they step by the frame time, live and in an export.
         sim_frame.liveFrames = liveFrames( timeSinceLastFrameSec );

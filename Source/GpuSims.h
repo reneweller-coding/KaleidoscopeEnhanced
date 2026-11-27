@@ -90,6 +90,10 @@ public:
         GLuint dyeTexB = 0; ///< Next/incoming source image being cross-faded in as dye (bound as tex1). Not owned; 0 if
                             ///< none.
         float dyeInterp = 1.f;    ///< Cross-fade factor between dyeTexA and dyeTexB (0 = pure A, 1 = pure B).
+        float fluidDepth = 0.f; ///< The fluid's depth landscape, 0..1 (plan 27.11. P7; the scene's knob fluidDepthP):
+                                ///< 0 = the old step.  run() slews it, so a scene change never switches the flow.
+        float depthAmtA = 0.f;  ///< 1 if dyeTexA carries a depth map in its alpha (PhotoDepth::Info::map), else 0.
+        float depthAmtB = 0.f;  ///< The same for dyeTexB.
         bool  hold = false;       ///< Freeze (VJ or comparison run): no step, the newest states stay bound.
         float liveFrames = 1.f;   ///< Frames at 120 Hz this frame stands for (RenderPipeline::liveFrames()).
         float stepScale = 1.f; ///< Set by run(): how many 120-Hz frames one scaled step (fluid, Physarum) stands for.
@@ -289,6 +293,9 @@ private:
     GLint  m_fluidImpulseUni = -1;             ///< Uniform location: bass/beat-driven swirl impulse strength.
     GLint  m_fluidInjectUni = -1;              ///< Uniform location: onset-driven dye-injection amount.
     GLint  m_fluidStepUni = -1;                ///< Uniform location: "stepScale", the step's length in 120-Hz frames.
+    GLint  m_fluidDepthUni = -1;  ///< Uniform location: "fluidDepth", the depth landscape's strength (0: old step).
+    GLint  m_fluidAmtUni = -1;    ///< Uniform location: "photoDepthAmt", which dye source carries a depth map.
+    float  m_fluidDepthNow = 0.f; ///< Frame::fluidDepth, slewed (linear, 1 per second): exactly 0 while the knob is 0.
     float m_rdAcc = 0.5f; ///< Reaction-diffusion sub-steps owed (whole ones run, the rest carried; 0.5 absorbs jitter).
     float  m_smokeAcc = 0.5f;                  ///< Smoke steps owed, the same way.
     bool   m_fluidReady = false;               ///< True once setup succeeded; gates stepping and texture binding.
