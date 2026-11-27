@@ -9012,5 +9012,8 @@ void main()
             col += iso * iso_l * iso_m * fade * rim_c * ( 0.9 + 0.8 * kick );
         }
     }
-    finish( voiceRoles( chainAfterglow( col ), screenP() ) );
+    // the voices on col itself: Engine/ChainPass/Final_ChainSlice3D.frag ends in a finish(col) of its own
+    // (make_chainpass.py, write_3d), and a role applied only inside this call would not reach the app
+    col = voiceRoles( col, screenP() );
+    finish( chainAfterglow( col ) );
 }

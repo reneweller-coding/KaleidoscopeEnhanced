@@ -8847,5 +8847,8 @@ void main()
                         rim * 1.3 + rim_c * 0.12 * ao, smoothstep( 0.5, 1.0, st ) );
         col = mix( fog_c, sc, exp( -t * ( 0.09 + 0.04 * swell ) ) );
     }
-    finish( voiceRoles( chainAfterglow( col ), screenP() ) );
+    // the voices on col itself: Engine/ChainPass/Final_ChainLab3D.frag ends in a finish(col) of its own
+    // (make_chainpass.py, write_3d), and a role applied only inside this call would not reach the app
+    col = voiceRoles( col, screenP() );
+    finish( chainAfterglow( col ) );
 }

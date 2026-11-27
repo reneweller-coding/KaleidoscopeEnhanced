@@ -590,7 +590,10 @@ void main()
                         rim * 1.3 + rim_c * 0.12 * ao, smoothstep( 0.5, 1.0, st ) );
         col = mix( fog_c, sc, exp( -t * ( 0.09 + 0.04 * swell ) ) );
     }
-    finish( voiceRoles( chainAfterglow( col ), screenP() ) );
+
+
+    col = voiceRoles( col, screenP() );
+    finish( chainAfterglow( col ) );
     // keeps the walk uniforms: the app finds the lab's stages by their locations
     if ( walkHost < -1.0 )
         col += vec3( walkA.x + walkB.x + walkC.x + walkD.x + walkS.x + walkSpace.x + walkCore.x + walkBody.x );
