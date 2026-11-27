@@ -103,9 +103,8 @@ void main()
     uv.x = ( speedTunnel * time + audioAdvance + .1 / r );
     uv.y = ( a / 3.1416 );
 
-    // alpha 1 as before: the photo's alpha holds its depth since 26.11.2026 (Source/PhotoDepth.h)
-    vec4 color1 = vec4( ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb,
-                        1.0 );
+    vec4 color1 = interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv );
+    color1.a = 1.0; // the photo's alpha holds its depth since 26.11.2026 (Source/PhotoDepth.h): 1 as before
 
 
     // Tunnel Backward
@@ -140,8 +139,8 @@ void main()
     // coordinate ripples (radially, no time term), so the layers grind visibly.
     uv.y = ( a / Pi ) + 0.035 * clamp( audioRoughness, 0.0, 1.0 ) * sin( r * 6.5 );
 
-    vec4 color2 = vec4( ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb,
-                        1.0 );
+    vec4 color2 = interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv );
+    color2.a = 1.0; // the photo's alpha holds its depth since 26.11.2026 (Source/PhotoDepth.h): 1 as before
 
     // Combine Plain and Reverse.  A build-up tips the 50/50 blend toward the
     // RECEDING layer, so rising tension visibly pulls the image backwards.

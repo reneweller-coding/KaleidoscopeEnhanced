@@ -11,9 +11,10 @@
  *
  *  A map is an 8-bit grey PNG `<photo folder>\.depth\<photo name without extension>.png` (255 = near, 0 = far,
  *  stretched per photo between its 2nd and 98th percentile, long side 512; made by Tools/depth_maps.py), with a
- *  table `photo_info.tsv` next to it (tab-separated, header `file relief slope flat fx fy thr conf model`; file =
- *  the photo's file name with extension, fx/fy = subject centre in IMAGE coordinates, x right, y DOWN, 0..1, thr =
- *  depth threshold of the subject, conf 0..1, `-` or empty where not measured).  `KALEIDO_DEPTH_DIR=<folder>` holds
+ *  table `photo_info.tsv` next to it (tab-separated, header `file relief slope flat fx fy thr conf model mask`, read
+ *  by the columns' names; file = the photo's file name with extension, fx/fy = subject centre in IMAGE coordinates,
+ *  x right, y DOWN, 0..1, thr = depth threshold of the subject, conf 0..1 = confidence in the centre, mask 0..1 = how
+ *  well depth >= thr outlines the subject, `-` or empty where not measured).  `KALEIDO_DEPTH_DIR=<folder>` holds
  *  the same files flat and takes precedence; `KALEIDO_NO_DEPTH=1` switches all of it off.
  *
  *  Why the alpha channel: everything that holds for the colour holds for the depth then -- the same coordinate, the
@@ -44,6 +45,7 @@
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QtGlobal>
+#include <QtCore/qnumeric.h>
 #include <QtGui/QImage>
 
 #include <cstdio>
@@ -58,19 +60,21 @@ struct Info
     float focusU = 0.5f; ///< Subject centre, texture coordinates (u right; the picture's centre without a measure).
     float focusV = 0.5f; ///< Subject centre, texture coordinates (v UP: the upload mirrors the image vertically).
     float thr = 1.f;     ///< Depth threshold of the subject (subject = depth >= thr), 0..1; 1 without a measure.
-    float conf = 0.f;    ///< Confidence of the subject measure, 0..1; 0 without one.
+    float conf = 0.f;    ///< Confidence of the subject centre (focusU, focusV), 0..1; 0 without one.
+    float mask = 0.f;    ///< How well depth >= thr outlines the subject (IoU, 0..1; 0 without a measure).
 };
 
 /** One row of photo_info.tsv, as far as the host uses it. */
 struct Row
 {
-    bool  flat = false; ///< The photo has no relief worth showing (pattern, texture, sky): it gets no depth.
-    bool  hasFocus = false; ///< fx and fy were measured.
-    float fx = 0.5f;        ///< Subject centre x, image coordinates (right), 0..1.
-    float fy = 0.5f;        ///< Subject centre y, image coordinates (DOWN), 0..1.
+    bool  flat = false;       ///< The photo has no relief worth showing (pattern, texture, sky): it gets no depth.
+    bool  hasFocus = false;   ///< fx and fy were measured.
+    float fx = 0.5f;          ///< Subject centre x, image coordinates (right), 0..1.
+    float fy = 0.5f;          ///< Subject centre y, image coordinates (DOWN), 0..1.
     bool  hasSubject = false; ///< thr and conf were measured.
     float thr = 1.f;          ///< Depth threshold of the subject, 0..1.
-    float conf = 0.f;         ///< Confidence of the subject measure, 0..1.
+    float conf = 0.f;         ///< Confidence of the subject centre, 0..1.
+    float mask = 0.f;         ///< IoU of depth >= thr against the detected subject region, 0..1 (0: not measured).
 };
 
 /**  Whether the depth is switched off for comparisons (KALEIDO_NO_DEPTH=1).
@@ -140,6 +144,7 @@ inline QHash<QString, Row> parseTable( const QString &text )
     const int c_fy = static_cast<int>( head.indexOf( QStringLiteral( "fy" ) ) );
     const int c_thr = static_cast<int>( head.indexOf( QStringLiteral( "thr" ) ) );
     const int c_conf = static_cast<int>( head.indexOf( QStringLiteral( "conf" ) ) );
+    const int c_mask = static_cast<int>( head.indexOf( QStringLiteral( "mask" ) ) );
     if ( c_file < 0 )
         return rows;
     for ( int i = 1; i < lines.size(); ++i )
@@ -147,8 +152,9 @@ inline QHash<QString, Row> parseTable( const QString &text )
         const QStringList c = lines[i].split( QLatin1Char( '\t' ) );
         if ( c.size() <= c_file || c[c_file].trimmed().isEmpty() )
             continue;
-        auto cell = [&c]( int k ) { return k >= 0 && k < c.size() ? c[k].trimmed() : QString(); };
-        Row  r;
+        auto cell = [&c]( int k )
+        { return k >= 0 && k < c.size() ? c[k].trimmed() : QString(); };
+        Row           r;
         const QString flat = cell( c_flat ).toLower();
         r.flat = flat == QLatin1String( "1" ) || flat == QLatin1String( "yes" ) || flat == QLatin1String( "true" )
                  || flat == QLatin1String( "flat" ) || flat == QLatin1String( "y" );
@@ -165,6 +171,9 @@ inline QHash<QString, Row> parseTable( const QString &text )
             r.thr = qBound( 0.f, thr, 1.f );
             r.conf = qBound( 0.f, conf, 1.f );
         }
+        float mask = 0.f; // a later column (26.11.2026): the mask's quality, read by its name like the others
+        if ( cellNumber( cell( c_mask ), mask ) )
+            r.mask = qBound( 0.f, mask, 1.f );
         rows.insert( c[c_file].trimmed().toLower(), r );
     }
     return rows;
@@ -184,11 +193,11 @@ inline QHash<QString, Row> parseTable( const QString &text )
  **/
 inline bool row( const QString &dir, const QString &file, Row &out )
 {
-    static QMutex                               Lock;
+    static QMutex                              Lock;
     static QHash<QString, QHash<QString, Row>> Tables;
-    QMutexLocker                                lock( &Lock );
-    const QString                               key = QDir::cleanPath( dir ).toLower();
-    auto                                        it = Tables.find( key );
+    QMutexLocker                               lock( &Lock );
+    const QString                              key = QDir::cleanPath( dir ).toLower();
+    auto                                       it = Tables.find( key );
     if ( it == Tables.end() )
     {
         QHash<QString, Row> rows;
@@ -255,7 +264,7 @@ inline Info applyToAlpha( QImage &image, const QString &photo )
         return info;
     const QImage::Format fmt = image.format();
     const bool           rgb32 = fmt == QImage::Format_ARGB32 || fmt == QImage::Format_ARGB32_Premultiplied
-                       || fmt == QImage::Format_RGB32;
+                                 || fmt == QImage::Format_RGB32;
     if ( !rgb32 && fmt != QImage::Format_RGBA8888 )
         return info;
     QString       table_dir;
@@ -305,6 +314,8 @@ inline Info applyToAlpha( QImage &image, const QString &photo )
         info.thr = r.thr;
         info.conf = r.conf;
     }
+    if ( has_row )
+        info.mask = r.mask;
     return info;
 }
 

@@ -1459,7 +1459,7 @@ void depthChecks()
     QDir().mkpath( env_dir );
     // Photos 64 x 32 (PNG: exact colours), red falling from the top row to the bottom one; maps 32 x 16 with the
     // same fall in grey (255 = near at the top): wherever the colour lands after prepareImage(), the depth must too.
-    auto ramp = [ ]( int w, int h, bool grey )
+    auto ramp = []( int w, int h, bool grey )
     {
         QImage im( w, h, QImage::Format_RGB32 );
         for ( int y = 0; y < h; ++y )
@@ -1553,12 +1553,54 @@ void depthChecks()
            "the editor's RGBA8888 image gets the same depth at its own size" );
 
     const QHash<QString, PhotoDepth::Row> t = PhotoDepth::parseTable(
-        "model\tconf\tfile\tfx\tthr\tfy\tflat\n-\t0.5\tA.JPG\t0.1\t0.7\t0.9\tyes\n\tx\tb.jpg\t\t\t\t0\n" );
+        "model\tconf\tfile\tfx\tthr\tfy\tflat\tmask\n-\t0.5\tA.JPG\t0.1\t0.7\t0.9\tyes\t0.75\n\tx\tb.jpg\t\t\t\t0\n" );
     check( t.size() == 2 && t.value( "a.jpg" ).flat && t.value( "a.jpg" ).hasFocus && t.value( "a.jpg" ).fy == 0.9f
-               && !t.value( "b.jpg" ).flat && !t.value( "b.jpg" ).hasFocus && !t.value( "b.jpg" ).hasSubject,
-           "photo_info.tsv: columns by their names, file names without case, '-'/empty/text are no numbers" );
+               && t.value( "a.jpg" ).mask == 0.75f && !t.value( "b.jpg" ).flat && !t.value( "b.jpg" ).hasFocus
+               && !t.value( "b.jpg" ).hasSubject && t.value( "b.jpg" ).mask == 0.f,
+           "photo_info.tsv: columns by their names (mask last, or missing), file names without case, '-'/empty/text "
+           "are no numbers" );
     check( PhotoDepth::isDepthFolder( ".depth" ) && QFileInfo( ddir ).baseName().isEmpty(),
            "the photo walk skips .depth by name (before, only because its baseName is empty)" );
+
+    // KALEIDO_DEPTH_BENCH=<photo folder>|<maps folder>: the loader's time per photo, without and with its map (plan
+    // T1: load time before and after) -- the first 40 photos of the folder that have a map, each loaded three times.
+    if ( const char *bench = getenv( "KALEIDO_DEPTH_BENCH" ) )
+    {
+        const QStringList parts = QString::fromLocal8Bit( bench ).split( QLatin1Char( '|' ) );
+        if ( parts.size() == 2 )
+        {
+            qputenv( "KALEIDO_DEPTH_DIR", parts[1].toLocal8Bit() );
+            QStringList photos;
+            for ( const QFileInfo &fi : QDir( parts[0] ).entryInfoList( { "*.jpg" }, QDir::Files, QDir::Name ) )
+            {
+                PhotoDepth::Row r;
+                const bool      flat = PhotoDepth::row( parts[1], fi.fileName(), r ) && r.flat;
+                if ( photos.size() < 40 && !flat && !PhotoDepth::mapPath( fi.absoluteFilePath() ).isEmpty() )
+                    photos << fi.absoluteFilePath();
+            }
+            double        plain_ms = 0.0, depth_ms = 0.0;
+            int           with_map = 0;
+            QElapsedTimer clock;
+            for ( int rep = 0; rep < 3; ++rep )
+                for ( const QString &p : photos )
+                {
+                    clock.start();
+                    QImage a = prepareImage( QImage( p ) );
+                    plain_ms += clock.nsecsElapsed() * 1e-6;
+                    clock.start();
+                    QImage           b = prepareImage( QImage( p ) );
+                    PhotoDepth::Info i = PhotoDepth::applyToAlpha( b, p );
+                    depth_ms += clock.nsecsElapsed() * 1e-6;
+                    with_map += i.map ? 1 : 0;
+                }
+            const int n = 3 * static_cast<int>( photos.size() );
+            printf( "  depth bench: %d loads of %d photos, %d with a map: %.1f ms without, %.1f ms with the map "
+                    "(per photo)\n",
+                    n, static_cast<int>( photos.size() ), with_map, n ? plain_ms / n : 0.0,
+                    n ? depth_ms / n : 0.0 );
+            qunsetenv( "KALEIDO_DEPTH_DIR" );
+        }
+    }
 }
 
 } // namespace
