@@ -44,7 +44,8 @@
 [CmdletBinding()]
 param(
     [string] $OutDir = "",
-    [int]    $Quality = 0
+    [int]    $Quality = 0,
+    [switch] $NoDepth
 )
 
 $ErrorActionPreference = "Stop"
@@ -105,6 +106,31 @@ Compress-Archive -Path (Join-Path $stage "*.jpg"), (Join-Path $stage "*.png") `
 
 if ($tmp) { Remove-Item $tmp -Recurse -Force }
 
+# The depth maps (since 26.11.2026): Images\.depth\<photo name>.png and the table photo_info.tsv beside them
+# (Source/PhotoDepth.h).  Without them the pack's photos are flat for every depth look, so they belong in the pack --
+# as the one nested folder, written entry by entry with forward slashes (Compress-Archive of Windows PowerShell 5.1
+# writes backslashes, which unpack as file names on Linux).  A map belongs to its photo by the name without the
+# extension, so a re-encoded pack (-Quality) keeps its maps.  -NoDepth leaves them out.
+$depthDir = Join-Path $images ".depth"
+$nDepth = 0
+if (-not $NoDepth -and (Test-Path $depthDir)) {
+    Add-Type -AssemblyName System.IO.Compression
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $have = @{}
+    foreach ($f in $files) { $have[[System.IO.Path]::GetFileNameWithoutExtension($f.Name)] = $true }
+    $zu = [System.IO.Compression.ZipFile]::Open($zip, [System.IO.Compression.ZipArchiveMode]::Update)
+    try {
+        foreach ($d in (Get-ChildItem $depthDir -File)) {
+            $isMap = $d.Extension -eq ".png" -and $have.ContainsKey([System.IO.Path]::GetFileNameWithoutExtension($d.Name))
+            if (-not $isMap -and $d.Name -ne "photo_info.tsv") { continue }
+            [void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+                $zu, $d.FullName, ".depth/" + $d.Name, [System.IO.Compression.CompressionLevel]::Fastest)
+            if ($isMap) { $nDepth++ }
+        }
+    } finally { $zu.Dispose() }
+    Write-Host ("[imagepack] {0} depth map(s) and photo_info.tsv added under .depth/" -f $nDepth)
+}
+
 $mb = (Get-Item $zip).Length / 1MB
 Write-Host ("[imagepack] done: {0}  ({1:N0} MB)" -f (Split-Path $zip -Leaf), $mb)
 
@@ -114,7 +140,10 @@ Write-Host ("[imagepack] done: {0}  ({1:N0} MB)" -f (Split-Path $zip -Leaf), $mb
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $za = [System.IO.Compression.ZipFile]::OpenRead($zip)
 try {
-    $nested = $za.Entries | Where-Object { $_.FullName -match '[\\/]' }
-    Write-Host ("[imagepack] {0} entries, {1} of them nested" -f $za.Entries.Count, $nested.Count)
+    # The one nested folder allowed is .depth/ (the photos' depth maps, see above).
+    $nested = @($za.Entries | Where-Object { $_.FullName -match '[\\/]' -and $_.FullName -notmatch '^\.depth/[^\\/]+$' })
+    $maps = @($za.Entries | Where-Object { $_.FullName -match '^\.depth/[^\\/]+\.png$' })
+    Write-Host ("[imagepack] {0} entries, {1} depth map(s), {2} wrongly nested" -f $za.Entries.Count, $maps.Count, $nested.Count)
     if ($nested.Count -gt 0) { throw "Archive has nested paths - it would not unpack into Images\ directly" }
+    if ($maps.Count -ne $nDepth) { throw "Archive holds $($maps.Count) depth maps, $nDepth were added" }
 } finally { $za.Dispose() }
