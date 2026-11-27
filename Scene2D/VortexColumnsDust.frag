@@ -503,7 +503,8 @@ void finish( vec3 col )
     col *= 0.9 + 0.2 * audioLevel;
     vec3 t = max( col, 0.0 );
     t /= 1.0 + 0.35 * max( t.r, max( t.g, t.b ) );
-    fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
+    // //@light: the light above white is kept (16-bit intermediates); an 8-bit target cuts it at 1.
+    fragColor = vec4( clamp( t, 0.0, 3.0 ), 1.0 );
 }
 
 

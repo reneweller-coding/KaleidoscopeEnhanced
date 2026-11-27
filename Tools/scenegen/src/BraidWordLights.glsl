@@ -14,6 +14,7 @@
  *
  * Knobs: strandP (how many strands), stepP (how long a step is), hueP.
 //@params strandP stepP
+//@light
 //@audio audioSwell audioKick
 //@body
 void main()

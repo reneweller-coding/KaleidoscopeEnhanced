@@ -15,6 +15,7 @@
  *
  * Knobs: widthP (the strokes' width), lifeP (how long they stay), hueP.
 //@params widthP lifeP
+//@light
 //@audio audioBarPhase audioPhrasePos audioPhase audioSwell
 //@state 13 1 60 32
 //@body

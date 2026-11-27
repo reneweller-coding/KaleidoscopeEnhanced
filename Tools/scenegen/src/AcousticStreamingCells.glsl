@@ -12,6 +12,7 @@
  *
  * Knobs: dropP (the drops' size), particleP (how many particles per drop), hueP.
 //@params dropP particleP
+//@light
 //@audio audioHarmAdvance audioSwell
 //@state 1 1 60 32
 //@body

@@ -13,6 +13,7 @@
  *
  * Knobs: spaceP (the rings' spacing), twistP (how many times the field line winds), hueP.
 //@params spaceP twistP
+//@light
 //@audio audioPhrasePos audioSwell
 //@body
 void main()

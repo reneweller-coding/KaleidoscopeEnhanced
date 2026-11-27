@@ -9,6 +9,7 @@
  *
  * Knobs: sizeP (the size of the stars), hueP.
 //@params sizeP
+//@light
 //@audio audioAdvance audioHarmAdvance audioKick
 //@body
 void main()

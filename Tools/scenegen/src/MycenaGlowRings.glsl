@@ -13,6 +13,7 @@
  *
  * Knobs: ringP (the rings' spacing), capP (how many caps a ring has), hueP.
 //@params ringP capP
+//@light
 //@audio audioPhrasePos audioSwell
 //@body
 void main()

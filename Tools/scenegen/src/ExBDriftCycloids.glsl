@@ -13,6 +13,7 @@
  *
  * Knobs: rowP (how many particles), loopP (the loops' size), hueP.
 //@params rowP loopP
+//@light
 //@audio audioBass audioHarmAdvance audioSwell
 //@state 12 1 60 32
 //@body

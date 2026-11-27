@@ -8,6 +8,7 @@
  *
  * Knobs: sizeP (the flake density), hueP.
 //@params sizeP
+//@light
 //@audio audioSpread audioAdvance
 //@body
 void main()

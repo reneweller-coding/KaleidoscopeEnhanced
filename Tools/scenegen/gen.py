@@ -10,6 +10,8 @@ Source format:
     //@state W H RATE [32]    (optional: a field of its own, W x H texels, RATE steps a second, 32 for RGBA32F --
                                EffectShader::stepState; declares texState, statePass, stateFrame, stateRes, stateFrac
                                and the helpers of STATE_LIB; main() answers statePass == 1 with the next state)
+    //@light                  (optional: the house finish keeps the light above white -- the scene's lights reach the
+                               bloom with 16-bit intermediates, KALEIDO_HDR_BUFFERS; 8 bit cuts it at 1 as before)
     //@body
     ... GLSL (functions + main, main ends with finish(col);)
 Usage: gen.py Name [Name ...]
@@ -3605,7 +3607,18 @@ def assemble(name):
         out.append("// @state %s %s %s%s" % (st.group(1), st.group(2), st.group(3), " 32" if st.group(4) else ""))
         out += ["uniform sampler2D texState;", "uniform int statePass;", "uniform float stateFrame;",
                 "uniform vec2 stateRes;", "uniform float stateFrac;"]
-    out.append(LIB)
+    if re.search(r"^//@light\b", src, re.M):
+        # //@light (block L of 26.11.2026, docs/engine-internals-69-light.md): the house finish keeps the light above
+        # white -- its roll-off t / (1 + 0.35 max) passes 1 only where the scene's colour passes 1.54, its brightest
+        # lights, and reaches 2.86 at most.  An 8-bit target cuts it at 1 exactly as the clamp did (the picture
+        # stays bit for bit); with 16-bit intermediates (KALEIDO_HDR_BUFFERS) it reaches the bloom.
+        lib = LIB.replace("    fragColor = vec4(clamp(t, 0.0, 1.0), 1.0);",
+                          "    // //@light: the light above white is kept (16-bit intermediates); an 8-bit target cuts it at 1.\n"
+                          "    fragColor = vec4(clamp(t, 0.0, 3.0), 1.0);")
+        assert lib != LIB
+        out.append(lib)
+    else:
+        out.append(LIB)
     if re.search(r"\bimgB\s*\(", src):
         out.append(PHOTOB_LIB)
     if re.search(r"\bfamHue\s*\(", src):

@@ -13,6 +13,7 @@
  *
  * Knobs: sphereP (how many spheres), glassP (the glass' index: how much it slows), hueP.
 //@params sphereP glassP
+//@light
 //@audio audioOnset audioSwell
 //@body
 void main()

@@ -14,6 +14,7 @@
  *
  * Knobs: speedP (how fast the ribbons move), widthP (the ribbons' width), hueP.
 //@params speedP widthP
+//@light
 //@audio audioMelodyPitch audioMelodyConf audioPhrasePos audioSwell
 //@state 64 3 30 32
 //@body

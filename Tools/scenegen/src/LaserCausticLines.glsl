@@ -12,6 +12,7 @@
  *
  * Knobs: lineP (how many lasers), waveP (how fine the waves are), hueP.
 //@params lineP waveP
+//@light
 //@audio audioBass audioSwell
 //@body
 void main()

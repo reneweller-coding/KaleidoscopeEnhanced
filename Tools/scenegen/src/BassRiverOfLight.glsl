@@ -15,6 +15,7 @@
  *
  * Knobs: widthP (the river's width), swingP (how far the bass swings it), hueP.
 //@params widthP swingP
+//@light
 //@audio audioBass audioMid audioHigh audioSwell
 //@state 128 1 30 32
 //@body

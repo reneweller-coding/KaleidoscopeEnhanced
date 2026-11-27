@@ -11,6 +11,7 @@
  *
  * Knobs: ringP (how many rings), lightP (how many lights per ring), hueP.
 //@params ringP lightP
+//@light
 //@audio audioSpectrum[32] audioSwell
 //@body
 void main()
