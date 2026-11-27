@@ -212,9 +212,10 @@ For comparisons: `KALEIDO_NO_DEPTH=1` ignores all maps, `KALEIDO_DEPTH_DIR=<fold
 `photo_info.tsv`) from one flat folder first, `KALEIDO_SHOW_DEPTH=1` shows each scene's depth as a grey picture
 (white = near), `KALEIDO_DEPTH_RANGE=near,far` sets the distances a photo's depth is laid on (default 8,80, the
 units of the 3D scenes), `KALEIDO_DEPTH_TRANS=0` leaves the transition roll alone, and `KALEIDO_PHOTO_BY_DEPTH=0`
-chooses the photos by mood alone, as before. Two effects are built and not yet in any preset, to be looked at
-with a switch: `KALEIDO_RAYS=0..1` (light shafts through the photo's depth) and `KALEIDO_FLUID_DEPTH=0..1` (the
-fluid scenes take the photo's depth as a landscape for the flow). For people who edit presets: the knobs `depthLook`/`depthVar`,
+chooses the photos by mood alone, as before. Light shafts through the photo's depth (knob `depthRaysP` in the
+scenes with depth), the fluid and the particle scenes in the photo's relief (`fluidDepthP`, `partDepthP`) and a
+soft backlight at depth edges (`haloP` of the rim-light effect) are rolled in the presets; to look at one of the
+first two in every scene, force it with `KALEIDO_RAYS=0..1` or `KALEIDO_FLUID_DEPTH=0..1`. For people who edit presets: the knobs `depthLook`/`depthVar`,
 `arcP`, `reliefP`, `envP` and `shadowMapP` are explained in
 [docs/kettenlabor-erklaert.md](docs/kettenlabor-erklaert.md) (the labs' depth looks) and in
 [Tools/SHADER_AUTHORING.md](Tools/SHADER_AUTHORING.md), V15 (both in German); in every one of them 0 is the
