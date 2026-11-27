@@ -61,6 +61,22 @@ static unsigned int maxSides = 14; ///< Legacy range width of the kaleidoscope m
 #define GL_RGBA16F \
     0x881A ///< Half-float RGBA internal format token (see above), provided in case the GL header set lacks it.
 #endif
+#ifndef GL_R11F_G11F_B10F
+#define GL_R11F_G11F_B10F 0x8C3A ///< Packed unsigned-float RGB, 11/11/10 bits (KALEIDO_HDR_FORMAT=r11, measuring only).
+#endif
+
+/**  The format of the intermediates with hdrBuffers(): RGBA16F; KALEIDO_HDR_FORMAT=r11 takes R11F_G11F_B10F instead --
+ * a measurement of plan P6 (27.11.2026): half the bytes, but no alpha, no sign and 6/6/5 mantissa bits.
+ *
+ * @return
+ *   GL_RGBA16F, or GL_R11F_G11F_B10F with the switch.
+ **/
+static GLenum hdrFormat()
+{
+    static const GLenum Format =
+        qgetenv( "KALEIDO_HDR_FORMAT" ).trimmed() == "r11" ? GL_R11F_G11F_B10F : GL_RGBA16F;
+    return Format;
+}
 
 // Live-tunable look parameters (shared across all configs, set by hotkeys).
 float RenderPipeline::M_Reactivity = 1.0f;
@@ -514,7 +530,7 @@ RenderPipeline::RenderPipeline()
       m_npotSupported( false ),
       m_width( 100 ),
       m_height( 100 ),
-      m_texInternalFormat( hdrBuffers() ? GL_RGBA16F : GL_RGBA8 ), // setting hdrBuffers / KALEIDO_HDR_BUFFERS
+      m_texInternalFormat( hdrBuffers() ? hdrFormat() : GL_RGBA8 ), // setting hdrBuffers / KALEIDO_HDR_BUFFERS
       m_texFormat( GL_RGBA ),
       m_texType( hdrBuffers() ? GL_FLOAT : GL_UNSIGNED_BYTE )
       // GL object ids MUST start at 0 ("not created yet"): creation code reuses an
@@ -3056,7 +3072,7 @@ float RenderPipeline::photoDepthLayer( EffectShader *scene )
 
 void RenderPipeline::capSceneLight( EffectShader *e, GLuint fbo )
 {
-    if ( m_texInternalFormat != GL_RGBA16F || !e )
+    if ( m_texInternalFormat == GL_RGBA8 || !e )
         return;
     const float cap = e->hdrCap();
     if ( cap <= 0.f )
@@ -3455,6 +3471,7 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
         m_effectTextures[m_scheduler.actTexture()]->draw();
 
 
+    glcoreDebugMark( "scene:resolve+cap" );
     if ( msaa_tex1 )
     {
         resolveMsaa( m_fboEffectTexture1, m_width, m_height );
@@ -3750,6 +3767,7 @@ void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
         // transition has to have produced it first.
         glcoreDebugMark( "transition" );
         const GLuint scene_tex = renderTransitionPass( audioFx, fx_tex1 );
+        glcoreDebugMark( "overlay" );
         renderOverlayPass( audioFx, scene_tex );
     }
 
@@ -3759,6 +3777,7 @@ void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
     checkFramebufferStatus();
 
     glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectFx2 );
+    glcoreDebugMark( "overlay:next" );
     renderNextOverlayPass( audioFx );
 }
 
@@ -4202,6 +4221,7 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
     // modifiers above, so a freeze ('e') or a DJ-stop really does stop it.
     m_globaltime += time_since_last_frame_sec;
 
+    glcoreDebugMark( "sims" );
     stepSimulations( audio, time_since_last_frame_sec, audio_fx );
     bindSceneInputs();
     updateTrueStereoState();
@@ -4218,10 +4238,13 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
     // passes: it needs m_trueStereoHold, which only exists once they ran.
     m_scheduler.tickFx( sched_tick, m_trueStereoHold );
 
+    glcoreDebugMark( "fx" );
     renderFxStage( audio_fx );
+    glcoreDebugMark( "blend" );
     if ( !m_stereoPresent )
         renderFinalBlend();
 
+    glcoreDebugMark( "trails" );
     // The packed frame of a full stereo format (renderFxStage()) is the present pass's source as it is.
     const GLuint present_source = m_stereoPresent
                                       ? m_stereoPresent
@@ -4231,6 +4254,7 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
 
     glcoreDebugMark( "present" );
     runPresentPass( present_source, audio, audio_fx, time_since_last_frame_sec, dt_wall );
+    glcoreDebugMark( "guard+spout" );
     updateGuard( audio, audio_fx, dt_wall );
 
     // Spout output (-o): publish the displayed frame for OBS / Resolume etc. -- the one the present pass just wrote,

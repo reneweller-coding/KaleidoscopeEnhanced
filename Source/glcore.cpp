@@ -17,8 +17,11 @@
 #include "glcore.h"
 #include "Platform.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <chrono>
 #include <map>
 #include <string>
+#include <vector>
 
 /**  Defines the storage (zero-initialized) for one loaded GL function pointer.
  *
@@ -99,6 +102,8 @@ GLC_DEF( glDeleteQueries )
 GLC_DEF( glBeginQuery )
 GLC_DEF( glEndQuery )
 GLC_DEF( glGetQueryObjectuiv )
+GLC_DEF( glQueryCounter )
+GLC_DEF( glGetQueryObjectui64v )
 GLC_DEF( glProgramBinary )
 GLC_DEF( glBlendFunci )
 GLC_DEF( glDrawBuffers )
@@ -241,9 +246,142 @@ const char *glcoreDebugProgramName( unsigned prog )
 static const char *s_debugMark = "?"; ///< Label of the render station last announced via glcoreDebugMark(), printed as
                                       ///< `at=` by glcDebugCb(); points at a string literal the caller keeps alive, "?"
                                       ///< when none was set.
+/// @name KALEIDO_GPU_PASSES: the GPU time of each station between two glcoreDebugMark() calls (glcorePassFrame()).
+///@{
+static const int PassMarks = 40; ///< Stations one frame may time (paint() and the present pass name about 20).
+static const int PassRing = 5;   ///< Frames in flight: a frame's timestamps are read four frames later.
+
+/** One frame's timestamps. */
+struct PassFrameT
+{
+    GLuint      query[PassMarks + 1];   ///< Timestamp queries; the last one issued is the frame's end.
+    const char *station[PassMarks + 1]; ///< The station each timestamp opens (null: the frame's end).
+    int         count;                  ///< Timestamps issued.
+    bool        pending;                ///< Closed and not yet read.
+};
+
+/** One station's GPU time summed since the last `[gpupass]` line. */
+struct PassSumT
+{
+    std::string station; ///< Its name.
+    double      ms;      ///< Milliseconds summed over the frames read.
+};
+
+static PassFrameT                            s_passFrames[PassRing]; ///< The ring of frames in flight.
+static int                                   s_passHead = 0;         ///< The slot the open frame writes.
+static bool                                  s_passOpen = false;     ///< Inside glcorePassFrame( true ) .. ( false ).
+static std::vector<PassSumT>                 s_passSums;             ///< Per station, in the order first seen.
+static int                                   s_passRead = 0;         ///< Frames read since the last line.
+static std::chrono::steady_clock::time_point s_passLast;             ///< When the last line was written.
+
+/**  Whether the per-station timer runs: KALEIDO_GPU_PASSES set and the timestamp entry points resolved.
+ *
+ * @return
+ *   True if it runs.
+ **/
+static bool passesOn()
+{
+    static const bool On = getenv( "KALEIDO_GPU_PASSES" ) != 0;
+    return On && glcore_glQueryCounter && glcore_glGetQueryObjectui64v && glcore_glGenQueries
+           && glcore_glGetQueryObjectuiv;
+}
+
+/**  Issues one timestamp into the open frame.
+ *
+ * @param station  The station it opens; null for the frame's end. (in)
+ **/
+static void passStamp( const char *station )
+{
+    PassFrameT &f = s_passFrames[s_passHead];
+    glQueryCounter( f.query[f.count], GL_TIMESTAMP );
+    f.station[f.count] = station;
+    ++f.count;
+}
+
+/**  Reads a closed frame's timestamps, if the GPU is done with them (never waits), into the per-station sums.
+ *
+ * @param f  The frame. (in/out)
+ **/
+static void passRead( PassFrameT &f )
+{
+    if ( !f.pending || f.count < 2 )
+        return;
+    f.pending = false;
+    GLuint ready = 0;
+    glGetQueryObjectuiv( f.query[f.count - 1], 0x8867 /* GL_QUERY_RESULT_AVAILABLE */, &ready );
+    if ( !ready )
+        return; // dropped: they complete in order, so the last one says for all
+    unsigned long long t[PassMarks + 1];
+    for ( int i = 0; i < f.count; ++i )
+        glGetQueryObjectui64v( f.query[i], GL_QUERY_RESULT, &t[i] );
+    for ( int i = 0; i + 1 < f.count; ++i )
+    {
+        const double ms = ( t[i + 1] > t[i] ) ? ( t[i + 1] - t[i] ) * 1e-6 : 0.0;
+        size_t       k = 0;
+        while ( k < s_passSums.size() && s_passSums[k].station != f.station[i] )
+            ++k;
+        if ( k == s_passSums.size() )
+            s_passSums.push_back( PassSumT{ f.station[i], 0.0 } );
+        s_passSums[k].ms += ms;
+    }
+    ++s_passRead;
+}
+
+void glcorePassFrame( bool begin )
+{
+    if ( !passesOn() )
+        return;
+    if ( !begin )
+    {
+        if ( !s_passOpen )
+            return;
+        passStamp( nullptr );
+        s_passFrames[s_passHead].pending = true;
+        s_passOpen = false;
+        s_passHead = ( s_passHead + 1 ) % PassRing;
+        return;
+    }
+    static bool Made = false;
+    if ( !Made )
+    {
+        Made = true;
+        for ( PassFrameT &f : s_passFrames )
+        {
+            glGenQueries( PassMarks + 1, f.query );
+            f.count = 0;
+            f.pending = false;
+        }
+        s_passLast = std::chrono::steady_clock::now();
+    }
+    PassFrameT &f = s_passFrames[s_passHead]; // closed PassRing - 1 frames ago
+    passRead( f );
+    f.count = 0;
+    s_passOpen = true;
+    passStamp( "frame" );
+
+    const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+    if ( now - s_passLast >= std::chrono::seconds( 1 ) && s_passRead > 0 )
+    {
+        double total = 0.0;
+        for ( const PassSumT &s : s_passSums )
+            total += s.ms;
+        fprintf( stderr, "[gpupass] n=%d total=%.3f", s_passRead, total / s_passRead );
+        for ( const PassSumT &s : s_passSums )
+            fprintf( stderr, " %s=%.3f", s.station.c_str(), s.ms / s_passRead );
+        fprintf( stderr, "\n" );
+        s_passSums.clear();
+        s_passRead = 0;
+        s_passLast = now;
+    }
+}
+///@}
+
 void glcoreDebugMark( const char *station )
 {
     s_debugMark = station ? station : "?";
+    // the end of the frame needs the last slot
+    if ( s_passOpen && station && s_passFrames[s_passHead].count < PassMarks )
+        passStamp( station );
 }
 
 /**  KHR_debug callback: prints every non-notification driver message to stderr with severity, station, message id and
@@ -440,6 +578,8 @@ int glcoreInit( void )
     GLC_LOAD_OPT( glBeginQuery )
     GLC_LOAD_OPT( glEndQuery )
     GLC_LOAD_OPT( glGetQueryObjectuiv )
+    GLC_LOAD_OPT( glQueryCounter ) // KALEIDO_GPU_PASSES only (optional: without them no per-station times)
+    GLC_LOAD_OPT( glGetQueryObjectui64v )
     GLC_LOAD_OPT( glProgramBinary )
     GLC_LOAD_OPT( glPatchParameteri )
     GLC_LOAD_OPT( glBlendFunci )

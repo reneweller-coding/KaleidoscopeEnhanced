@@ -1698,7 +1698,9 @@ void GLwidget::paintGL()
         glBeginQuery( 0x88BF /* GL_TIME_ELAPSED */, gpu_q[gpu_frame & 3] );
     }
 
+    glcorePassFrame( true ); // KALEIDO_GPU_PASSES: the GPU time per station (glcoreDebugMark())
     draw();
+    glcorePassFrame( false );
 
     if ( gpu_on )
     {

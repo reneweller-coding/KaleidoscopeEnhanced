@@ -334,6 +334,9 @@ extern "C"
     GLC_FN( void, glBeginQuery, ( GLenum, GLuint ) )
     GLC_FN( void, glEndQuery, ( GLenum ) )
     GLC_FN( void, glGetQueryObjectuiv, (GLuint, GLenum, GLuint *))
+    // Timestamps (GL 3.3, ARB_timer_query): KALEIDO_GPU_PASSES times the stations glcoreDebugMark() names.
+    GLC_FN( void, glQueryCounter, ( GLuint, GLenum ) )
+    GLC_FN( void, glGetQueryObjectui64v, (GLuint, GLenum, unsigned long long *))
     GLC_FN( void, glProgramBinary, ( GLuint, GLenum, const void *, GLsizei ) ) ///< GL 4.1: load a program binary
                                                                                ///< (ShaderForge)
 
@@ -351,6 +354,9 @@ extern "C"
 #endif
 #ifndef GL_QUERY_RESULT
 #define GL_QUERY_RESULT 0x8866 ///< glGetQueryObjectuiv: fetch the finished query's count.
+#endif
+#ifndef GL_TIMESTAMP
+#define GL_TIMESTAMP 0x8E28 ///< glQueryCounter target: the GPU clock once the commands before it are done.
 #endif
 
     // Order-independent transparency needs its two targets blended DIFFERENTLY in
@@ -451,6 +457,8 @@ extern "C"
 #define glBeginQuery               glcore_glBeginQuery
 #define glEndQuery                 glcore_glEndQuery
 #define glGetQueryObjectuiv        glcore_glGetQueryObjectuiv
+#define glQueryCounter             glcore_glQueryCounter
+#define glGetQueryObjectui64v      glcore_glGetQueryObjectui64v
 #define glProgramBinary            glcore_glProgramBinary
 #define glPatchParameteri          glcore_glPatchParameteri
 #define glBlendFunci               glcore_glBlendFunci
@@ -511,9 +519,23 @@ extern "C"
      * literal -- only the pointer is stored.
      *
      * @sideeffects
-     *   Changes s_debugMark.
+     *   Changes s_debugMark; with KALEIDO_GPU_PASSES inside a frame also issues a timestamp query for the station.
      **/
     void glcoreDebugMark( const char *station );
+    /**  KALEIDO_GPU_PASSES=1: opens (@p begin true) or closes one frame of the per-station GPU timer.
+     *
+     * @param begin  True before the frame's GL commands (glwidget's paintGL, before draw()), false after them. (in)
+     *
+     * Between the two calls every glcoreDebugMark() takes a GPU timestamp; a station's time is the time from its mark
+     * to the next one (the first station, "frame", runs from the frame's start to the first mark).  The queries of a
+     * frame are read four frames later (nothing waits for the GPU), and once a second one `[gpupass]` line goes to
+     * stderr: the mean GPU time per frame of each station, and their sum.  Without the switch (or without the
+     * timestamp entry points) it does nothing.
+     *
+     * @sideeffects
+     *   With the switch: creates its query objects on first use, writes the per-second line to stderr.
+     **/
+    void glcorePassFrame( bool begin );
 
     // ---------------------------------------------------------------------------
     // Stand-in textures.
