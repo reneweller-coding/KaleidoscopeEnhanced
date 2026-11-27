@@ -674,20 +674,20 @@ private:
                          ///< logging.
     float m_sBuildUp = 0.f;                       ///< Smoothed 0..1 build-up output; see AudioFeatures::buildUp.
     // ---- the build-up from the groove's missing bass and the rising top (27.11.2026; Tools/buildup_lab.py) ----
-    float m_bldPAll = 0.f;      ///< This block's power over bands 8..31 (above the bass): the new build-up's input.
-    float m_bldCent = 0.f;      ///< Their power-weighted mean band index (the centroid above the bass).
-    float m_bldHiRel = 0.f;     ///< The share of bands 20..31 (2.9-16 kHz) in them, in dB.
-    float m_bldCentF = 0.f;     ///< ~1-s average of #m_bldCent.
-    float m_bldCentS = 0.f;     ///< ~6-s average of #m_bldCent (the centroid rising: #m_bldCentF above it).
-    float m_bldHiF = 0.f;       ///< ~1-s average of #m_bldHiRel.
+    float m_bldPAll = 0.f;  ///< This block's power over bands 8..31 (above the bass): the new build-up's input.
+    float m_bldCent = 0.f;  ///< Their power-weighted mean band index (the centroid above the bass).
+    float m_bldHiRel = 0.f; ///< The share of bands 20..31 (2.9-16 kHz) in them, in dB.
+    float                           m_bldCentF = 0.f;               ///< ~1-s average of #m_bldCent.
+    float m_bldCentS = 0.f; ///< ~6-s average of #m_bldCent (the centroid rising: #m_bldCentF above it).
+    float                           m_bldHiF = 0.f;                 ///< ~1-s average of #m_bldHiRel.
     float m_bldHiS = 0.f;       ///< ~6-s average of #m_bldHiRel (the top rising: #m_bldHiF above it).
     bool  m_bldNewInit = false; ///< The averages above start at the first non-silent block.
     float m_sBuildUpNew = 0.f;  ///< The new build-up, smoothed (published with KALEIDO_OLD_BUILDUP=0).
     bool  m_oldBuildUp = true;  ///< Publish #m_sBuildUp, the build-up of before 27.11.2026 (the default for now).
     bool  m_buildUpEnv = false; ///< KALEIDO_OLD_BUILDUP is set: #m_oldBuildUp stands, whatever the preset asks for.
     float m_buildUpMix = -1.f;  ///< 0 = #m_sBuildUp, 1 = #m_sBuildUpNew is published; below 0: not started yet.
-    std::atomic<bool>        m_followPresetBuildUp{ false }; ///< Read #M_PresetBuildUpNew (followPresetBuildUp()).
-    static inline std::atomic<bool> M_PresetBuildUpNew{ false }; ///< The active preset asks for the new build-up.
+    std::atomic<bool> m_followPresetBuildUp{ false }; ///< Read #M_PresetBuildUpNew (followPresetBuildUp()).
+    static inline std::atomic<bool> M_PresetBuildUpNew{ false };    ///< The active preset asks for the new build-up.
     // ---- the drop: the bass back at its groove level (see processBlock) ----
     static const int DropSlots = 90;              ///< Half-second slots of the groove level's 45-s memory.
     float            m_dropBassP = 0.f;           ///< This block's bass power, the 32 bands' lowest eight (40..180 Hz).

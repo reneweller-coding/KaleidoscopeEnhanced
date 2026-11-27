@@ -267,17 +267,47 @@ vec2 anchorOff( vec2 f, float conf, float amt )
 {
     return ( f - 0.5 ) * smoothstep( 0.45, 0.55, conf ) * amt;
 }
+/**  A constant of the frequency-by-depth look, set by its variant inside a range (variant 0: the middle).
+ *
+ * @param vi  The variant, 0..99. (in)
+ * @param j   The constant's number. (in)
+ * @param lo  The range's low end. (in)
+ * @param hi  The range's high end. (in)
+ *
+ * @return
+ *   The constant.
+ **/
 float fdVar( int vi, float j, float lo, float hi )
 {
     return vi == 0 ? 0.5 * ( lo + hi )
                    : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
 }
+/**  The frequency-by-depth look's layers: where near ends and far begins around the photo's mean depth, and the width
+ * of the borders.
+ *
+ * @param vi  The variant, 0..99. (in)
+ *
+ * @return
+ *   The two edges and their half width.
+ **/
 vec3 fdLayers( int vi )
 {
     float m = photoDepthLod( vec2( 0.5 ), 12.0 );
     float h = fdVar( vi, 12.0, 0.10, 0.18 );
     return vec3( m - h, m + h, fdVar( vi, 14.0, 0.05, 0.10 ) );
 }
+/**  Frequency by depth (look 6): the bass lifts the near layer, the mids its contrast, the hi-hat lights points in
+ * the far layer.
+ *
+ * @param col   The colour: the photo's own, at the pixel. (in)
+ * @param d     The photo's depth there, 0 far .. 1 near. (in)
+ * @param p     The centred screen position (screenP()). (in)
+ * @param tint  The photo's broad colour there (a coarse mip). (in)
+ * @param vi    The variant, 0..99. (in)
+ *
+ * @return
+ *   The colour with the music in its layers.
+ **/
 vec3 freqDepth( vec3 col, float d, vec2 p, vec3 tint, int vi )
 {
     float have = interpolation * photoDepthAmt.x + ( 1.0 - interpolation ) * photoDepthAmt.y;

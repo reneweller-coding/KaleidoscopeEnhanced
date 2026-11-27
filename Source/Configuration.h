@@ -155,15 +155,15 @@ private:
      **/
     void addUniforms( EffectShader *shader, QDomElement &el );
 
-    QString m_imageDirectory;    ///< Root image directory for this preset (root element's ImageDirectory attribute),
-                                 ///< passed to RenderPipeline::init().
+    QString m_imageDirectory;     ///< Root image directory for this preset (root element's ImageDirectory attribute),
+                                  ///< passed to RenderPipeline::init().
     QString m_configurationName; ///< Preset display name (root element's ConfigurationName attribute); also used as the
                                  ///< taste-learning namespace.
-    QString m_sourceFile;        ///< The file the preset was read from (for messages).
+    QString m_sourceFile;         ///< The file the preset was read from (for messages).
     bool    m_newBuildUp = false; ///< True when the root element has buildUp="new" (see newBuildUp()).
-    bool    m_hidden = false;    ///< True when the root element has hidden="true" (excluded from user-facing preset
-                                 ///< selection).
-    QString m_audioFile;         ///< Optional AudioFile="..." from the root element; see audioFile().
+    bool    m_hidden = false;     ///< True when the root element has hidden="true" (excluded from user-facing preset
+                                  ///< selection).
+    QString m_audioFile;          ///< Optional AudioFile="..." from the root element; see audioFile().
 
     unsigned int m_timeTextureInterpolationMin; ///< Preset-wide minimum image cross-fade duration (seconds); falls back
                                                 ///< to a baseline when absent/0 in the XML.

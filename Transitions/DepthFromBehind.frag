@@ -57,7 +57,7 @@ uniform float hueP;      ///< Hue knob (radians): turns the colours a little in 
 uniform sampler2D texDepth0;     ///< Depth buffer of the outgoing scene (window depth; 1 where nothing was drawn).
 uniform sampler2D texDepth1;     ///< Depth buffer of the incoming scene.
 uniform vec2      depthValid;    ///< How real each depth is (x old, y new scene): 1 3D or photo with a map, 0 none.
-uniform vec2      depthPhoto;    ///< 1 where the depth is a photo's (a 2D scene with // @depth), 0 a 3D scene's.
+uniform vec2      depthPhoto;    ///< 1 where the depth is a photo's (a 2D scene with the depth tag), 0 a 3D scene's.
 uniform vec2      photoDepthWin; ///< Window depth of a photo's near end (x, depth 1) and far end (y, depth 0).
 uniform vec2      nearFar;       ///< Near and far clip distances of the shared 3D projection.
 

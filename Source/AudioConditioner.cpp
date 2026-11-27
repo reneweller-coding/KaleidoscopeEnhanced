@@ -640,7 +640,8 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
         // takes the breath's drop envelope (the user's decision of 27.11.2026) and the fast rate holds as long as
         // that envelope does.  KALEIDO_LETTER_DROP=0: the target as before.
         {
-            static const bool LetterDrop = !getenv( "KALEIDO_LETTER_DROP" ) || atoi( getenv( "KALEIDO_LETTER_DROP" ) ) != 0;
+            static const bool LetterDrop = !getenv( "KALEIDO_LETTER_DROP" )
+                                           || atoi( getenv( "KALEIDO_LETTER_DROP" ) ) != 0;
             const float       lb_open = LetterDrop ? drop_open : 1.f;
             const float       lb_target = b_target * lb_open;
             // calmMotion: the bars never snap, they only creep (2/s).

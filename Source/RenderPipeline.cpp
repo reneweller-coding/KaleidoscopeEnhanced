@@ -3249,16 +3249,17 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
         sim_frame.dyeTexA = m_liveTex ? m_liveTex : m_actTex;
         sim_frame.dyeTexB = m_liveTex ? m_liveTex : m_nextTex;
         sim_frame.dyeInterp = m_interpolationTexture;
-        // Plan 27.11. P7: the photo's depth as a landscape for the fluid (Engine/FluidSim.frag).  The knob is the rolled
-        // fluidDepthP of the scene that samples the fluid -- the incoming one as soon as it does; a scene without the
-        // knob: 0, the old step -- and GpuSims slews it.  KALEIDO_FLUID_DEPTH=<0..1> forces it (comparisons).  A live
-        // input has no map.
+        // Plan 27.11. P7: the photo's depth as a landscape for the fluid (Engine/FluidSim.frag).  The knob is the
+        // rolled fluidDepthP of the scene that samples the fluid -- the incoming one as soon as it does; a scene
+        // without the knob: 0, the old step -- and GpuSims slews it.  KALEIDO_FLUID_DEPTH=<0..1> forces it
+        // (comparisons).  A live input has no map.
         if ( need.fluid )
         {
             static const float Forced = qEnvironmentVariableIsSet( "KALEIDO_FLUID_DEPTH" )
                                             ? qEnvironmentVariable( "KALEIDO_FLUID_DEPTH" ).toFloat()
                                             : -1.f;
-            const auto knob = []( EffectShader *e ) {
+            const auto         knob = []( EffectShader *e )
+            {
                 float v = 0.f;
                 for ( const auto &p : e->namedParameters() )
                     if ( p.first == "fluidDepthP" )
@@ -4174,16 +4175,16 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
             pin.photoWin[0] = EffectShader::windowDepth( EffectShader::M_PhotoDepthDist[0] );
             pin.photoWin[1] = EffectShader::windowDepth( EffectShader::M_PhotoDepthDist[1] );
         }
-        // ---- rays (27.11.2026): light shafts through the photo's depth (Engine/Present.frag, raysLight()) -- BEGIN ----
-        // The active scene's preset knob `raysP` (0 where its entry has none) times "a photo's depth is up", slewed
-        // at 1.2/s: neither a scene change nor a photo with or without a map makes the light jump.  KALEIDO_RAYS=<x>
-        // forces the knob for every scene (to look at it: the presets do not set it).
+        // ---- rays (27.11.2026): light shafts through the photo's depth (Engine/Present.frag, raysLight()) -- BEGIN
+        // ---- The active scene's preset knob `raysP` (0 where its entry has none) times "a photo's depth is up",
+        // slewed at 1.2/s: neither a scene change nor a photo with or without a map makes the light jump.
+        // KALEIDO_RAYS=<x> forces the knob for every scene (to look at it: the presets do not set it).
         {
             static const QByteArray RaysEnv = qgetenv( "KALEIDO_RAYS" );
             const float knob = RaysEnv.isEmpty()
                                    ? m_effectTextures[m_scheduler.actTexture()]->namedParameter( "raysP", 0.f )
                                    : RaysEnv.toFloat();
-            const float up = full_src ? 0.f : EffectShader::M_DepthPhoto[0] * EffectShader::M_DepthValid[0];
+            const float             up = full_src ? 0.f : EffectShader::M_DepthPhoto[0] * EffectShader::M_DepthValid[0];
             m_raysUp = slewToward( m_raysUp, ( knob > 0.f ? knob : 0.f ) * up, 1.2f, dtWall );
             pin.raysP = m_raysUp;
         }

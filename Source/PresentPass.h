@@ -609,7 +609,8 @@ private:
     GLint m_presentPhParUni = -1;         ///< Uniform location: parallax strength on a photo's depth ("depthParPhoto").
     GLint m_presentPhStereoUni = -1; ///< Uniform location: the photo's depth's share in the stereo ("stereoPhoto").
     GLint m_presentPhWinUni = -1;         ///< Uniform location: the photo's near/far window depths ("photoDepthWin").
-    GLint m_presentRaysUni = -1; ///< Uniform location: light shafts through a photo's depth ("raysP"; rays, 27.11.2026).
+    GLint m_presentRaysUni = -1;          ///< Uniform location: light shafts through a photo's depth ("raysP";
+                                          ///< rays, 27.11.2026).
 
     // ---- Lyrics / artist image ----
     GLuint m_lyricsTex = 0;               ///< Uploaded lyrics overlay texture.

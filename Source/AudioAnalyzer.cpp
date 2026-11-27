@@ -3841,8 +3841,9 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // (the EDM presets ask for the new one), else the old one.  A change of the preset cross-fades in a second (a
     // block is 10 ms); at the ends exactly one of the two signals is published, bit for bit.
     {
-        const bool  want_new = m_buildUpEnv ? !m_oldBuildUp
-                                            : ( m_followPresetBuildUp.load() ? M_PresetBuildUpNew.load() : !m_oldBuildUp );
+        const bool  want_new = m_buildUpEnv
+                                   ? !m_oldBuildUp
+                                   : ( m_followPresetBuildUp.load() ? M_PresetBuildUpNew.load() : !m_oldBuildUp );
         const float target = want_new ? 1.f : 0.f;
         if ( m_buildUpMix < 0.f )
             m_buildUpMix = target;
