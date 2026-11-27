@@ -41,6 +41,15 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float smearP; ///< preset: streak length
 uniform float glowP;  ///< preset: halo strength
 
+uniform sampler2D tex1;          ///< The next photo (the cross-fade's other end).
+uniform vec2      photoDepthAmt; ///< Whether the photo in tex0 (x) / tex1 (y) has a depth map in alpha: 1 or 0.
+uniform vec4      photoSubject;  ///< Depth threshold and confidence of the subject: xy for tex0, zw for tex1.
+uniform vec2      photoMask;     ///< How well depth >= threshold outlines the subject, tex0 (x) / tex1 (y), 0..1.
+uniform float     partDepthP;    ///< preset: the photo's depth as the particles' landscape (read by the pipeline
+                                 ///< for the simulation; 0 = the old step)
+uniform float partOccP;          ///< preset: the photo in front of the particles where it is nearer than its
+                                 ///< subject depth, 0 = off .. 1 = fully in front
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -88,6 +97,21 @@ void main()
     // slideshow reads as the subject and the particles as an overlay.
     vec3 photo = texture( tex0, uv ).rgb;
     col += photo * photo * 0.022 * ( 1.0 - dens );
+
+    // Plan 27.11. P7, second stage: the particle layer runs BEHIND the photo where the photo is nearer than its
+    // subject depth -- only for photos whose mask is good (photoMask over 0.6) and that have a map. Both photo
+    // slots are weighed with the cross-fade, so a photo change fades the cut-out instead of switching it.
+    if ( partOccP > 0.0 )
+    {
+        vec4  pa = texture( tex0, uv ), pb = texture( tex1, uv );
+        float fa = photoDepthAmt.x * smoothstep( 0.6, 0.7, photoMask.x )
+                   * smoothstep( photoSubject.x, photoSubject.x + 0.06, pa.a );
+        float fb = photoDepthAmt.y * smoothstep( 0.6, 0.7, photoMask.y )
+                   * smoothstep( photoSubject.z, photoSubject.z + 0.06, pb.a );
+        float wa = interpolation * fa, wb = ( 1.0 - interpolation ) * fb;
+        vec3  front = ( wa * pa.rgb + wb * pb.rgb ) / max( wa + wb, 1e-4 );
+        col = mix( col, front, clamp( partOccP, 0.0, 1.0 ) * ( wa + wb ) );
+    }
 
     fragColor = vec4( col, interpolation );
 }

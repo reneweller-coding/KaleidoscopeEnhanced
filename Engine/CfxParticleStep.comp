@@ -57,6 +57,10 @@ uniform float     level;     ///< The music's level, 0..1.
 uniform float     hue;       ///< Hue offset of the palette.
 uniform float     drop;      ///< Drop envelope, 0..1.
 uniform uint      frame;     ///< Frame counter (seeds the random numbers).
+uniform float     partDepth; ///< The photo relief's amount (the scene's partDepthP); 0 = the old step.
+uniform sampler2D texPhotoB; ///< The photo of the second slot (bound only while partDepth > 0).
+uniform float     photoMix;  ///< Cross-fade between the photos: 1 = texPhoto, 0 = texPhotoB.
+uniform vec2      photoMap;  ///< Whether texPhoto (x) / texPhotoB (y) carry a depth map in alpha: 1 or 0.
 
 const float Scale = 256.0; ///< Fixed-point scale of the accumulation buffer (colour times Scale, added as integers).
 
@@ -148,6 +152,21 @@ vec2 curl( vec2 p )
     return vec2( dy, -dx ) / ( 2.0 * e );
 }
 
+/**  The photo relief at a point: the two photo slots' depth (alpha, 1 = near, 0 = far) blended with the cross-fade; a
+ * slot without a map counts as flat and far, so a photo change never jumps.
+ *
+ * @param p  The point, 0..1. (in)
+ *
+ * @return
+ *   The relief's height, 0 (far, or no map) .. 1 (near).
+ **/
+float relief( vec2 p )
+{
+    // mip 2: the forms, not the terraces of the 8-bit map (their steps would put noise into the force)
+    return photoMix * photoMap.x * textureLod( texPhoto, p, 2.0 ).a
+           + ( 1.0 - photoMix ) * photoMap.y * textureLod( texPhotoB, p, 2.0 ).a;
+}
+
 /**  A bird gets a small CROSS footprint, not a single texel.
  *
  * @param uv   Position in the field, 0..1. (in)
@@ -192,6 +211,24 @@ void main()
     // Kicks blow the swarm radially outward from the centre.
     vec2 rad = pos - 0.5;
     f += normalize( rad + 1e-5 ) * kick * 0.55;
+
+    // Plan 27.11. P7: the photo's depth as a landscape. The slope is a force -- the particles drift downhill into
+    // the far regions and gather there (this part of the field has divergence on purpose) -- and the near regions
+    // deflect them like soft obstacles: the part of the velocity that climbs a slope is taken away where the
+    // ground is near, so the swarm slides around the subject along its contour. partDepth 0: the old step.
+    if ( partDepth > 0.0 )
+    {
+        const float e = 0.006; // ~3 texels of a 512 map: the slope of the forms, not of the map's noise
+        vec2        g = vec2( relief( pos + vec2( e, 0.0 ) ) - relief( pos - vec2( e, 0.0 ) ),
+                              relief( pos + vec2( 0.0, e ) ) - relief( pos - vec2( 0.0, e ) ) )
+                        / ( 2.0 * e );
+        float       gLen = length( g );
+        // Soft-limited: a depth edge (slope 20 and more) pushes at most ~0.2 of the picture a second.
+        f -= g / ( 1.0 + 0.15 * gLen ) * 0.03 * partDepth;
+        vec2  up = g / ( gLen + 1e-4 );
+        float nearK = smoothstep( 0.45, 0.85, relief( pos ) ) * smoothstep( 0.2, 1.5, gLen );
+        f -= up * max( dot( f, up ), 0.0 ) * nearK * min( partDepth, 1.0 );
+    }
 
     vel = mix( vel, f, clamp( dt * 5.0, 0.0, 1.0 ) );
     pos += vel * dt;

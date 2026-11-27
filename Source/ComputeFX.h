@@ -139,6 +139,28 @@ public:
      **/
     void retireIdle( float now );
 
+    /**  Sets the photo relief the particles (CFX_PARTICLES) move in (plan 27.11. P7); call before step().
+     *
+     * @param amount  The scene's knob `partDepthP`; 0 = the old step, bit for bit (no extra texture bound, the
+     *                shader's branch not taken). (in)
+     * @param photoB  The photo of the second slot (tex1); its alpha is its depth map (PhotoDepth.h). (in)
+     * @param mix     The photos' cross-fade, 1 = the photo passed to step() (tex0), 0 = photoB. (in)
+     * @param mapA    1 when the photo passed to step() has a depth map (`photoDepthAmt.x`), else 0. (in)
+     * @param mapB    The same for photoB (`photoDepthAmt.y`). (in)
+     *
+     * The relief is the two slots' depth blended with the cross-fade, each weighted by whether it has a map: a
+     * photo change never jumps, and without maps the amount is 0 -- the old step.
+     **/
+    void setParticleRelief( float amount, GLuint photoB, float mix, float mapA, float mapB )
+    {
+        m_partMix = mix < 0.f ? 0.f : ( mix > 1.f ? 1.f : mix );
+        m_partMap[0] = mapA;
+        m_partMap[1] = mapB;
+        m_partPhotoB = photoB;
+        const float maps = m_partMix * mapA + ( 1.f - m_partMix ) * mapB;
+        m_partDepth = ( amount > 0.f && maps > 0.f && photoB ) ? amount : 0.f;
+    }
+
 private:
     // ---- shared splat canvas (uint accumulator -> RGBA16F image) ----
     // Used by every sim that scatters colour into the frame.  The accumulator
@@ -553,6 +575,11 @@ private:
     bool  m_ok = false;       ///< true once init() has detected usable GL compute support
     int   m_maxTexUnits = 16; ///< cached GL_MAX_TEXTURE_IMAGE_UNITS, used to decide which kinds fit
     float m_now = 0.f;        ///< last time value seen by step(); recorded for bookkeeping
+
+    float  m_partDepth = 0.f;           ///< The particles' relief amount (setParticleRelief()); 0 = the old step.
+    float  m_partMix = 1.f;             ///< The photos' cross-fade for the particles' relief, 1 = tex0.
+    float  m_partMap[2] = { 0.f, 0.f }; ///< Whether tex0 / tex1 carry a depth map (1) or not (0).
+    GLuint m_partPhotoB = 0;            ///< The second photo slot's texture for the particles' relief.
 
     enum
     {

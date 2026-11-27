@@ -3301,6 +3301,23 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
         if ( need )
         {
             GLuint src = m_liveTex ? m_liveTex : m_actTex;
+            // Plan 27.11. P7: the particles' photo relief -- the knob `partDepthP` of the scene that shows them (0
+            // where a preset does not roll it), the second photo and the cross-fade. A live input has no map: 0.
+            if ( need & ( 1u << CFX_PARTICLES ) )
+            {
+                float         part_depth = 0.f;
+                EffectShader *shown[2] = { m_effectTextures[m_scheduler.actTexture()],
+                                           m_scheduler.texState() != 0 ? m_effectTextures[m_scheduler.nextTexture()]
+                                                                       : nullptr };
+                for ( EffectShader *e : shown )
+                    if ( e && ( e->cfxMask() & ( 1u << CFX_PARTICLES ) ) )
+                        for ( const auto &p : e->namedParameters() )
+                            if ( p.first == "partDepthP" )
+                                part_depth = std::max( part_depth, p.second );
+                m_cfx.setParticleRelief( m_liveTex ? 0.f : part_depth, m_nextTex,
+                                         static_cast<float>( m_interpolationTexture ),
+                                         EffectShader::M_PhotoDepthAmt[0], EffectShader::M_PhotoDepthAmt[1] );
+            }
             for ( int k = 0; k < CFX_COUNT; ++k )
             {
                 if ( !( need & ( 1u << k ) ) )

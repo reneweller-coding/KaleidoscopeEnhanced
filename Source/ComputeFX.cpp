@@ -508,6 +508,18 @@ GLuint ComputeFX::stepParticles( const AudioFeatures &a, float dt, float t,
     glUniform1f( glGetUniformLocation( ps, "hue" ), a.chromaHue );
     glUniform1f( glGetUniformLocation( ps, "drop" ), a.dropPulse );
     glUniform1ui( glGetUniformLocation( ps, "frame" ), static_cast<GLuint>( t * 1000.f ) );
+    // Plan 27.11. P7: the photo's depth (alpha of both photo slots) as a landscape -- setParticleRelief(). Amount
+    // 0: nothing more is bound and the shader's branch is not taken, the old step.
+    glUniform1f( glGetUniformLocation( ps, "partDepth" ), m_partDepth );
+    if ( m_partDepth > 0.f )
+    {
+        glActiveTexture( GL_TEXTURE1 );
+        glBindTexture( GL_TEXTURE_2D, m_partPhotoB ); // the pipeline binds unit 1 again after the sims
+        glActiveTexture( GL_TEXTURE0 );
+        glUniform1i( glGetUniformLocation( ps, "texPhotoB" ), 1 );
+        glUniform1f( glGetUniformLocation( ps, "photoMix" ), m_partMix );
+        glUniform2f( glGetUniformLocation( ps, "photoMap" ), m_partMap[0], m_partMap[1] );
+    }
     glDispatchCompute( groups( Particles, 256 ), 1, 1 );
     glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
