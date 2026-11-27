@@ -131,6 +131,13 @@ void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, con
 
     if ( need.fluid && m_fluidReady )
     {
+        // The depth landscape's strength follows the scene's knob at 1 per second (linear, so it arrives exactly --
+        // 0 stays 0 and the step stays the old one): two fluid scenes with different knobs cross-fade the flow.
+        // It moves with the sim's own time (none in a freeze).
+        const float want = std::clamp( f.fluidDepth, 0.f, 1.f );
+        const float slew = live / 120.f;
+        m_fluidDepthNow += std::clamp( want - m_fluidDepthNow, -slew, slew );
+        g.fluidDepth = m_fluidDepthNow;
         for ( int s = 0; s < scaled_n; ++s )
             stepFluid( audio, g );
         glActiveTexture( GL_TEXTURE8 );
@@ -239,6 +246,8 @@ void GpuSims::setupFluid()
         m_fluidImpulseUni = glGetUniformLocation( m_fluidProgId, "impulse" );
         m_fluidInjectUni = glGetUniformLocation( m_fluidProgId, "injectAmt" );
         m_fluidStepUni = glGetUniformLocation( m_fluidProgId, "stepScale" );
+        m_fluidDepthUni = glGetUniformLocation( m_fluidProgId, "fluidDepth" );
+        m_fluidAmtUni = glGetUniformLocation( m_fluidProgId, "photoDepthAmt" );
     }
 
     bool ok = ( m_fluidProgId != 0 ) && ( m_fluidPrevUni >= 0 );
@@ -320,6 +329,10 @@ void GpuSims::stepFluid( const AudioFeatures &audio, const Frame &f )
                      0.012f + 0.020f * audio.onsetStrength );
     if ( m_fluidStepUni >= 0 )
         glUniform1f( m_fluidStepUni, f.stepScale );
+    if ( m_fluidDepthUni >= 0 )
+        glUniform1f( m_fluidDepthUni, f.fluidDepth );
+    if ( m_fluidAmtUni >= 0 )
+        glUniform2f( m_fluidAmtUni, f.depthAmtA, f.depthAmtB );
 
     drawFullscreen();
 

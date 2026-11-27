@@ -43,9 +43,11 @@ uniform float audioDrop;      ///< Drop envelope: high after a detected drop, de
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 
 // Per-activation variety:
-uniform int   sidesP;    ///< kaleido fold (0/1 off; 2..8)
-uniform float strengthP; ///< schlieren gain      (0 -> 1.0; 0.6..1.8)
-uniform float rainbowP;  ///< 0 knife-edge mono .. 1 colour-filter mode
+uniform int   sidesP;      ///< kaleido fold (0/1 off; 2..8)
+uniform float strengthP;   ///< schlieren gain      (0 -> 1.0; 0.6..1.8)
+uniform float rainbowP;    ///< 0 knife-edge mono .. 1 colour-filter mode
+uniform float fluidDepthP; ///< The photo's depth as a landscape for the fluid, 0..1 (0: off); read by the host for
+                           ///< FluidSim.frag.
 
 const float Pi = 3.14159265358979; ///< Pi.
 

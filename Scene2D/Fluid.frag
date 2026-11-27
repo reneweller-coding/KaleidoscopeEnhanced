@@ -34,8 +34,10 @@ uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0
 uniform float audioValence;  ///< Mood valence: 0 dark .. 1 bright.
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform int   sidesP; ///< kaleido fold of the fluid (0/1 -> off; 2..8)
-uniform float zoomP;  ///< field zoom (0 -> 1.0; 0.7..1.5)
+uniform int   sidesP;      ///< kaleido fold of the fluid (0/1 -> off; 2..8)
+uniform float zoomP;       ///< field zoom (0 -> 1.0; 0.7..1.5)
+uniform float fluidDepthP; ///< The photo's depth as a landscape for the fluid, 0..1 (0: off); read by the host for
+                           ///< FluidSim.frag.
 
 const float Pi = 3.14159265358979; ///< Pi.
 
