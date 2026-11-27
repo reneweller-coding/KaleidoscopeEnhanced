@@ -319,7 +319,7 @@ vec3 freqDepth( vec3 col, float d, vec2 p, vec3 tint, int vi )
     float bn = fdVar( vi, 16.0, 0.45, 0.75 ) * clamp( 0.7 * audioKick + 0.3 * clamp( audioBass, 0.0, 1.0 ), 0.0, 1.0 )
                * w_n;
     float head = 1.0 - clamp( luma( col ), 0.0, 1.0 );
-    col = col * ( 1.0 + bn * head ) + 0.6 * bn * head * own;
+    col = col * ( 1.0 + 2.0 * bn * head ) + 0.8 * bn * head * own;
     float l = luma( col );
     col = max( l + ( col - l ) * ( 1.0 + fdVar( vi, 17.0, 0.5, 1.1 ) * clamp( audioMid, 0.0, 1.0 ) * w_m ), 0.0 );
     float hi = clamp( 0.8 * audioHat + 0.2 * audioHigh, 0.0, 1.0 );

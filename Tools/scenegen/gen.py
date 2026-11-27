@@ -348,8 +348,9 @@ vec3 fdLayers(int vi)
  * 20..34 % lit, gain 1.2..2.2, half the own colour) read +2.1 of 255 in the near third and +0.4 in the far one --
  * right in direction, too small to see.  The same evening the near layer's lift was bound to the room up to white
  * (the user asked for more; a gain on the colour gave a dark photo almost nothing and would have burnt a bright one
- * out): the kick lifts a dark near layer by up to 0.6 x 0.75 of its own colour at full brightness, a bright one by
- * what is left to white.  The near layer's light follows the kick's envelope (below 3 Hz, a part of
+ * out): the lift is a gain of 2 and 0.8 of the own colour at full brightness, both times the room up to white, so a
+ * dark near layer gains most and a bright one only what is left to white (the first try, gain 1 and 0.6 within the
+ * room, measured weaker than the old gain: the near layers of the test photos are their bright parts).  The near layer's light follows the kick's envelope (below 3 Hz, a part of
  * the picture), the far layer's only fine points (the hat is too fast for a layer's light: temporal budget).
  *
  * @param col   The colour: the photo's own, at the pixel. (in)
@@ -371,7 +372,7 @@ vec3 freqDepth(vec3 col, float d, vec2 p, vec3 tint, int vi)
     vec3 own = tint / max(max(tint.r, max(tint.g, tint.b)), 0.05);   // tint is a coarse mip: no grain to lift
     float bn = fdVar(vi, 16.0, 0.45, 0.75) * clamp(0.7 * audioKick + 0.3 * clamp(audioBass, 0.0, 1.0), 0.0, 1.0) * wN;
     float head = 1.0 - clamp(luma(col), 0.0, 1.0);                     // the room up to white
-    col = col * (1.0 + bn * head) + 0.6 * bn * head * own;
+    col = col * (1.0 + 2.0 * bn * head) + 0.8 * bn * head * own;
     float l = luma(col);
     col = max(l + (col - l) * (1.0 + fdVar(vi, 17.0, 0.5, 1.1) * clamp(audioMid, 0.0, 1.0) * wM), 0.0);
     float hi = clamp(0.8 * audioHat + 0.2 * audioHigh, 0.0, 1.0);
