@@ -814,12 +814,14 @@ int main( int argc, char *argv[] )
     QMyWindow window( NULL );
     QObject::connect( &window, SIGNAL( signalQuitApp() ), &app, SLOT( quit() ) );
     app.setWindowIcon( QIcon( QString( "icon.ico" ) ) ); // multi-res: Qt picks the best size per context
-    // A tool drives the app (KALEIDO_NO_ACTIVATE): the window lies off the screen, frameless and without a taskbar
-    // button, like the editor's command-line renders -- the frames come from the framebuffer, not from the screen.
-    // Exports and snapshot series of many runs popped one window after the other into the middle of the user's
-    // screen (27.11.2026).  Not with KALEIDO_GPU_TIMING: timings are taken from a window on the screen.
-    const bool tool_offscreen =
-        qEnvironmentVariableIsSet( "KALEIDO_NO_ACTIVATE" ) && !qEnvironmentVariableIsSet( "KALEIDO_GPU_TIMING" );
+    // A tool drives an export (KALEIDO_NO_ACTIVATE with -e): the window lies off the screen, frameless and without a
+    // taskbar button, like the editor's command-line renders -- the export renders into its own framebuffer.  Series
+    // of exports popped one preview window after the other into the middle of the user's screen (27.11.2026).  Not
+    // for the other tool runs: the frozen snapshot and the web remote's screenshot read the window's own frame, which
+    // an off-screen window never draws (tried: every snapshot went missing) -- those stay at the bottom of the window
+    // stack as before.  Not with KALEIDO_GPU_TIMING: timings are taken from a window on the screen.
+    const bool tool_offscreen = VideoExport::requested() && qEnvironmentVariableIsSet( "KALEIDO_NO_ACTIVATE" )
+                                && !qEnvironmentVariableIsSet( "KALEIDO_GPU_TIMING" );
     if ( tool_offscreen )
     {
         window.setWindowFlags( window.windowFlags() | Qt::Tool | Qt::FramelessWindowHint
