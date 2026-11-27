@@ -1,0 +1,31 @@
+# Tools/depth_maps.py -- its own environment, never the system Python or another tool's venv (plan of 26.11.2026, T0).
+# Tested with these versions on Windows 11, Python 3.12, RTX 5090 (Blackwell, sm_120; needs CUDA 12.8 wheels).
+#
+#   uv venv depthenv --python 3.12
+#   uv pip install --python depthenv\Scripts\python.exe torch==2.11.0+cu128 torchvision==0.26.0+cu128 ^
+#       --index-url https://download.pytorch.org/whl/cu128
+#   uv pip install --python depthenv\Scripts\python.exe -r Tools\depth_maps_requirements.txt
+#   rem Depth Anything 3 (only for --model da3ml): the authors' code, WITHOUT its dependencies (they pull in
+#   rem xformers, open3d, pycolmap, gradio ... for exports this tool does not use); the PyPI package of the same
+#   rem name names no authors ("Your Name"), so the code comes from the official repository:
+#   git clone https://github.com/ByteDance-Seed/Depth-Anything-3 depthsrc\da3
+#   git -C depthsrc\da3 checkout 3d835ec1a5802d64a8b8b15f817a1ab54809bfe4
+#   uv pip install --python depthenv\Scripts\python.exe --no-deps .\depthsrc\da3
+#
+# Weights: set HF_HOME to a cache outside the user profile and the repository before the first run; the tool loads
+# the pinned revisions of depth-anything/Depth-Anything-V2-Small-hf and depth-anything/DA3MONO-LARGE (safetensors).
+# torch and torchvision come from the PyTorch index (above), not from this file.
+transformers==5.24.1
+huggingface_hub==2.5.0
+safetensors==0.8.0
+numpy==2.5.4
+pillow==13.0.0
+scipy==1.18.1
+# needed by the Depth Anything 3 code at import time
+einops==0.8.2
+omegaconf==2.4.0
+addict==2.4.0
+opencv-python-headless==5.1.0.95
+imageio==2.38.2
+matplotlib==3.11.2
+tqdm==4.70.1
