@@ -461,8 +461,8 @@ vec3 depthLookCol( int look, int vi, vec2 p, vec2 c, vec3 ph, float lod, inout f
     float thr = interpolation * photoSubject.x + ( 1.0 - interpolation ) * photoSubject.z;
 
 
-    float sure = interpolation * smoothstep( 0.45, 0.65, photoMask.x ) * photoDepthAmt.x
-                 + ( 1.0 - interpolation ) * smoothstep( 0.45, 0.65, photoMask.y ) * photoDepthAmt.y;
+    float sure = interpolation * smoothstep( 0.55, 0.65, photoMask.x ) * photoDepthAmt.x
+                 + ( 1.0 - interpolation ) * smoothstep( 0.55, 0.65, photoMask.y ) * photoDepthAmt.y;
     float e = dv( vi, 11.0, 0.05, 0.12 ) * ( 0.7 + 0.6 * sw );
     float m = smoothstep( thr - e, thr + e, s.w ) * sure;
     pd = mix( r.w, s.w, m );
