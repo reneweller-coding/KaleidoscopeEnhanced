@@ -98,8 +98,9 @@ every scene see the same kind of signal.
 480-sample block, Hann with N-1, k = 0..1024), ports the old detector line by line and runs the new one; `PresetEditor
 --features in.wav out.csv --drum-trace FILE` writes per block 16 float32 (time, the old envelopes, the new envelopes,
 ODFs, activations, hits).  `python Tools/drum_lab.py --check FILE in.wav` compares: on the screening music the old
-port and the C++ agree to 0.0000, the new to 0.0002, with every one of the 72 kick, 38 snare and 105 hat hits in the
-same block (the activations within 0.2 % at p99).  [C++ check of the final constants: see "Checks".]
+port and the C++ agree to 0.0000, the new to 0.0001, with every hit in the same block -- the final build on the
+screening music 72 kick, 52 snare, 128 hat hits, on the breakbeat kit 340, 542, 225 (the activations within 0.24 % at
+p99).  The trace carries the separator's envelopes whatever the default publishes.
 
 `--set screen,break` scores old against new on the truth sets, `--stats real,cues` gives the level statistics,
 `--same OLD_EXE` runs two editors over every WAV of the lab and compares every feature column but the three drums,
@@ -176,7 +177,9 @@ The brief: keep the version that is strictly better than the old one on every me
 drum that stays worse on the real kit ships on the old envelope by default.
 
 - *Hat: the separator.*  Better on every measure of the screening music (F, leak, crosstalk -- as change and at the
-  lead's hits); the kit has no hat truth; on the user's tracks its rate is +13 %.
+  lead's hits); the kit has no hat truth; on the user's tracks its rate is +13 %.  But one scene, PulsarLighthouse,
+  now trips the photosensitivity limiter more on the screening music (flash-on 1 -> 20 of 120 samples, see "The
+  picture") -- open, with the lead.
 - *Kick: the band group.*  The separator's kick is better in F on both sets, leaks a third less on the kit, is 14 ms
   faster and keeps the user's tracks' statistics exactly -- but on the kit the keys light it three times as much
   (0.11 -> 0.37) and its recall is 0.78 against 0.80.
@@ -245,7 +248,13 @@ small or under the voiceRoles knob); DiscoGodrays hat 0.020 -> 0.025; PulsarLigh
 `0.15 + 1.2 * audioHat` -- follows the hats now (hat hit 0.010 -> 0.046, its snare answer 0.066 -> 0.042), and in
 that run its limiter dimmed more: 50 -> 62 of 120 samples, flash-on 0 -> 14 (ProfileStill after it 53 -> 80, it reads
 no drum: the limiter's state carries over).  `flash_count.py` on PulsarLighthouse (its own photo and seed): worst
-second 0.5 flashes before and after, mean luminance 0.004 both.  [repeatability: see below]
+second 0.5 flashes before and after, mean luminance 0.004 both (that photo leaves the scene nearly black, so the
+count says little).  Repeated alone (PulsarLighthouse, ProfileStill; old, default, old, default): the limiter's
+flash-on samples 1 / 20 / 1 / 20 of 120, dimmed 70 every time -- deterministic.  The scene's hat light now blinks
+with the screening music's hats on every eighth (4.3 a second in the loud halves) where the band group fired 1.4
+times a second overall, and the limiter catches it.  By the brief that is a limiter firing more often; it is left
+to the lead (reported 13:30): the hat stays the separator's (the lead's call), the scene's gain on `audioHat` is the
+place to look, `KALEIDO_OLD_DRUMS=1` restores the old hat.
 
 `Tools/flash_count.py` (20 s at 60 fps, the screening music): TaikoSilhouettes 2.5, LightningStorm 2.0,
 BismuthLabyrinth 0.5 flashes/s in the worst second, the same with all three drums from the separator as with the
@@ -272,8 +281,11 @@ separator is skipped.
 - `analyzer_regress.py`: as the baseline.  `check_build_lists.py`: in step (56 sources, 60 headers).
   `cgvr_format.py --check` on the changed C++: same.  `temporal_budget.py` 0 errors, `shake_scan.py` 0 new,
   `doc_shaders.py --check` 0, `check_strings.py` OK.
-- Not run: `shadercheck.py` (no shader changed), Doxygen (not installed here; the new members are documented), the
-  Linux build (DrumSeparator is plain C++17 with <algorithm>/<cmath> only; CMake and .pro list it).
+- Doxygen (release_check's step): one warning, `DrumSeparator::hit` without its parameter -- documented since
+  (a comment; not run again).
+- Not run: `shadercheck.py` (no shader changed), the Linux build (DrumSeparator is plain C++17 with <algorithm> and
+  <cmath> only; CMake and .pro list it), the --same comparison with the final default (it compared all three from
+  the separator; the default publishes a subset of the same signals).
 
 #### Tried and dropped
 
@@ -321,6 +333,9 @@ Each in the lab, on both truth sets (and the demos where it mattered):
   the one real kit measured, and in two of eight scenes the limiter dimmed more), `KALEIDO_OLD_DRUMS=snare`;
   all three from the separator, `KALEIDO_OLD_DRUMS=0`.  A setting in the ini instead of the environment variable
   would be a small step if one of these becomes a choice.
+- *PulsarLighthouse* lights `1.2 * audioHat`: with a hat that really follows the hats it blinks at the hats' rate and
+  the limiter steps in more (flash-on 1 -> 20 of 120 samples on the screening music).  Lowering that scene's hat gain,
+  or the old hat (`KALEIDO_OLD_DRUMS=1`), are the two ways back.
 - *Lo-fi music*: on the BreakbeatGenerator's lo-fi demos (rolled off at 5 kHz) the new hat nearly never fires
   (noir 1.78 -> 0.07 hits/s): hat-reading scenes stay quieter there.  On your seven tracks the hat fires 13 % more.
 - *More truth would decide the kick and the snare*: a second real kit with stems and MIDI (another generator
