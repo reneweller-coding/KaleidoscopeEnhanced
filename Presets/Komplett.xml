@@ -19414,6 +19414,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
     <expr name="voiceP" formula="1"/>
+    <float name="depthLook" minValue="2.83" maxValue="5.49"></float>
   </TextureShader>
 
   <TextureShader file="..\\Scene2D\\GlassLab.frag" type="normal" mood="calm,dreamy,bright" probability="0.45" complexity="2" gpuMs="0.63">
