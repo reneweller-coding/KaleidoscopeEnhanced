@@ -120,9 +120,9 @@ uniform float     depthPar;      ///< parallax strength (the scene's slewed 3D-n
 uniform vec2      nearFar2;      ///< clip planes for the linearisation
 uniform float     oldHue;        ///< 1 = the harmony drift rotates RGB about the grey axis as before 26.11.2026
                                  ///< (KALEIDO_OLD_HUE=1, for comparisons); 0 = OKLab at constant lightness
-uniform float     depthParPhoto; ///< parallax strength on a photo's depth (a 2D scene with @depth; slewed, 0 = none)
-uniform float     stereoPhoto;   ///< share of the photo's real depth in the stereo depth (slewed, 0 = the old guess)
-uniform vec2      photoDepthWin; ///< window depth of the photo's near end (x, depth 1) and far end (y, depth 0)
+uniform float depthParPhoto;     ///< parallax strength on a photo's depth (a 2D scene with @depth; slewed, 0 = none)
+uniform float stereoPhoto;       ///< share of the photo's real depth in the stereo depth (slewed, 0 = the old guess)
+uniform vec2  photoDepthWin;     ///< window depth of the photo's near end (x, depth 1) and far end (y, depth 0)
 
 /**  Pseudo-random number 0..1 from a 2D point.
  *
