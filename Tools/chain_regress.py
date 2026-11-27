@@ -116,16 +116,30 @@ def main():
             # the class the shader picks from the pinned knob: pickStage(x, n) = min(floor(x * n), n - 1)
             names = " | ".join(cc.CLASSES[k][min(int(float(pins[k]) * n), n - 1)] or "none" for k, n in N.items())
             ra, rb = os.path.join(work, "run_%02d.png" % i), os.path.join(work, "uber_%02d.png" % i)
-            if not (shot(pins, ra, True, photo, a.wait) and shot(pins, rb, False, photo, a.wait + 2)):
+            # A combination that fails is shown once more, with a longer wait.  After a change of the lab's text the
+            # driver's shader cache is cold for every specialised copy it has not seen: the first start of a
+            # combination then compiles past the wait and the screenshot shows the fallback or nothing (27.11.2026:
+            # 9 of 12 "differed" in release_check after look 6's constants changed; each was identical at the second
+            # start).  A real difference fails twice.
+            d, got, again = 0.0, False, ""
+            for attempt in (0, 1):
+                w = a.wait + 18.0 * attempt
+                got = shot(pins, ra, True, photo, w) and shot(pins, rb, False, photo, w + 2)
+                if got:
+                    x = np.asarray(Image.open(ra).convert("RGB")).astype(float)
+                    y = np.asarray(Image.open(rb).convert("RGB")).astype(float)
+                    d = abs(x - y).mean()
+                if got and d <= a.tol:
+                    break
+                again = "  (second start; the first %s)" % ("differed by %.3f" % d if got else "gave no screenshot")
+            if not got:
                 print("%2d  NO SCREENSHOT  %s" % (i, names), flush=True)
                 fails += 1
                 continue
-            x = np.asarray(Image.open(ra).convert("RGB")).astype(float)
-            y = np.asarray(Image.open(rb).convert("RGB")).astype(float)
-            d = abs(x - y).mean()
             bad = bool(d > a.tol)                       # a numpy bool would make fails a numpy int
             fails += bad
-            print("%2d  %s  diff %.3f  %s" % (i, "FAIL" if bad else "ok  ", d, names), flush=True)
+            print("%2d  %s  diff %.3f  %s%s" % (i, "FAIL" if bad else "ok  ", d, names, "" if bad else again),
+                  flush=True)
     finally:
         PS.close()
         try:
