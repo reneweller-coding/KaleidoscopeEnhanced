@@ -63,6 +63,7 @@ SOURCES += \
     Source/TextureEffectKaleidoscopeBase.cpp \
     Source/TrackMedia.cpp \
     Source/TempoTracker.cpp \
+    Source/DrumSeparator.cpp \
     Source/Uniform.cpp \
     Source/UpdateCheck.cpp \
     Source/Utils.cpp \
@@ -98,6 +99,7 @@ HEADERS += \
     Source/GpuSims.h \
     Source/LongRunVariety.h \
     Source/TempoTracker.h \
+    Source/DrumSeparator.h \
     Source/mainwindow.h \
     Source/mesh.h \
     Source/MeshImport.h \

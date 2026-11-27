@@ -598,6 +598,13 @@ particle swarms, lasers, sparks, lamp cores -- survives to the glow instead of b
 rolls it off softly. Off by default; it costs some 0.1–0.4 ms of GPU time a frame and about 330 MB of GPU memory.
 The photosensitivity limiter keeps measuring what you see. Details: docs/engine-internals.md, section (69).
 
+### Kick, snare and hi-hat
+
+The scenes' `audioKick`, `audioSnare` and `audioHat` follow the drums themselves since 27.11.2026: the analysis
+splits each onset onto drum templates (Source/DrumSeparator.h), so a bass line no longer flashes the kick and a lead
+melody no longer the hi-hat. `KALEIDO_OLD_DRUMS=1` brings back the earlier band-group onsets, for comparisons.
+Details: docs/engine-internals-70-analyzer.md.
+
 ---
 
 ## Stereo 3D in a headset

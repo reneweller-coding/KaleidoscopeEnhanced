@@ -77,6 +77,7 @@ set(KALEIDO_SOURCES
 	Source/TextureEffectKaleidoscopeBase.cpp
 	Source/TrackMedia.cpp
 	Source/TempoTracker.cpp
+	Source/DrumSeparator.cpp
 	Source/Uniform.cpp
 	Source/UpdateCheck.cpp
 	Source/Utils.cpp
