@@ -100,13 +100,21 @@ white wall and a lamp give the same glow.  But most scenes cut their own output 
   highlight guard (`p98 * want <= 1`) work unchanged; only a NaN needed a guard (it would pick no defined bin).
   The limiter reads mips: `frameAt()` takes each texel at most 1 per channel and a NaN as black (one NaN would make
   its scale NaN for good).  That was not enough -- see the measure copy below.
-- *The readbacks* (every `glReadPixels`/`glGetTexImage`/`glCopyTexSubImage2D` in Source/, checked one by one):
-  the screenshot, the freeze shot and the web remote's preview (glwidget.cpp) read the default framebuffer, the
-  recorder (Recorder.cpp) and Spout read the presented picture, the video export (VideoExport.cpp) its own NV12
-  conversion of the presented picture -- all after Present.frag's final clamp, unchanged.  The mean colour
-  (PresentPass, the top mip, GL_FLOAT) is clamped to 0..1 on the CPU (with a NaN the clamp gives 0).  The CPU
-  limiter fallback (no compute) reads its mip as float: its texels are now clamped at 1 like the compute pass's.
-  The light-stats hook reads bytes or floats by the source's format.
+- *The readbacks* -- every `glReadPixels`, `glGetTexImage` and `glCopyTexSubImage2D` in Source/ (lines as of this
+  branch; the plan's "16" counted the comments that name them as well), one by one:
+
+  | where | reads | with the switch |
+  |---|---|---|
+  | glwidget.cpp:831, the web remote's preview | the default framebuffer (presented, 8 bit) | unchanged |
+  | glwidget.cpp:2000, the screenshot | the default framebuffer | unchanged |
+  | glwidget.cpp:2030, the freeze shot (snapshots) | the default framebuffer | unchanged |
+  | Recorder.cpp:633 (copy) and :1037 (PBO), the recorder | its own RGBA8 copy of the presented picture | unchanged |
+  | VideoExport.cpp:648, the video export | its NV12 conversion of the presented picture | unchanged |
+  | PresentPass.cpp:548, the mean colour (OSC, the guard) | the source's top mip as float | may hold > 1 or NaN: the CPU clamps to 0..1 (NaN gives 0) |
+  | PresentPass.cpp:660, the limiter without compute | its mip as float | now clamped at 1 per channel, like the compute pass |
+  | PresentPass.cpp:1112 / 1117, the light-stats hook | the source, bytes or floats by its format | both handled |
+
+  Spout sends the default framebuffer.  Everything after Present.frag's final clamp is 8 bit as before.
 
 - *The limiter needed a frame of its own* (Engine/LightMeasure.frag, `PresentPass::measureTexture()`).  The first
   flash test (below) showed the limiter acting far more with the switch than without: over ParticleTunnelFlight the
