@@ -13696,3 +13696,124 @@ Photo change: run the app with a preset of the three scenes and `KALEIDO_FLUID_D
   frames: about 0.2..0.5; 1.0 kills the swirl. Registering it changes the three scenes' rolls for a given seed
   (their snapshots against the baseline change once, by 7-14 of 255, whatever the range).
 - Whether the near should stay "the picture" (stronger refresh, as built) or only be an obstacle.
+
+### After the sprint: the user's answers of the evening (lead, alone)
+
+The user looked at the sheets of the sprint and answered five questions: the light shafts through the photo's depth
+"by all means try"; the subject anchor's mirror seam in StripLab "not so bad, there are no discontinuities"; look 6
+stronger -- "what do you think?"; the haze in the 3D scenes "far too strong on the picture -- less, and with a low
+probability"; the rests (particles, a soft glow instead of the halo's line, the depth looks in more labs) "please on
+your own".  No agents after 17:00.
+
+#### The rays in the presets, under a name of their own
+
+Two older scenes, AnticrepuscularRays and CrepuscularRaysForest, have a knob `raysP` of their own, and the host read
+the rays' strength from the active scene's `raysP` -- harmless while those two write no depth, a trap the day one
+does.  The preset knob is now `depthRaysP` (`RenderPipeline.cpp`, the block "rays"; the uniform in Present.frag keeps
+its name), rolled in all 46 scenes with `// @depth`: -0.4..0.8, so off in a third of the activations.
+
+Before that, three sheets on bright photos with relief (`kaleido-wt\lead_look_sheet.py`, frozen and silent frames):
+the first constants (gain 1.5) were invisible on dark pictures and, at three times the gain, a grey veil over bright
+ones.  Two rules made the effect usable: a sample lights the pixel only as far as it is brighter than the pixel
+(`RaysOver` 0.3), and a near pixel takes 15 % of the light (`RaysNear`: the subject stays a silhouette in the
+shafts); gain 3.2.  Knob 0 is unchanged against the frames before the change (three photos, 0 changed at tolerance
+0).  Not verified: the rays in motion and with music (the strength follows the swell, so silent frames show its
+floor); GPU time (32 texture reads a pixel while on).
+
+#### The haze rarer and weaker
+
+The sheet the user judged shows off | on | the difference x8; at the user's word the haze stays, rarer and weaker:
+`shaftP` -1.5..0.35 in MeshZoetrope (on in about one activation of five, at most 0.35 instead of 0.6) and -1.5..0.25
+in MeshMetronomes (one of seven).  The other five scenes with the block keep it off.
+
+#### Look 6: the near layer's lift bound to the room up to white
+
+The kick multiplied the near layer's colour (`col * (1 + bn)`): a dark near layer gained almost nothing, a bright
+one burnt out.  The lead's answer to "what do you think": not a flat step but a lift bound to what is left to white.
+The first try (gain 1 and 0.6 of the own colour, both times the room) measured weaker than the agent's version on
+both test photos: the near layers of these photos are their bright parts, where the room is small.  The second try
+(gain 2, 0.8 of the own colour, within the room) is in: `gen.py` FREQ_LIB, regenerated in the ten labs that call
+`freqDepth()` and in `Engine/ChainPass/Final_ChainLab2D.frag`.
+
+Measured with the look agent's tools in the worktree p3 (`kaleido-wt\lead_l6.py`, `lead_l6b.py`; the screening
+music, seed 7, the same rolls; mean added to the near third of the pixels by depth, of 255; base = look 0 in
+ChainLab2D, look 4 in the other two):
+
+| photo, lab | agent (16:30) | first try | second try (in) |
+|---|---|---|---|
+| dark (kristallhoehle), ChainLab2D | +8.5 | +7.9 | +12.1 |
+| dark, TimeChainLab / MirrorBilliardLab | +7.2 / +9.4 | +6.9 / +8.9 | +10.0 / +13.3 |
+| bright (lehmwurf-seladon-lk3), ChainLab2D | +11.1 | +8.8 | +12.4 |
+| bright, TimeChainLab / MirrorBilliardLab | +10.1 / +12.2 | +9.9 / +12.2 | +12.8 / +18.1 |
+
+Against the look of the afternoon (+2.8 in ChainLab2D on the dark photo) the second try is about 4x.  The limiter
+flashed in no run (dimmed frames: 5 of 420 in ChainLab2D's closing window on the dark photo, 2 on the bright one).
+On the bright photo the far third of the two labs falls by 12 of 255 on average (the agent's version: 5): not the
+look -- it sets only points there -- but the exposure, which takes back when the near layer brightens.  Sheets:
+`kaleido-wt\sheets\lead72\look6_dark`, `look6_bright` (base | agent | second try | differences x4 | depth view).
+
+#### The depth looks in six more labs
+
+`python Tools/scenegen/patch_depthlabs.py FoldLab GlassLab SequenceLab DefectLab MeterLab PartitionLab` (the agent's
+script, all seven one-lookup labs; StripLab was done): looks 4 and 6 at the photo lookup, `depthLook` <= 3.5 the old
+statements.  Checked with the depth-labs agent's helpers (`kaleido-wt\lead_labs6_check.py`,
+`depthlabs_control.py`; frozen frame, seed 7, the knob pinned in all three shots):
+
+| lab | look 0, old against new | new against new (control) | look 4 against look 0 (drahtknaeuel, subject sure) |
+|---|---|---|---|
+| FoldLab | 0 pixels, twice | -- | mean 53 of 255 |
+| GlassLab | 0 pixels, twice | -- | 25 |
+| MeterLab | 0 and 1 pixel | -- | 26 |
+| SequenceLab | 1,662 pixels by 1 of 255 | 0 | 51 |
+| DefectLab | 24 pixels by 1 | 0 | 52 |
+| PartitionLab | 96,799 pixels (2 %) by 1 | 0 | 52 |
+
+So look 0 is not bit for bit in three of the six: the control shows the difference is the shader's, not the app
+start's.  The patch rewrote the end of `main()` (`col = max( col / max( ws, 1e-3 ), 0.0 ); if ( depthLook > 5.5 )
+...; finish( voiceRoles( col, ... ) )` instead of the one expression): the same arithmetic, which the driver compiles
+differently, and a pixel rounds one level the other way.  Left as it is -- at most 1 of 255 is below anything seen --
+and said here instead of claimed bit for bit.  The first round on lehmwurf-seladon-lk3 showed look 4 equal to look
+0 in all six: that photo's subject is not sure (`conf` 0 in photo_info.tsv), and the anchor rightly does not move;
+a check of the anchor needs a photo with a sure subject.  On the sheets
+(`kaleido-wt\sheets\lead72\<lab>_look0_look4.jpg`) the anchor pulls the picture into a figure around the centre --
+the mirror seam the user accepted for StripLab.  In the presets: `depthLook` 2.70..5.90 in all six (off 25 %, anchor
+62.5 %, look 6 12.5 %), and StripLab from 2.83..5.49 to the same.  Not verified: look 6 in these six with music.
+
+#### The particles in the photo's relief (P7, second simulation)
+
+The stopped agent's draft (branch `wt-simpart`) was nearly complete; read against the main state and taken over:
+`Engine/CfxParticleStep.comp` reads the relief of both photo slots (alpha, weighed with the cross-fade and with
+whether a slot has a map) and adds the slope as a force (the swarm drifts into the far regions) and takes away the
+part of the velocity that climbs a slope where the ground is near (it slides around the subject);
+`Scene2D/ParticleFlow.frag` can put the photo in front of the swarm where it is nearer than its subject depth
+(`partOccP`, only at `photoMask` over 0.6).  The pipeline reads `partDepthP` of the scene that shows the particles and
+hands `ComputeFX::setParticleRelief()` the second photo, the cross-fade and the two map flags; a live input has no
+map.  One change by the lead: the relief from mip 2 (the 8-bit map's terraces would put noise into the force).  The
+slots checked: unit 0 is the current photo (tex0), unit 1 the next, `interpolation` 1 = tex0 -- as the draft assumed.
+
+Three exports of the ostgut stretch on lehmwurf-seladon-lk3 (`kaleido-wt\lead_particles.py`, sheet
+`kaleido-wt\sheets\lead72\particles_sheet.jpg`): with the relief the swarm follows the photo's diagonal edge in long
+strands and leaves the near rock emptier; the occlusion shows nothing on this photo (mask 0.10).  In the presets:
+`partDepthP` -0.5..1.0 (ParticleFlow); `partOccP` stays off until it has been seen on a photo with a good mask.
+Not verified: GPU time; a photo change with the knob on (by the formula only).
+
+#### The fluid in the presets
+
+`fluidDepthP` -0.3..0.5 in Fluid, FluidInkMandala and Schlieren (the fluid agent: 0.4 usable, 1.0 too much).  On the
+lead's frozen sheet (three photos, 0 | 0.4) the difference is small -- the landscape acts on the flow, which a single
+frame does not show.
+
+#### The halo as a soft glow
+
+At 360 lines the agent's halo was a line.  `haloAt()` got a second ring: eight more depth pairs from 1.5 to 4 halo
+radii (6 % of the height), far side only, weighted down outward; the line keeps half its weight.  PillarHall haloP 1:
+mean +0.87 of 255, 12 % of the pixels changed by more than 2 (the line alone: +0.32, 7 %), max 37, the brightest
+pixel unchanged; FoldLab: +1.07, 94 % (a lab has depth edges everywhere).  On the sheet a soft warm hem around the
+pillars against the dark, floor and walls untouched.  In the presets: `haloP` -0.3..1.0 in FxRimLight (an effect of
+probability 0.004).
+
+#### Also fixed
+
+- Section (72) as assembled carried the fluid part's own headings at levels 1 and 2, and (71) one of P8a: demoted.
+- The pages workflow: a re-run of a failed deploy finds two artefacts and fails again -- start it anew instead
+  (`gh workflow run Pages --ref master`), as `.github/workflows/pages.yml` says.
