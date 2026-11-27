@@ -196,6 +196,9 @@ All in the lab (`--param`; the experimental knobs stay in Tools/buildup_lab.py, 
 - Holding the rise while the gap lasts (`hold` 4 / 10 s, so that a riser that has stopped climbing still counts):
   rise 0.50 -> 0.57 / 0.59, pre 0.51 -> 0.57 / 0.61, but falseX 4.4 % -> 5.6 / 6.5 % -- the breakdowns hold too.
   The most promising of the dropped ones; with a break/build distinction it may come back.
+- Other averages for the rise (`tf`/`ts` 1/12, 2/6, 2/12 s instead of 1/6): 1/12 rises better (0.58) and arms
+  earlier (pre 0.63) but doubles the false time in grooves (1.7 %, falseX 6.0 %); 2/6 halves it (0.4 %, 2.9 %) but arms
+  only 13 of 17; none brings goa's and ostgut's breakdowns or the crescendos to the old aucX.
 - A slow loudness ramp for the crescendos (`w_lvl` 0.5 / 0.8, 4-s over 20-s / 40-s level): long builds' aucX at best
   0.65 (old 0.63), but groove time above 0.45 9.5-28 % and EDM AUC 0.41-0.68 -- every intro and every new layer is a
   ramp.  The old signal's 0.63 on the crescendos is not a level effect alone.
