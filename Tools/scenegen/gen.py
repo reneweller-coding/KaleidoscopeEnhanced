@@ -337,13 +337,17 @@ vec3 fdLayers(int vi)
 /**  Frequency by depth: the photo's depth splits the picture softly into near, middle and far (fdLayers(): around
  * the photo's mean depth); the bass (the kick's hit and the bass line under it)
  * brightens the near layer, the mids raise the colour of the middle one (its chroma around its luma), the highs (the
- * hi-hat and the high band) set fine round glints into the far one -- jittered points in cells of 1/110 .. 1/170 of
+ * hi-hat and the high band) set fine round glints into the far one -- jittered points in cells of 1/64 .. 1/100 of
  * the height, each with a size and a twinkle of its own, the field drifting with the music's advance (rule V8e: the
  * jitter (+-0.2) and the radius (<= 0.24) keep every point inside its cell).  Every signal is a continuous envelope;
  * nothing moves.  Where neither photo has a depth map the colour stays as it is, and a cross-fade fades the look.
  * The near layer's light and the glints carry the photo's own colour there brought up to full brightness (as the
  * chain lab's glow does): a gain alone left a dark photo dark -- on the screening photo (the chain's picture at 18 of
- * 255) the first version's glints added 0.2 of 255 to the far layer, and the eye saw none.
+ * 255) the first version's glints added 0.2 of 255 to the far layer, and the eye saw none.  The sizes are those of
+ * 27.11.2026 evening (look6labs): the first ones (lift 16..32 %, a quarter of the own colour; cells 1/110..1/170,
+ * 20..34 % lit, gain 1.2..2.2, half the own colour) read +2.1 of 255 in the near third and +0.4 in the far one --
+ * right in direction, too small to see.  The near layer's light follows the kick's envelope (below 3 Hz, a part of
+ * the picture), the far layer's only fine points (the hat is too fast for a layer's light: temporal budget).
  *
  * @param col   The colour: the photo's own, at the pixel. (in)
  * @param d     The photo's depth there, 0 far .. 1 near. (in)
@@ -362,19 +366,19 @@ vec3 freqDepth(vec3 col, float d, vec2 p, vec3 tint, int vi)
     float wF = (1.0 - smoothstep(t.x - t.z, t.x + t.z, d)) * have;
     float wM = max(have - wN - wF, 0.0);
     vec3 own = tint / max(max(tint.r, max(tint.g, tint.b)), 0.05);   // tint is a coarse mip: no grain to lift
-    float bn = fdVar(vi, 16.0, 0.16, 0.32) * clamp(0.7 * audioKick + 0.3 * clamp(audioBass, 0.0, 1.0), 0.0, 1.0) * wN;
-    col = col * (1.0 + bn) + 0.25 * bn * own;
+    float bn = fdVar(vi, 16.0, 0.45, 0.75) * clamp(0.7 * audioKick + 0.3 * clamp(audioBass, 0.0, 1.0), 0.0, 1.0) * wN;
+    col = col * (1.0 + bn) + 0.4 * bn * own;
     float l = luma(col);
     col = max(l + (col - l) * (1.0 + fdVar(vi, 17.0, 0.5, 1.1) * clamp(audioMid, 0.0, 1.0) * wM), 0.0);
     float hi = clamp(0.8 * audioHat + 0.2 * audioHigh, 0.0, 1.0);
-    vec2 g = p * fdVar(vi, 18.0, 110.0, 170.0) + vec2(0.29, 0.13) * sceneAdvance;
+    vec2 g = p * fdVar(vi, 18.0, 64.0, 100.0) + vec2(0.29, 0.13) * sceneAdvance;
     vec2 gc = floor(g);
     vec2 gf = fract(g) - 0.5 - 0.4 * (hash22(gc + 3.0) - 0.5);
     float gs = 0.6 + 0.4 * hash21(gc + 11.0);
-    float pt = step(fdVar(vi, 19.0, 0.66, 0.80), hash21(gc + 29.0)) * smoothstep(0.24 * gs, 0.06 * gs, length(gf));
+    float pt = step(fdVar(vi, 19.0, 0.44, 0.60), hash21(gc + 29.0)) * smoothstep(0.24 * gs, 0.06 * gs, length(gf));
     float tw = 0.55 + 0.45 * sin(6.2831853 * hash21(gc + 7.0) + 1.1 * sceneAdvance);
-    float gl = fdVar(vi, 20.0, 1.2, 2.2) * hi * pt * tw * wF;
-    return col * (1.0 + gl) + 0.5 * gl * own;
+    float gl = fdVar(vi, 20.0, 2.4, 3.6) * hi * pt * tw * wF;
+    return col * (1.0 + gl) + 0.8 * gl * own;
 }
 """
 
