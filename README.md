@@ -184,8 +184,9 @@ What the depth does in the picture:
 
 **Which photos have maps.** The photo set these features were built on has 1,266 photos, each with a map; 707 of
 them have relief, the other 559 are flat by the table and stay without depth. The pack released as `images-v2`
-(977 photos, the table above) was built before the maps, and `Tools/make_image_pack.ps1` packs the pictures
-only -- for that pack, and for your own photos, make the maps yourself.
+(977 photos, the table above) was built before the maps; from the next pack on `Tools/make_image_pack.ps1` puts
+the maps and their table into the archive (folder `.depth`). For the `images-v2` pack, and for your own photos,
+make the maps yourself.
 
 **Maps for your own photos:** `Tools/depth_maps.py` makes them, in a Python environment of its own (the exact
 versions and the steps are in `Tools/depth_maps_requirements.txt`; it runs the model on the GPU where torch finds CUDA, else on the CPU):
